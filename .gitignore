@@ -1,0 +1,16 @@
+# Local safety copies and character exports
+backups/
+exports/
+*.character.json
+dnd-character.json
+
+# Local working notes
+DND_4.txt
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+

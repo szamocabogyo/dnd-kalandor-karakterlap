@@ -3968,7 +3968,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
     // event log together only after all roll inputs have passed validation.
     const VERSION = 1;
     const ATTACK_BONUSES = new Set(['martial-arts', 'flurry', 'frenzy', 'war-priest', 'two-weapon', 'war-magic', 'improved-war-magic', 'battle-magic', 'animal-triggered-attack']);
-    const ATTACK_REACTIONS = new Set(['opportunity', 'readied', 'giant-killer']);
+    const ATTACK_REACTIONS = new Set(['opportunity', 'readied', 'giant-killer', 'opportunist']);
     const ACTIONS = new Set(['dash', 'disengage', 'dodge', 'help', 'hide', 'ready', 'search', 'use-object']);
     const RESOURCE_EVENTS = {
         rage: { category: 'bonus', resource: 'rageUses', klass: 'Barbarian', level: 1 },
@@ -3995,6 +3995,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         indomitable: { category: 'trigger', resource: 'indomitable', klass: 'Fighter', level: 9, trigger: true },
         'patient-defense': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
         'step-wind': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
+        'wholeness-body': { category: 'action', resource: 'wholenessBody', klass: 'Monk', level: 6, subclass: 'open hand' },
         'lay-on-hands': { category: 'action', resource: 'layOnHands', klass: 'Paladin', level: 1, amount: true },
         'divine-sense': { category: 'action', resource: 'divineSense', klass: 'Paladin', level: 1 },
         'dragon-breath': { category: 'action', resource: 'dragonBreath' },
@@ -4421,6 +4422,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                         requireClass('Ranger', 3, 'hunter'); requireConditions();
                         if (normalized(context.hunterPrey) !== 'giant killer' && context.allowReaction?.['giant-killer'] !== true) fail('A karakter nem választotta a Giant Killer képességet.');
                     }
+                    if(choice==='opportunist')requireClass('Monk',17,'way of shadow');
                     spend('reaction');
                     if (choice === 'readied') state.flags.ready = false;
                     takePool(addPool('reaction', choice, 1));
@@ -4610,6 +4612,31 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     if(!(hp>0&&maximum>0&&hp<=maximum/2))fail('A Survivor csak 1 HP felett és legfeljebb fél HP-n használható.');
                     state.used.survivor=true;return;
                 }
+                if(choice==='slow-fall'){
+                    requireClass('Monk',4);if(category!=='reaction')fail('A Slow Fall reakciót használ.');spend('reaction');return;
+                }
+                if(choice==='stillness-mind'){
+                    requireClass('Monk',7);if(category!=='action')fail('A Stillness of Mind akciót használ.');spend('action');return;
+                }
+                if(choice==='diamond-soul'){
+                    requireClass('Monk',14);if(category!=='trigger')fail('A Diamond Soul sikertelen mentődobás után használható.');resource('kiPoints',1);return;
+                }
+                if(choice==='empty-body'){
+                    requireClass('Monk',18);if(category!=='action')fail('Az Empty Body akciót használ.');resource('kiPoints',4);spend('action');return;
+                }
+                if(choice==='astral-projection'){
+                    requireClass('Monk',18);if(category!=='action')fail('Az Astral Projection akciót használ.');resource('kiPoints',8);spend('action');return;
+                }
+                if(choice==='shadow-step'){
+                    requireClass('Monk',6,'way of shadow');if(category!=='bonus')fail('A Shadow Step bónuszakciót használ.');spend('bonus');state.flags.shadowStep=true;return;
+                }
+                if(choice==='monk-cloak-shadows'){
+                    requireClass('Monk',11,'way of shadow');if(category!=='action')fail('A Cloak of Shadows akciót használ.');spend('action');return;
+                }
+                if(choice==='quivering-palm-release'){
+                    requireClass('Monk',17,'open hand');if(category!=='action')fail('A Quivering Palm lezárása akciót használ.');
+                    if(!document.getElementById('classFeature_quiveringPalmPrimed')?.checked)fail('Nincs aktív Quivering Palm rezgés.');spend('action');return;
+                }
                 if (choice === 'revert-shape') {
                     requireClass('Druid', 2);
                     if (category !== 'bonus') fail('Az állati alak megszüntetése bónuszakció.');
@@ -4778,7 +4805,9 @@ function combatRulesSpeed(){
     const manual=parse(document.querySelector('[data-character-speed]')?.value);
     if(manual)return {...manual,fallback:false,source:'manual'};
     const race=document.getElementById('characterRace')?.value||'';
-    return {speed:/dwarf|halfling|gnome/i.test(race)?25:30,unit:'ft',fallback:true,source:'race'};
+    const base=/dwarf|halfling|gnome/i.test(race)?25:30,c=classFeatureContext();
+    const monkBonus=c.klass==='Monk'&&c.level>=2&&(document.getElementById('armorType')?.value||'unarmored')==='unarmored'&&(Number(document.getElementById('shieldAC')?.value)||0)===0?(c.level>=18?30:c.level>=14?25:c.level>=10?20:c.level>=6?15:10):0;
+    return {speed:base+monkBonus,unit:'ft',fallback:true,source:monkBonus?'race+monk':'race'};
 }
 
 function combatRulesRead(){
@@ -4898,7 +4927,7 @@ function combatRulesIntent(kind,category,choice,preview=false){
         const known=context.movementSpeeds?.[choice]||move?.modeSpeeds?.[choice];
         if(['climb','swim','fly'].includes(choice)){
             const rogue=classFeatureContext();
-            if(choice==='climb'&&rogue.klass==='Rogue'&&rogue.level>=3&&rogue.subclass.includes('thief'))intent.modeSpeed=move?.speed||1;
+            if(choice==='climb'&&((rogue.klass==='Rogue'&&rogue.level>=3&&rogue.subclass.includes('thief'))||(rogue.klass==='Monk'&&rogue.level>=9)))intent.modeSpeed=move?.speed||1;
             else if(manual&&(!preview||Number.isFinite(entered)&&entered>0))intent.modeSpeed=entered;
             else if(Number.isFinite(known)&&known>0)intent.modeSpeed=known;
             else if(preview&&choice==='fly')intent.modeSpeed=Math.max(move?.speed||0,(move?.spent||0)+1,1);
@@ -4929,7 +4958,7 @@ function combatRulesPlan(intent){
     if(intent.kind==='attack'&&rangerFoeSlayerSelected()&&state.used.foeSlayer&&!intent.preview)return {ok:false,error:'A Foe Slayer ebben a fordulóban már elfogyott.'};
     if(intent.kind==='spell'&&!intent.spell)return {ok:false,error:'Válassz érvényes varázslatot.'};
     if(intent.kind==='spell'&&intent.spell.time==='unsupported')return {ok:false,error:'Egy akció, bónuszakció vagy reakció idejű varázslatot válassz. A hosszabb varázslást több körön át a megjegyzésben lehet követni.'};
-    const attackChoices=['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon','animal-triggered-attack'];
+    const attackChoices=['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','opportunist','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon','animal-triggered-attack'];
     if(intent.kind==='attack'&&!attackChoices.includes(intent.choice))return {ok:false,error:'Ehhez a művelethez nem tartozik fegyvertámadás.'};
     if(intent.kind==='attack'&&rangerPetChoice(intent.choice)){
         const profiles=rangerPetAttackChoices(intent.choice,true);
@@ -5062,7 +5091,7 @@ function combatRulesFilterDamageOptions(){
     });
 }
 
-function combatRulesEventKind(choice,category){return choice.startsWith('spell:')?'spell':['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon'].includes(choice)?'attack':category==='movement'?'movement':'event';}
+function combatRulesEventKind(choice,category){return choice.startsWith('spell:')?'spell':['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','opportunist','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon'].includes(choice)?'attack':category==='movement'?'movement':'event';}
 
 function combatRulesRecordEvent(){
     if(combatGuideState.stage!=='event'||(!hasCombatRoundInitiative()&&combatGuideState.category!=='reaction'))return;
@@ -5112,6 +5141,14 @@ function combatRulesRecordEvent(){
         const hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value),heal=5+classFeatureContext().conMod;
         hp.value=String(Math.min(max||Infinity,Number(hp.value)+heal));detail='Survivor: '+heal+' HP visszanyerve a saját kör elején. '+detail;
     }
+    if(option.value==='wholeness-body'){
+        const hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value),heal=3*classFeatureContext().level;
+        hp.value=String(Math.min(max||Infinity,Number(hp.value)+heal));detail='Wholeness of Body: '+heal+' HP visszanyerve. '+detail;
+    }
+    if(option.value==='quivering-palm-release'){
+        const primed=document.getElementById('classFeature_quiveringPalmPrimed');if(primed)primed.checked=false;
+        detail='Quivering Palm: a célpont CON mentőt dob; sikertelenségnél 0 HP-ra kerül, siker esetén 10d10 necrotic sebzést szenved. '+detail;
+    }
     if(option.value==='lay-on-hands'){
         const amount=intent.amount;
         if(document.getElementById('combatRulesHealSelf').checked){const hp=document.getElementById('currentHp');hp.value=String(Math.min(Number(document.getElementById('maxHp').value)||Infinity,Number(hp.value)+amount));}
@@ -5136,6 +5173,17 @@ function combatRulesRecordEvent(){
     if(option.value==='indomitable')detail='Indomitable: a sikertelen mentődobást újradobod, és az új eredményt kell használnod. '+detail;
     if(option.value==='protection-style')detail='Protection: pajzs használata mellett hátrányt adsz az 5 ft-on belüli másik célpontot támadó, látott lény támadásdobására. '+detail;
     if(option.value==='weapon-bond-summon')detail='Weapon Bond: az egyik kötött fegyver ugyanazon a létsíkon bónuszakcióval a kezedbe kerül. '+detail;
+    const monkDetails={
+        'slow-fall':'Slow Fall: az esési sebzés a monk szint ötszörösével csökken.',
+        'stillness-mind':'Stillness of Mind: egy rajtad lévő bájolt vagy ijedt állapot megszűnik.',
+        'diamond-soul':'Diamond Soul: a sikertelen mentődobást 1 Kiért újradobod, és az új eredményt használod.',
+        'empty-body':'Empty Body: 1 percre láthatatlanná válsz és ellenállást kapsz minden sebzésre a force kivételével.',
+        'astral-projection':'Empty Body: Astral Projection használata csak magadra, anyagi komponens nélkül.',
+        'shadow-step':'Shadow Step: legfeljebb 60 ft teleport félhomályból vagy sötétségből látható félhomályos/sötét helyre; előny a következő közelharci támadásra a kör végéig.',
+        'monk-cloak-shadows':'Cloak of Shadows: félhomályban vagy sötétségben láthatatlanná válsz; támadás, varázslás vagy erős fény megszünteti.',
+        opportunist:'Opportunist: reakcióból közelharci támadást végzel az 5 ft-on belüli lény ellen, akit egy másik lény eltalált.'
+    };
+    if(monkDetails[option.value])detail=monkDetails[option.value]+' '+detail;
     if(option.value==='action-surge'&&classFeatureContext().klass==='Fighter'&&classFeatureContext().subclass.includes('eldritch knight')&&classFeatureContext().level>=15)detail='Arcane Charge: az Action Surge előtt vagy után legfeljebb 30 ft-ot teleportálhatsz egy látható, szabad helyre. '+detail;
     const clericDetails={
         'turn-undead':'Turn Undead: a 30 ft-on belüli, látó vagy halló élőholtak WIS mentőt dobnak; sikertelenségnél 1 percig vagy sebzésig menekülnek és nem reagálhatnak.',
@@ -5543,6 +5591,10 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         profile.label='Stand Against the Tide';profile.known=true;
     }else if(choice==='deflect-missiles'&&className==='Monk'&&level>=3){
         profile.label='Deflect Missiles';profile.known=true;
+    }else if(choice==='slow-fall'&&className==='Monk'&&level>=4){
+        profile.label='Slow Fall';profile.known=true;
+    }else if(choice==='opportunist'&&className==='Monk'&&level>=17&&context.subclass.includes('way of shadow')){
+        profile.label='Opportunist';profile.known=true;
     }else if(choice==='giant-killer'&&className==='Ranger'&&level>=3&&context.subclass.includes('hunter')&&context.hunterPrey==='Giant Killer'){
         profile.label='Giant Killer';profile.known=true;
     }else if(choice==='hellish-rebuke'&&race==='Tiefling'&&level>=3){
@@ -5631,6 +5683,8 @@ function combatReactionProfiles(){
     if(rangerHunterDefense('Stand Against the Tide'))choices.push('stand-tide');
     if(rangerCompanionRules())choices.push('companion-opportunity');
     if(context.klass==='Monk'&&context.level>=3)choices.push('deflect-missiles');
+    if(context.klass==='Monk'&&context.level>=4)choices.push('slow-fall');
+    if(context.klass==='Monk'&&context.level>=17&&context.subclass.includes('way of shadow'))choices.push('opportunist');
     if(context.klass==='Ranger'&&context.level>=15&&context.subclass.includes('hunter'))choices.push('hunter-defense');
     if(race==='Tiefling'&&context.level>=3)choices.push('hellish-rebuke');
     rows.forEach(row=>{
@@ -6481,9 +6535,40 @@ const classFeatureModels={
         {type:'output',key:'arcaneCharge',label:'Eldritch Knight – Arcane Charge',minLevel:15,wide:true,when:c=>c.subclass.includes('eldritch knight'),value:()=> 'Action Surge használatakor előtte vagy utána legfeljebb 30 ft-ot teleportálhatsz egy látható, szabad helyre.'},
         {type:'output',key:'improvedWarMagic',label:'Eldritch Knight – Improved War Magic',minLevel:18,wide:true,when:c=>c.subclass.includes('eldritch knight'),value:()=> 'Bármilyen akcióval használt varázslat után bónuszakcióval egy fegyvertámadás.'}
     ]},
-    Monk:{note:'A Ki-pontok rövid vagy hosszú pihenő után állnak vissza. A mentődobás DC-je automatikus.',fields:[
+    Monk:{note:'PHB 2014: a Ki-pontok legalább 30 perc meditációt tartalmazó rövid vagy hosszú pihenő után állnak vissza. A Combat mód a Ki-költségeket automatikusan levonja.',fields:[
+        {type:'output',key:'martialArtsDie',label:'Harcművészet kocka',value:c=>c.level>=17?'d10':c.level>=11?'d8':c.level>=5?'d6':'d4'},
+        {type:'output',key:'martialArtsRules',label:'Harcművészet',wide:true,value:()=> 'Páncél és pajzs nélkül, pusztakezes vagy szerzetesi fegyverrel DEX használható STR helyett; az Attack akció után bónuszakcióval egy pusztakezes támadás végezhető.'},
+        {type:'output',key:'unarmoredDefense',label:'Unarmored Defense',wide:true,value:c=>'AC = 10 + DEX + WIS, jelenleg '+(10+c.dexMod+c.wisMod)+', ha nincs páncél és pajzs.'},
         {type:'counter',key:'kiPoints',label:'Ki-pontok',max:c=>c.level,rest:'both',minLevel:2},
-        {type:'output',key:'kiSaveDC',label:'Ki mentődobás DC',value:c=>8+c.proficiency+c.wisMod,minLevel:2}
+        {type:'output',key:'kiSaveDC',label:'Ki mentődobás DC',value:c=>8+c.proficiency+c.wisMod,minLevel:2},
+        {type:'output',key:'kiBasics',label:'Flurry / Patient Defense / Step of the Wind',minLevel:2,wide:true,value:()=> '1 Ki: Flurry két pusztakezes támadás; Patient Defense Dodge bónuszakcióval; Step of the Wind Dash vagy Disengage bónuszakcióval és megduplázott ugrástávval.'},
+        {type:'output',key:'unarmoredMovement',label:'Unarmored Movement',minLevel:2,value:c=>'+'+(c.level>=18?30:c.level>=14?25:c.level>=10?20:c.level>=6?15:10)+' ft'},
+        {type:'output',key:'deflectMissiles',label:'Deflect Missiles',minLevel:3,wide:true,value:c=>'Reakcióval 1d10 + DEX + monk szint ('+(c.dexMod+c.level)+') sebzéscsökkentés; 0-ra csökkentve 1 Kiért visszadobható 20/60 ft távolságra.'},
+        {type:'output',key:'slowFall',label:'Slow Fall',minLevel:4,wide:true,value:c=>'Reakcióval '+(5*c.level)+' ponttal csökkenthető az esési sebzés.'},
+        {type:'output',key:'extraAttack',label:'Extra Attack',minLevel:5,value:()=> '2 támadás / Attack akció'},
+        {type:'output',key:'stunningStrike',label:'Stunning Strike',minLevel:5,wide:true,value:c=>'Közelharci fegyveres találat után 1 Ki; CON mentő DC '+(8+c.proficiency+c.wisMod)+', sikertelenségnél kábult a következő köröd végéig.'},
+        {type:'output',key:'kiEmpowered',label:'Ki-Empowered Strikes',minLevel:6,wide:true,value:()=> 'A pusztakezes támadások mágikusnak számítanak a nem mágikus ellenállások és immunitások leküzdéséhez.'},
+        {type:'output',key:'evasion',label:'Evasion',minLevel:7,wide:true,value:()=> 'DEX mentőn siker esetén 0, sikertelenség esetén fél sebzés.'},
+        {type:'output',key:'stillnessMind',label:'Stillness of Mind',minLevel:7,wide:true,value:()=> 'Akcióval megszüntethetsz magadon egy bájolt vagy ijedt állapotot.'},
+        {type:'output',key:'movementImprovement',label:'Unarmored Movement Improvement',minLevel:9,wide:true,value:()=> 'Saját körödben függőleges felületen és folyadékon mozoghatsz lezuhanás vagy elsüllyedés nélkül.'},
+        {type:'output',key:'purityBody',label:'Purity of Body',minLevel:10,wide:true,value:()=> 'Immunis vagy a betegségekre és a mérgezett állapotra.'},
+        {type:'output',key:'tongueSunMoon',label:'Tongue of the Sun and Moon',minLevel:13,wide:true,value:()=> 'Megértesz minden beszélt nyelvet, és minden nyelvet értő lény megérti a beszédedet.'},
+        {type:'output',key:'diamondSoul',label:'Diamond Soul',minLevel:14,wide:true,value:()=> 'Minden mentődobásban jártas vagy; sikertelen mentődobás 1 Kiért újradobható, az új eredményt használva.'},
+        {type:'output',key:'timelessBody',label:'Timeless Body',minLevel:15,wide:true,value:()=> 'Nem öregszel mágikusan, az öregkor nem gyengít, és nincs szükséged ételre vagy vízre.'},
+        {type:'output',key:'emptyBody',label:'Empty Body',minLevel:18,wide:true,value:()=> 'Akció és 4 Ki: 1 percre láthatatlanság és ellenállás minden sebzésre a force kivételével. 8 Kiért Astral Projection használható.'},
+        {type:'output',key:'perfectSelf',label:'Perfect Self',minLevel:20,wide:true,value:()=> 'Kezdeményezéskor, ha 0 Ki-pontod van, automatikusan 4 Ki-pontot kapsz.'},
+        {type:'output',key:'openHandTechnique',label:'Open Hand Technique',minLevel:3,wide:true,when:c=>c.subclass.includes('open hand'),value:c=>'Flurry találatnál választható: DEX mentő DC '+(8+c.proficiency+c.wisMod)+' vagy prone; STR mentő ugyanilyen DC-vel vagy 15 ft lökés; illetve a célpont a következő köröd végéig nem reagálhat.'},
+        {type:'counter',key:'wholenessBody',label:'Open Hand – Wholeness of Body',max:()=>1,rest:'long',minLevel:6,when:c=>c.subclass.includes('open hand')},
+        {type:'output',key:'wholenessRules',label:'Wholeness of Body',minLevel:6,wide:true,when:c=>c.subclass.includes('open hand'),value:c=>'Akcióval '+(3*c.level)+' HP-t gyógyulsz; hosszú pihenőnként egyszer.'},
+        {type:'output',key:'tranquility',label:'Open Hand – Tranquility',minLevel:11,wide:true,when:c=>c.subclass.includes('open hand'),value:c=>'Hosszú pihenő végén Sanctuary hatása alá kerülsz; WIS mentő DC '+(8+c.proficiency+c.wisMod)+', a következő pihenőig vagy támadás/ártó varázslat használatáig.'},
+        {type:'toggle',key:'quiveringPalmPrimed',label:'Open Hand – Quivering Palm rezgés aktív',minLevel:17,when:c=>c.subclass.includes('open hand')},
+        {type:'output',key:'quiveringPalm',label:'Quivering Palm',minLevel:17,wide:true,when:c=>c.subclass.includes('open hand'),value:c=>'Pusztakezes találat után 3 Ki; '+c.level+' napig aktív. Akcióval CON mentő DC '+(8+c.proficiency+c.wisMod)+': sikertelenül 0 HP, sikerrel 10d10 necrotic sebzés.'},
+        {type:'output',key:'shadowArts',label:'Shadow Arts',minLevel:3,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Minor Illusion trükk; 2 Kiért Darkness, Darkvision, Pass without Trace vagy Silence anyagi komponens nélkül.'},
+        {type:'output',key:'shadowStep',label:'Shadow Step',minLevel:6,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Félhomályból vagy sötétségből bónuszakcióval legfeljebb 60 ft teleport egy látható félhomályos/sötét helyre; előny a következő közelharci támadásra a kör végéig.'},
+        {type:'output',key:'cloakShadowsMonk',label:'Cloak of Shadows',minLevel:11,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Félhomályban vagy sötétségben akcióval láthatatlanná válsz; támadás, varázslás vagy erős fény megszünteti.'},
+        {type:'output',key:'opportunist',label:'Opportunist',minLevel:17,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Reakcióval közelharci támadás egy 5 ft-on belüli lény ellen, amikor azt más eltalálja.'},
+        {type:'textarea',key:'elementalDisciplines',label:'Four Elements – ismert elemi diszciplínák',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements')},
+        {type:'output',key:'elementalDisciplinesRules',label:'Disciple of the Elements',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements'),value:()=> 'Elemental Attunement és a szint alapján választott diszciplínák; a varázslatkatalógus a kiválasztott diszciplínák Ki-költségét automatikusan kezeli.'}
     ]},
     Paladin:{note:'A Lay on Hands és Divine Sense hosszú pihenőre töltődik vissza; az eskü Isteni Energiája rövid vagy hosszú pihenőre.',fields:[
         {type:'counter',key:'layOnHands',label:'Lay on Hands gyógyító tartalék',max:c=>c.level*5,rest:'long'},
@@ -6992,6 +7077,15 @@ function renderCombatTurnChoices(){
     if(klass==='Fighter'&&level>=18&&subclass.includes('champion')&&fighterHp>0&&fighterMaxHp>0&&fighterHp<=fighterMaxHp/2&&!combatRulesRead()?.used?.survivor)trigger.push(['champion-survivor','Survivor – kör eleji gyógyulás']);
     if(klass==='Monk'&&level>=1)bonus.push(['martial-arts','Harcművészet: bónuszakciós pusztakezes csapás (támadás után)']);
     if(klass==='Monk'&&level>=2&&(Number(document.getElementById('classFeature_kiPoints')?.value)||0)>0)bonus.push(['flurry','Csapások zápora (Flurry of Blows; 1 Ki)'],['patient-defense','Türelmes védekezés (Patient Defense; 1 Ki)'],['step-wind','A szél lépése (Step of the Wind; 1 Ki)']);
+    if(klass==='Monk'&&level>=4)reaction.push(['slow-fall','Slow Fall – esési sebzés csökkentése']);
+    if(klass==='Monk'&&level>=7)action.push(['stillness-mind','Stillness of Mind – bájolt/ijedt állapot megszüntetése']);
+    if(klass==='Monk'&&level>=14&&(Number(document.getElementById('classFeature_kiPoints')?.value)||0)>0)trigger.push(['diamond-soul','Diamond Soul – mentődobás újradobása (1 Ki)']);
+    if(klass==='Monk'&&level>=18){const ki=Number(document.getElementById('classFeature_kiPoints')?.value)||0;if(ki>=4)action.push(['empty-body','Empty Body – láthatatlanság és ellenállás (4 Ki)']);if(ki>=8)action.push(['astral-projection','Astral Projection (8 Ki)']);}
+    if(klass==='Monk'&&subclass.includes('open hand')&&level>=6&&(Number(document.getElementById('classFeature_wholenessBody')?.value)||0)>0)action.push(['wholeness-body','Wholeness of Body – öngyógyítás']);
+    if(klass==='Monk'&&subclass.includes('open hand')&&level>=17&&document.getElementById('classFeature_quiveringPalmPrimed')?.checked)action.push(['quivering-palm-release','Quivering Palm – rezgés lezárása']);
+    if(klass==='Monk'&&subclass.includes('way of shadow')&&level>=6)bonus.push(['shadow-step','Shadow Step – teleportáció']);
+    if(klass==='Monk'&&subclass.includes('way of shadow')&&level>=11)action.push(['monk-cloak-shadows','Cloak of Shadows – láthatatlanság']);
+    if(klass==='Monk'&&subclass.includes('way of shadow')&&level>=17)reaction.push(['opportunist','Opportunist – reakciótámadás']);
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_layOnHands')?.value)||0)>0)action.push(['lay-on-hands','Lay on Hands']);
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_divineSense')?.value)||0)>0)action.push(['divine-sense','Divine Sense']);
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
@@ -7345,6 +7439,8 @@ function updateCombatClassOptions(preserveSelection=true){
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Horde Breaker'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Horde Breaker: saját fordulónként egyszer további támadás ugyanazzal a fegyverrel egy másik, az elsőtől 1,5 m-en belüli, fegyvertávban lévő célpontra, akit ebben a fordulóban még nem támadtál meg.</small>');
     if(getCombatRollType()==='damage'&&klass==='Cleric'&&level>=8&&['life domain','nature domain','tempest domain','trickery domain','war domain'].some(domain=>subclass.includes(domain))){const dice=level>=14?2:1;const type=subclass.includes('nature domain')?'sav, hideg, tűz, villám vagy mennydörgés sebzés':subclass.includes('tempest domain')?'mennydörgés sebzés':subclass.includes('trickery domain')?'méregsebzés':subclass.includes('life domain')?'sugárzó sebzés':'a fegyver sebzéstípusa';options.push(`<label><input id="combatDivineStrike" type="checkbox"> Divine Strike (+${dice}d8 ${type}; fegyveres találat, körönként egyszer)</label>`);}
     if(getCombatRollType()==='damage'&&klass==='Monk'&&level>=5){const ki=document.getElementById('classFeature_kiPoints');if(ki&&Number(ki.value)>0)options.push(`<label><input id="combatStunningStrike" type="checkbox"> Stunning Strike (találat után 1 Ki; CON mentődobás DC ${8+classFeatureContext().proficiency+classFeatureContext().wisMod})</label>`);}
+    if(getCombatRollType()==='damage'&&klass==='Monk'&&level>=3&&subclass.includes('open hand')&&combatRulesRead()?.pending?.choice==='flurry')options.push(`<label class="wide">Open Hand Technique<select id="combatOpenHandTechnique"><option value="">Nincs</option><option value="prone">DEX mentő vagy prone</option><option value="push">STR mentő vagy 15 ft lökés</option><option value="no-reactions">Nincs reakció a következő köröm végéig</option></select></label>`);
+    if(getCombatRollType()==='damage'&&klass==='Monk'&&level>=17&&subclass.includes('open hand')&&(Number(document.getElementById('classFeature_kiPoints')?.value)||0)>=3)options.push('<label><input id="combatQuiveringPalm" type="checkbox"> Quivering Palm rezgés elhelyezése (pusztakezes találat; 3 Ki)</label>');
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const die=level>=18?'d12':level>=10?'d10':'d8';const pool=document.getElementById('classFeature_superiorityDice');options.push(`<small class="combat-class-note">Battle Master: ${die} manőverkocka (${pool?`${pool.value} / ${pool.max}`:'—'}). Válaszd ki a manővert a kasztjellemzőknél, és annak leírása szerint használd.</small>`);}
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const pool=document.getElementById('classFeature_superiorityDice');if(pool&&Number(pool.value)>0)options.push('<label><input id="combatManeuverDamage" type="checkbox"> Manőverkocka a sebzéshez (csak olyan manővernél, amely ezt engedi; 1 kockát elkölt)</label>');}
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=10&&subclass.includes('eldritch knight'))options.push('<small class="combat-class-note">Eldritch Strike: fegyveres találat után a célpont a következő saját köröd végéig hátránnyal ment az általad használt varázslatok ellen.</small>');
@@ -7495,6 +7591,10 @@ function performCombatInitiativeRoll(){
         const pool=document.getElementById('classFeature_superiorityDice');
         if(pool&&Number(pool.value)===0){pool.value='1';pool.dispatchEvent(new Event('input',{bubbles:true}));}
     }
+    if(initiativeClass.klass==='Monk'&&initiativeClass.level>=20){
+        const pool=document.getElementById('classFeature_kiPoints');
+        if(pool&&Number(pool.value)===0){pool.value='4';pool.dispatchEvent(new Event('input',{bubbles:true}));}
+    }
     let inspiration;
     try{inspiration=readRollInspiration('initiativeRollInspiration');}catch(error){result.textContent=error.message;return;}
     const bonus=getInitiativeModifier();
@@ -7603,6 +7703,8 @@ function performCombatRoll(){
     if(rolls.some(roll=>!roll)){combatRollResult.textContent='Minden fegyverkocka eredményének az adott kocka tartományába kell esnie.';return;}
     const context=classFeatureContext();
     const stunningStrike=Boolean(document.getElementById('combatStunningStrike')?.checked);
+    const openHandTechnique=document.getElementById('combatOpenHandTechnique')?.value||'';
+    const quiveringPalm=Boolean(document.getElementById('combatQuiveringPalm')?.checked);
     const maneuverSelected=Boolean(document.getElementById('combatManeuverDamage')?.checked);
     const flourishSelected=Boolean(document.getElementById('combatBladeFlourish')?.checked);
     const smiteSelected=Boolean(document.getElementById('combatDivineSmite')?.checked);
@@ -7613,6 +7715,7 @@ function performCombatRoll(){
     const maneuverPool=document.getElementById('classFeature_superiorityDice');
     const bardPool=document.getElementById('classFeature_bardicInspiration');
     if(stunningStrike&&(!ki||Number(ki.value)<1)){combatRollResult.textContent='Nincs elegendő Ki-pont a Stunning Strike-hoz.';return;}
+    if(quiveringPalm&&(!ki||Number(ki.value)<3)){combatRollResult.textContent='Nincs elegendő Ki-pont a Quivering Palmhoz.';return;}
     if(maneuverSelected&&(!maneuverPool||Number(maneuverPool.value)<1)){combatRollResult.textContent='Nincs elérhető Battle Master manőverkocka.';return;}
     if(flourishSelected&&(!bardPool||Number(bardPool.value)<1)){combatRollResult.textContent='Nincs elérhető Bárdi inspiráció a Blade Flourish-hoz.';return;}
     if(smiteSelected&&!lowestAvailableSpellSlot()){combatRollResult.textContent='Az Isteni Sújtáshoz nincs felhasználható varázsrekesz.';return;}
@@ -7624,6 +7727,7 @@ function performCombatRoll(){
     if(animalTriggeredFeature)armCombatAnimalTriggeredAttack(animalTriggeredFeature);
     if(smiteSelected&&!consumeLowestSpellSlot()){combatRollResult.textContent='Az Isteni Sújtáshoz nincs felhasználható varázsrekesz.';return;}
     if(stunningStrike){ki.value=String(Number(ki.value)-1);ki.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(quiveringPalm){ki.value=String(Number(ki.value)-3);ki.dispatchEvent(new Event('input',{bubbles:true}));const primed=document.getElementById('classFeature_quiveringPalmPrimed');if(primed)primed.checked=true;}
     if(maneuverSelected){maneuverPool.value=String(Number(maneuverPool.value)-1);maneuverPool.dispatchEvent(new Event('input',{bubbles:true}));}
     if(flourishSelected){bardPool.value=String(Number(bardPool.value)-1);bardPool.dispatchEvent(new Event('input',{bubbles:true}));}
     const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0);
@@ -7643,6 +7747,8 @@ function performCombatRoll(){
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
     if(stunningStrike)featureNotes.push('Stunning Strike: CON mentő DC '+(8+context.proficiency+context.wisMod)+'; 1 Ki elköltve');
+    if(openHandTechnique)featureNotes.push('Open Hand Technique: '+({prone:'DEX mentő vagy prone',push:'STR mentő vagy 15 ft lökés','no-reactions':'nincs reakció a következő köröd végéig'}[openHandTechnique]||openHandTechnique)+'; DC '+(8+context.proficiency+context.wisMod));
+    if(quiveringPalm)featureNotes.push('Quivering Palm rezgés aktív; 3 Ki elköltve');
     showCombatResult(attack.name+': '+spec.expression+' | Dobások: '+diceDetail+modifierText+rageText+(featureNotes.length?' | '+featureNotes.join(' | '):'')+inspiration.text,total);
     commitRollInspiration(inspiration);
     document.querySelectorAll('#spellEntries .spell-entry-row').forEach(updateSpellUsageStatus);
@@ -8131,7 +8237,8 @@ function updateDerivedFields(){
         return getModifier(Number.isFinite(score) ? score : 10);
     };
     ['STR','DEX','CON','INT','WIS','CHA'].forEach(ability => {
-        const proficient = document.getElementById(`saveProf${ability}`)?.checked||(ability==='WIS'&&classFeatureContext().klass==='Rogue'&&classFeatureContext().level>=15);
+        const saveContext=classFeatureContext();
+        const proficient = document.getElementById(`saveProf${ability}`)?.checked||(ability==='WIS'&&saveContext.klass==='Rogue'&&saveContext.level>=15)||(saveContext.klass==='Monk'&&saveContext.level>=14);
         const extra = parseInt(document.getElementById(`saveExtra${ability}`)?.value, 10) || 0;
         const result = modifierFor(ability) + (proficient ? prof : 0) + extra;
         const output = document.getElementById(`saveValue${ability}`);

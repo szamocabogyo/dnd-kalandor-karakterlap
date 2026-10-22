@@ -4,6 +4,11 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ## [Kiadatlan]
 
+### Hozzáadva
+
+- Sorcerer PHB 2014 kasztképességek: Font of Magic, Flexible Casting, választható Metamagic lehetőségek és Sorcerous Restoration.
+- A Combat mód automatikusan kezeli a Sorcerer varázserőpont-költségeit, a rekesz–pont átalakítást és a Quickened Spell bónuszakciós varázslását.
+
 ### Tervezett
 
 - GitHub-tárhely és kiadási URL-ek beállítása.

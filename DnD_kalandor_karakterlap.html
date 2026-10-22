@@ -4584,6 +4584,21 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     state.flags.shapeReverted = true;
                     return;
                 }
+                if (choice.startsWith('sorcerer-create-slot-')) {
+                    requireClass('Sorcerer', 2);
+                    if (category !== 'bonus') fail('A varázsrekesz létrehozása bónuszakció.');
+                    const slotLevel=Number(choice.slice('sorcerer-create-slot-'.length)),pointCost=[0,2,3,5,6,7][slotLevel];
+                    if (!pointCost) fail('Csak 1–5. szintű varázsrekesz hozható létre.');
+                    resource('sorceryPoints',pointCost);spend('bonus');return;
+                }
+                if (choice.startsWith('sorcerer-convert-slot-')) {
+                    requireClass('Sorcerer', 2);
+                    if (category !== 'bonus') fail('A varázsrekesz ponttá alakítása bónuszakció.');
+                    const slotLevel=Number(choice.slice('sorcerer-convert-slot-'.length));
+                    if (!whole(slotLevel)||slotLevel<1||slotLevel>9) fail('Érvénytelen varázsrekeszszint.');
+                    if ((context.resources.sorceryPoints||0)+slotLevel>context.level) fail('A Varázserő-pontok nem haladhatják meg a Sorcerer szintedet.');
+                    resource('spellSlot'+slotLevel,1);spend('bonus');return;
+                }
                 const feature = RESOURCE_EVENTS[choice];
                 if (feature) {
                     if (category !== feature.category) fail('A képesség nem ebből a műveleti keretből használható.');
@@ -4774,6 +4789,11 @@ function combatRulesIntent(kind,category,choice,preview=false){
         const key=choice?.startsWith('spell:')?choice.slice(6):combatSpellSelect.value;
         intent.spell=combatRulesSpell([...document.querySelectorAll('#spellEntries .spell-entry-row')].find(row=>row.dataset.spellEntryKey===key));
         intent.choice='spell:'+key;
+        const known=sorcererKnownMetamagic(),selected=document.getElementById('combatSorcererMetamagic')?.value||'';
+        if(classFeatureContext().klass==='Sorcerer'){
+            if(category==='bonus'&&intent.spell?.time==='action'&&known.includes('Quickened Spell'))intent.metamagic='Quickened Spell';
+            else if(known.includes(selected))intent.metamagic=selected;
+        }
     }
     intent.monkQualified=classFeatureContext().klass==='Monk'&&kind==='attack'&&category==='action';
     intent.weaponKey=combatAttackSelect.value;
@@ -4853,7 +4873,17 @@ function combatRulesPlan(intent){
     if(intent.choice==='relentless-endurance'&&Number(document.getElementById('currentHp').value)>0)return {ok:false,error:'A Rendíthetetlen kitartás csak 0 HP elérésekor alkalmazható (ha nem azonnali halál).'};
     if(intent.choice==='lucky')return {ok:false,error:'A Lucky az eredeti, 1-es d20 újradobása; nem új akció. A tényleges újradobás eredményét a dobás mezőjében add meg.'};
     if(intent.choice==='blade-flourish')return {ok:false,error:'A Blade Flourish a sikeres fegyvertámadás sebzésénél jelölhető.'};
+    if(intent.kind==='spell'&&intent.metamagic){
+        if(!sorcererKnownMetamagic().includes(intent.metamagic))return {ok:false,error:'A kiválasztott Metamagic nincs a karakter ismert lehetőségei között.'};
+        if(intent.metamagic==='Quickened Spell')intent={...intent,spell:{...intent.spell,time:'bonus'}};
+    }
     const plan=CombatTurnRules.plan(state,intent,context);
+    if(plan.ok&&intent.kind==='spell'&&intent.metamagic){
+        const cost=sorcererMetamagicCost(intent.metamagic,intent.spell.level);
+        if((context.resources.sorceryPoints||0)<cost)return {ok:false,error:'Nincs elegendő Varázserő-pont ehhez: '+intent.metamagic+' ('+cost+' pont).'};
+        plan.cost.resources.sorceryPoints=(plan.cost.resources.sorceryPoints||0)+cost;
+        plan.state.resources.sorceryPoints=(plan.state.resources.sorceryPoints||0)-cost;
+    }
     if(plan.ok){plan.state.characterKey=characterKey;if(context.klass==='Ranger')plan.state.rangerRulesYear=2024;}
     if(plan.ok&&intent.kind==='attack'){
         if(!rangerPetChoice(intent.choice))plan.state.flags.lastWeapon=intent.weaponKey;
@@ -4991,6 +5021,16 @@ function combatRulesRecordEvent(){
         const amount=intent.amount;
         if(document.getElementById('combatRulesHealSelf').checked){const hp=document.getElementById('currentHp');hp.value=String(Math.min(Number(document.getElementById('maxHp').value)||Infinity,Number(hp.value)+amount));}
         detail=amount+' pont elköltve a Lay on Hands tartalékból. '+detail;
+    }
+    if(option.value.startsWith('sorcerer-create-slot-')){
+        const slotLevel=Number(option.value.slice('sorcerer-create-slot-'.length)),field=document.getElementById('spellSlots'+slotLevel),slot=parseSpellSlotValue(field),cost=sorcererCreateSlotCost(slotLevel);
+        if(field&&slot)field.value=(slot.current+1)+' / '+(slot.maximum??characterSpellSlotMaximums()[slotLevel-1]);
+        detail=slotLevel+'. szintű varázsrekesz létrehozva; '+cost+' Varázserő-pont elköltve. '+detail;
+    }
+    if(option.value.startsWith('sorcerer-convert-slot-')){
+        const slotLevel=Number(option.value.slice('sorcerer-convert-slot-'.length)),points=sorcererPointsField();
+        if(points)points.value=String(Math.min(classFeatureContext().level,(Number(points.value)||0)+slotLevel));
+        detail=slotLevel+'. szintű varázsrekesz elhasználva; '+slotLevel+' Varázserő-pont visszanyerve. '+detail;
     }
     const racialFlags={'dragon-breath':'combatDragonBreathUsed','hellish-rebuke':'combatTieflingRebukeUsed','relentless-endurance':'combatHalfOrcEnduranceUsed'};
     if(racialFlags[option.value])document.getElementById(racialFlags[option.value]).value='true';
@@ -6277,9 +6317,17 @@ const classFeatureModels={
         {type:'output',key:'sneakAttack',label:'Sneak Attack sebzése',value:c=>`${Math.ceil(c.level/2)}d6`},
         {type:'textarea',key:'expertiseSkills',label:'Szakértelem (Expertise)',wide:true}
     ]},
-    Sorcerer:{note:'A Varázserő-pontok a varázsló szintjével egyeznek meg, és hosszú pihenőre töltődnek vissza.',fields:[
+    Sorcerer:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Varázserő-pontok hosszú pihenőre töltődnek vissza; a Flexible Casting és a kiválasztott Metamagic lehetőségek a Combat módban is használhatók.',fields:[
+        {type:'output',key:'sorcererSpellcasting',label:'Varázslás',wide:true,value:c=>'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'.'},
         {type:'counter',key:'sorceryPoints',label:'Varázserő-pontok',max:c=>c.level>=2?c.level:0,rest:'long',minLevel:2},
-        {type:'textarea',key:'metamagicOptions',label:'Metamagikus lehetőségek',wide:true}
+        {type:'output',key:'fontOfMagic',label:'Font of Magic / Flexible Casting',minLevel:2,wide:true,value:()=> 'Bónuszakcióval varázsrekeszt alakíthatsz ponttá, vagy pontokból legfeljebb 5. szintű rekeszt hozhatsz létre. Költség: 1/2/3/4/5. szintű rekesz = 2/3/5/6/7 pont.'},
+        {type:'select',key:'metamagic1',label:'Metamagic 1',minLevel:3,options:['Careful Spell','Distant Spell','Empowered Spell','Extended Spell','Heightened Spell','Quickened Spell','Subtle Spell','Twinned Spell']},
+        {type:'select',key:'metamagic2',label:'Metamagic 2',minLevel:3,options:['Careful Spell','Distant Spell','Empowered Spell','Extended Spell','Heightened Spell','Quickened Spell','Subtle Spell','Twinned Spell']},
+        {type:'select',key:'metamagic3',label:'Metamagic 3',minLevel:10,options:['Careful Spell','Distant Spell','Empowered Spell','Extended Spell','Heightened Spell','Quickened Spell','Subtle Spell','Twinned Spell']},
+        {type:'select',key:'metamagic4',label:'Metamagic 4',minLevel:17,options:['Careful Spell','Distant Spell','Empowered Spell','Extended Spell','Heightened Spell','Quickened Spell','Subtle Spell','Twinned Spell']},
+        {type:'output',key:'metamagicRules',label:'Metamagic',minLevel:3,wide:true,value:()=> 'Egy varázslatra rendszerint egy Metamagic alkalmazható. A Combat mód ellenőrzi és levonja a pontköltséget; a célponttal, hatótávval és mentődobással kapcsolatos feltételeket játékosként kell megítélni.'},
+        {type:'output',key:'sorcerousRestoration',label:'Sorcerous Restoration',minLevel:20,wide:true,value:()=> 'Rövid pihenő befejezésekor 4 elhasznált Varázserő-pontot visszakapsz.'},
+        {type:'textarea',key:'metamagicNotes',label:'Metamagic és eredet – egyéb jegyzetek',wide:true}
     ]},
     Warlock:{note:'A paktummágia varázsrekeszei a fenti varázslás panelen vannak, rövid pihenőnél automatikusan visszatöltődnek.',fields:[
         {type:'select',key:'pactBoon',label:'Paktum ajándéka',options:['Pact of the Chain','Pact of the Blade','Pact of the Tome'],minLevel:3},
@@ -6299,6 +6347,18 @@ const classFeatureModels={
         {type:'textarea',key:'spellbookNotes',label:'Varázskönyv / további jegyzetek',wide:true}
     ]}
 };
+const sorcererMetamagicCosts={
+    'Careful Spell':()=>1,'Distant Spell':()=>1,'Empowered Spell':()=>1,'Extended Spell':()=>1,
+    'Heightened Spell':()=>3,'Quickened Spell':()=>2,'Subtle Spell':()=>1,
+    'Twinned Spell':level=>Math.max(1,Number(level)||0)
+};
+function sorcererKnownMetamagic(){
+    if(classFeatureContext().klass!=='Sorcerer')return [];
+    return [...new Set([1,2,3,4].map(index=>document.getElementById('classFeature_metamagic'+index)?.value).filter(Boolean))];
+}
+function sorcererMetamagicCost(name,spellLevel=0){return sorcererMetamagicCosts[name]?.(spellLevel)||0;}
+function sorcererPointsField(){return document.getElementById('classFeature_sorceryPoints');}
+function sorcererCreateSlotCost(level){return [0,2,3,5,6,7][Number(level)]||0;}
 function classFeatureState(){
     try{return JSON.parse(localStorage.getItem('dndCharacter')||'{}')._classFeatureStates||{};}catch{return {};}
 }
@@ -6379,6 +6439,10 @@ function restoreClassResources(restType){
             const input=document.getElementById(`classFeature_${field.key}`);if(input)input.checked=false;
         }
     });
+    if(context.klass==='Sorcerer'&&context.level>=20&&restType==='short'){
+        const points=sorcererPointsField();
+        if(points)points.value=String(Math.min(context.level,(Number(points.value)||0)+4));
+    }
     updateClassFeatureCalculations();
 }
 
@@ -6663,6 +6727,21 @@ function renderCombatTurnChoices(){
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_divineSense')?.value)||0)>0)action.push(['divine-sense','Divine Sense']);
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
     if(klass==='Rogue'&&level>=5)reaction.push(['uncanny-dodge','Uncanny Dodge']);
+    if(klass==='Sorcerer'&&level>=2){
+        const points=Number(sorcererPointsField()?.value)||0;
+        for(let slotLevel=1;slotLevel<=5;slotLevel++){
+            const slot=parseSpellSlotValue(document.getElementById('spellSlots'+slotLevel));
+            const cost=sorcererCreateSlotCost(slotLevel);
+            if(points>=cost)bonus.push([`sorcerer-create-slot-${slotLevel}`,`Flexible Casting: ${slotLevel}. szintű rekesz létrehozása (${cost} pont)`]);
+            if(slot?.current>0&&points+slotLevel<=level)bonus.push([`sorcerer-convert-slot-${slotLevel}`,`Flexible Casting: ${slotLevel}. szintű rekesz átalakítása (+${slotLevel} pont)`]);
+        }
+        if(sorcererKnownMetamagic().includes('Quickened Spell')&&points>=2){
+            document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])').forEach(row=>{
+                const name=row.querySelector('input[id$="_name"]')?.value.trim(),spell=combatRulesSpell(row);
+                if(name&&spell?.time==='action'&&spellRowCanCast(row))bonus.push([`spell:${row.dataset.spellEntryKey}`,`Quickened Spell: ${name} (2 pont)`]);
+            });
+        }
+    }
     if(klass==='Monk'&&level>=3)reaction.push(['deflect-missiles','Deflect Missiles']);
     if(klass==='Ranger'&&subclass.includes('hunter')&&level>=3){const prey=document.getElementById('classFeature_hunterPrey')?.value;if(prey==='Giant Killer')reaction.push(['giant-killer','Giant Killer (reakciótámadás)']);if(prey==='Horde Breaker')action.push(['horde-breaker','Horde Breaker (második célpont elleni támadás)']);}
     const activeForm=activeCombatWildShape(),multiattack=activeForm?wildShapeMultiattackPlan(activeForm):null;
@@ -6983,6 +7062,15 @@ function updateCombatClassOptions(preserveSelection=true){
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const die=level>=18?'d12':level>=10?'d10':'d8';const pool=document.getElementById('classFeature_superiorityDice');options.push(`<small class="combat-class-note">Battle Master: ${die} manőverkocka (${pool?`${pool.value} / ${pool.max}`:'—'}). Válaszd ki a manővert a kasztjellemzőknél, és annak leírása szerint használd.</small>`);}
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const pool=document.getElementById('classFeature_superiorityDice');if(pool&&Number(pool.value)>0)options.push('<label><input id="combatManeuverDamage" type="checkbox"> Manőverkocka a sebzéshez (csak olyan manővernél, amely ezt engedi; 1 kockát elkölt)</label>');}
     if(getCombatRollType()==='damage'&&klass==='Bard'&&level>=3&&subclass.includes('college of swords')){const inspiration=document.getElementById('classFeature_bardicInspiration');if(inspiration&&Number(inspiration.value)>0){const die=level>=15?'d12':level>=10?'d10':level>=5?'d8':'d6';options.push(`<label><input id="combatBladeFlourish" type="checkbox"> Blade Flourish (+${die}; találat után, 1 Bárdi inspirációt elkölt)</label><small class="combat-class-note">Válaszd ki a támadási eredmény után a Defensive, Slashing vagy Mobile Flourish változatot, és alkalmazd annak hatását.</small>`);}}
+    if(getCombatRollType()==='spell'&&klass==='Sorcerer'&&level>=3){
+        const spell=readCombatSpell(),known=sorcererKnownMetamagic(),category=combatGuideState.category||'action';
+        const forced=category==='bonus'&&spell&&combatRulesSpell(spell.row)?.time==='action'?'Quickened Spell':'';
+        const choices=known.filter(name=>name!=='Quickened Spell'||forced||category==='bonus');
+        if(choices.length){
+            const selected=forced||document.getElementById('combatSorcererMetamagic')?.value||'';
+            options.push(`<label class="wide">Metamagic<select id="combatSorcererMetamagic" ${forced?'disabled':''}><option value="">Nincs</option>${choices.map(name=>`<option ${name===selected?'selected':''}>${name}</option>`).join('')}</select></label><small class="combat-class-note">${forced?'A bónuszakciós varázsláshoz a Quickened Spell automatikus.':'A pontköltség a varázslat rögzítésekor automatikusan levonódik.'}</small>`);
+        }
+    }
     const animalFeatures=getCombatRollType()==='damage'?(combatAnimalAttackFeatures()||[]):[];
     animalFeatures.forEach((feature,index)=>options.push(`<label><input id="combatAnimalFeature${index}" data-combat-animal-feature="${index}" type="checkbox"> ${feature.name}: ${feature.condition}</label><small class="combat-class-note">${feature.followup||(feature.key==='attack-effect'?'A jelölés a kiegészítő hatást a támadás eredményével együtt rögzíti.':'Alkalmazd az állat adatlapján szereplő további hatást.')}${feature.attackKey?' A folytatás a sebzés rögzítése után jelenik meg, a kör bónuszakcióját használja, és minden új körben ismét elérhető.':''}</small>`));
     rangerCombatRollOptions(options,previous,preserveSelection);
@@ -7168,7 +7256,8 @@ function performCombatRoll(){
             const total=die+spell.bonus+inspiration.value;
             const note=die===20?' — kritikus találat!':'';
             const dcText=spell.dc?' | Mentődobás DC: '+spell.dc:'';
-            showCombatResult(spell.name+': d20 ('+die+(manualValue!==null?', kézi':'')+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+note,total);
+            const metamagicText=rulesIntent.metamagic?' | '+rulesIntent.metamagic+' ('+sorcererMetamagicCost(rulesIntent.metamagic,combatRulesSpell(spell.row)?.level)+' Varázserő-pont)':'';
+            showCombatResult(spell.name+': d20 ('+die+(manualValue!==null?', kézi':'')+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+metamagicText+note,total);
             commitRollInspiration(inspiration);
         }
         combatAttackFlow={phase:'complete',attackKey:'',lastNatural:die,eventType:'spell'};

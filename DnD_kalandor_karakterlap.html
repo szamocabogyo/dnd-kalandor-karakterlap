@@ -3974,6 +3974,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         rage: { category: 'bonus', resource: 'rageUses', klass: 'Barbarian', level: 1 },
         inspiration: { category: 'bonus', resource: 'bardicInspiration', klass: 'Bard', level: 1 },
         'cutting-words': { category: 'reaction', resource: 'bardicInspiration', klass: 'Bard', level: 3, subclass: 'lore', trigger: true },
+        'stroke-of-luck': { category: 'trigger', resource: 'strokeOfLuck', klass: 'Rogue', level: 20, trigger: true },
         'wild-shape': { category: 'action', resource: 'wildShapeUses', klass: 'Druid', level: 2 },
         'moon-wild-shape': { category: 'bonus', resource: 'wildShapeUses', klass: 'Druid', level: 2, subclass: 'moon' },
         'channel-divinity': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2 },
@@ -4590,6 +4591,30 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     if (category !== 'action') fail('A Countercharm használata akció.');
                     spend('action');return;
                 }
+                if (['fast-hands-sleight','fast-hands-tools','fast-hands-object'].includes(choice)) {
+                    requireClass('Rogue',3,'thief');
+                    if(category!=='bonus')fail('A Fast Hands a Cunning Action bónuszakcióját használja.');
+                    spend('bonus');return;
+                }
+                if(choice==='versatile-trickster'){
+                    requireClass('Rogue',13,'arcane trickster');
+                    if(category!=='bonus')fail('A Versatile Trickster bónuszakciót használ.');
+                    spend('bonus');state.flags.versatileTrickster=true;return;
+                }
+                if(choice==='evasion'){
+                    requireClass('Rogue',7);
+                    if(category!=='trigger')fail('Az Evasion egy Ügyességmentő eredményekor alkalmazható.');
+                    return;
+                }
+                if(choice==='thiefs-reflexes'){
+                    requireClass('Rogue',17,'thief');
+                    if(category!=='trigger'||state.round!==1)fail('A Thief’s Reflexes csak a harc első körében használható.');
+                    if(state.used.thiefsReflexes)fail('A Thief’s Reflexes második fordulója már megkezdődött.');
+                    state.actionsLeft=1;state.bonusLeft=1;state.reactionLeft=1;state.itemLeft=1;
+                    state.move.spent=0;state.move.dashes=0;state.move.extra=0;state.move.limit=state.move.speed;
+                    state.attackPools=[];state.pending=null;state.used={thiefsReflexes:true};state.flags={};
+                    state.spells={bonus:false,actionLeveled:false,otherSpell:false};return;
+                }
                 if (choice.startsWith('sorcerer-create-slot-')) {
                     requireClass('Sorcerer', 2);
                     if (category !== 'bonus') fail('A varázsrekesz létrehozása bónuszakció.');
@@ -4814,7 +4839,9 @@ function combatRulesIntent(kind,category,choice,preview=false){
         const manual=selected===choice&&Boolean(document.getElementById('combatRulesHasModeSpeed')?.checked);
         const known=context.movementSpeeds?.[choice]||move?.modeSpeeds?.[choice];
         if(['climb','swim','fly'].includes(choice)){
-            if(manual&&(!preview||Number.isFinite(entered)&&entered>0))intent.modeSpeed=entered;
+            const rogue=classFeatureContext();
+            if(choice==='climb'&&rogue.klass==='Rogue'&&rogue.level>=3&&rogue.subclass.includes('thief'))intent.modeSpeed=move?.speed||1;
+            else if(manual&&(!preview||Number.isFinite(entered)&&entered>0))intent.modeSpeed=entered;
             else if(Number.isFinite(known)&&known>0)intent.modeSpeed=known;
             else if(preview&&choice==='fly')intent.modeSpeed=Math.max(move?.speed||0,(move?.spent||0)+1,1);
         }
@@ -5044,6 +5071,13 @@ function combatRulesRecordEvent(){
     }
     if(option.value==='cutting-words')detail='Cutting Words: vond le az inspirációs kockát a látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobásából. '+detail;
     if(option.value==='countercharm')detail='A következő saját köröd végéig a 30 ft-on belüli, téged halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra. '+detail;
+    if(option.value==='fast-hands-sleight')detail='Fast Hands: Dexterity (Sleight of Hand) próba bónuszakcióval. '+detail;
+    if(option.value==='fast-hands-tools')detail='Fast Hands: zárnyitás vagy csapdahatástalanítás tolvajszerszámmal, bónuszakcióként. '+detail;
+    if(option.value==='fast-hands-object')detail='Fast Hands: Use an Object bónuszakcióval. '+detail;
+    if(option.value==='versatile-trickster')detail='Versatile Trickster: a Mage Hand kijelölt egy mellette álló célpontot; a kör végéig előnyöd van az ellene végzett támadásokra. '+detail;
+    if(option.value==='evasion')detail='Evasion: sikeres Ügyességmentőn 0 sebzés, sikertelen mentőn fél sebzés. '+detail;
+    if(option.value==='thiefs-reflexes')detail='Thief’s Reflexes: a második forduló elkezdődött; az akció, bónuszakció, reakció, mozgás és a fordulónkénti Sneak Attack újra elérhető. Meglepetés esetén ezt ne használd. '+detail;
+    if(option.value==='stroke-of-luck')detail='Stroke of Luck: a hatótávon belüli elhibázott támadás találattá, vagy a sikertelen tulajdonságpróba d20-a 20-ra válik. '+detail;
     const racialFlags={'dragon-breath':'combatDragonBreathUsed','hellish-rebuke':'combatTieflingRebukeUsed','relentless-endurance':'combatHalfOrcEnduranceUsed'};
     if(racialFlags[option.value])document.getElementById(racialFlags[option.value]).value='true';
     if(option.value==='relentless-endurance')document.getElementById('currentHp').value='1';
@@ -6345,9 +6379,33 @@ const classFeatureModels={
         {type:'output',key:'companionShareSpells',label:'Beast Master – Share Spells',minLevel:15,wide:true,when:c=>c.subclass.includes('beast master'),value:()=> 'Magadra célzott varázslatodat a 30 ft-on belüli társra is alkalmazhatod.'}
     ]
 },
-    Rogue:{note:'A Sneak Attack kockaszáma a zsivány szintjével automatikusan változik.',fields:[
+    Rogue:{note:'PHB 2014: az Orvtámadás fordulónként egyszer használható finesse vagy távolsági fegyverrel. A Combat mód kezeli a sebzéskockákat, a Cunning Actiont, az Uncanny Dodge-ot és a többi harci jellemzőt.',fields:[
         {type:'output',key:'sneakAttack',label:'Sneak Attack sebzése',value:c=>`${Math.ceil(c.level/2)}d6`},
-        {type:'textarea',key:'expertiseSkills',label:'Szakértelem (Expertise)',wide:true}
+        {type:'output',key:'sneakAttackRules',label:'Sneak Attack',wide:true,value:()=> 'Fordulónként egyszer, finesse vagy távolsági fegyveres találatnál: előny szükséges, vagy a célpont egy másik, harcképes ellensége legyen 5 ft-on belül, miközben nincs hátrányod.'},
+        {type:'select',key:'rogueExpertise1',label:'Expertise 1',options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'rogueExpertise2',label:'Expertise 2',options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'rogueExpertise3',label:'Expertise 3',minLevel:6,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'rogueExpertise4',label:'Expertise 4',minLevel:6,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'output',key:'thievesCant',label:'Thieves’ Cant',wide:true,value:()=> 'Titkos tolvajnyelv és jelek; négyszer annyi idő alatt adhatsz át rejtett üzenetet közönséges beszélgetésben.'},
+        {type:'output',key:'cunningAction',label:'Cunning Action',minLevel:2,wide:true,value:()=> 'Minden saját körben bónuszakcióként Dash, Disengage vagy Hide; a Combat módban elérhető.'},
+        {type:'output',key:'uncannyDodge',label:'Uncanny Dodge',minLevel:5,wide:true,value:()=> 'Reakcióval felezd egy látott támadó találatának ellened okozott sebzését.'},
+        {type:'output',key:'evasion',label:'Evasion',minLevel:7,wide:true,value:()=> 'Ügyességmentőnél, amely sikerre fél sebzést okozna: sikerre nincs, kudarcra fél sebzés.'},
+        {type:'output',key:'reliableTalent',label:'Reliable Talent',minLevel:11,wide:true,value:()=> 'Jártassági bónusszal végzett tulajdonságpróbán a 9 vagy kisebb d20 dobás 10-nek számít.'},
+        {type:'output',key:'blindsense',label:'Blindsense',minLevel:14,wide:true,value:()=> 'Ha hallasz, 10 ft-on belül tudod a rejtőző vagy láthatatlan lények helyét.'},
+        {type:'output',key:'slipperyMind',label:'Slippery Mind',minLevel:15,wide:true,value:()=> 'Automatikus jártasság a Bölcsesség mentődobásokban.'},
+        {type:'output',key:'elusive',label:'Elusive',minLevel:18,wide:true,value:()=> 'Amíg nem vagy cselekvésképtelen, ellened egyetlen támadásdobásnak sincs előnye.'},
+        {type:'counter',key:'strokeOfLuck',label:'Stroke of Luck – megmaradt használat',max:()=>1,rest:'both',minLevel:20},
+        {type:'output',key:'strokeOfLuckRules',label:'Stroke of Luck',minLevel:20,wide:true,value:()=> 'Egy hatótávon belüli elhibázott támadást találattá, vagy egy sikertelen tulajdonságpróba d20-át 20-ra változtathatod; rövid vagy hosszú pihenőnként egyszer.'},
+        {type:'output',key:'fastHands',label:'Thief – Fast Hands',minLevel:3,wide:true,when:c=>c.subclass.includes('thief'),value:()=> 'Cunning Action bónuszakcióval Sleight of Hand próba, tolvajszerszámos zár-/csapdakezelés vagy Use an Object.'},
+        {type:'output',key:'secondStoryWork',label:'Thief – Second-Story Work',minLevel:3,wide:true,when:c=>c.subclass.includes('thief'),value:c=> 'A mászás nem kerül extra mozgásba; a futásból ugrás távja '+Math.max(0,characterAbilityModifier('DEX'))+' ft-tal nő.'},
+        {type:'output',key:'supremeSneak',label:'Thief – Supreme Sneak',minLevel:9,wide:true,when:c=>c.subclass.includes('thief'),value:()=> 'Előny a Dexterity (Stealth) próbán, ha ugyanabban a körben legfeljebb a sebességed felét mozogsz.'},
+        {type:'output',key:'useMagicDevice',label:'Thief – Use Magic Device',minLevel:13,wide:true,when:c=>c.subclass.includes('thief'),value:()=> 'Mágikus tárgy használatakor figyelmen kívül hagyhatod a kaszt-, faj- és szintkövetelményeket.'},
+        {type:'output',key:'thiefsReflexes',label:'Thief – Thief’s Reflexes',minLevel:17,wide:true,when:c=>c.subclass.includes('thief'),value:()=> 'Az első harci körben két kört kapsz: a normál kezdeményezésednél és −10-nél; meglepetés esetén nem használható.'},
+        {type:'output',key:'assassinate',label:'Assassin – Assassinate',minLevel:3,wide:true,when:c=>c.subclass.includes('assassin'),value:()=> 'Előny az olyan lény elleni támadásokra, aki még nem került sorra; a meglepett lény elleni találat kritikus.'},
+        {type:'output',key:'arcaneTrickster',label:'Arcane Trickster – Mage Hand Legerdemain',minLevel:3,wide:true,when:c=>c.subclass.includes('arcane trickster'),value:()=> 'A Mage Hand láthatatlan; tárgyat helyezhet el vagy vehet el, illetve tolvajszerszámot kezelhet távolról.'},
+        {type:'output',key:'magicalAmbush',label:'Arcane Trickster – Magical Ambush',minLevel:9,wide:true,when:c=>c.subclass.includes('arcane trickster'),value:()=> 'A tőled rejtőzködés közben célzott lény hátránnyal ment a varázslatod ellen.'},
+        {type:'output',key:'versatileTrickster',label:'Arcane Trickster – Versatile Trickster',minLevel:13,wide:true,when:c=>c.subclass.includes('arcane trickster'),value:()=> 'Bónuszakcióval a Mage Hand elvonja egy 5 ft-on belüli célpont figyelmét; a kör végéig előnyöd van ellene.'},
+        {type:'counter',key:'spellThief',label:'Arcane Trickster – Spell Thief használat',max:()=>1,rest:'long',minLevel:17,when:c=>c.subclass.includes('arcane trickster')}
     ]},
     Sorcerer:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Varázserő-pontok hosszú pihenőre töltődnek vissza; a Flexible Casting és a kiválasztott Metamagic lehetőségek a Combat módban is használhatók.',fields:[
         {type:'output',key:'sorcererSpellcasting',label:'Varázslás',wide:true,value:c=>'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'.'},
@@ -6428,8 +6486,8 @@ function renderClassFeatures(){
     fields.dataset.className=context.klass;
     fields.innerHTML=model.fields.map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
-        control.addEventListener('input',()=>{updateClassFeatureCalculations();if(control.id.includes('bardExpertise'))updateSkills();saveCharacter();});
-        control.addEventListener('change',()=>{updateClassFeatureCalculations();if(control.id.includes('bardExpertise'))updateSkills();saveCharacter();});
+        control.addEventListener('input',()=>{updateClassFeatureCalculations();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
+        control.addEventListener('change',()=>{updateClassFeatureCalculations();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
@@ -6760,7 +6818,12 @@ function renderCombatTurnChoices(){
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_layOnHands')?.value)||0)>0)action.push(['lay-on-hands','Lay on Hands']);
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_divineSense')?.value)||0)>0)action.push(['divine-sense','Divine Sense']);
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
+    if(klass==='Rogue'&&level>=3&&subclass.includes('thief'))bonus.push(['fast-hands-sleight','Fast Hands: Sleight of Hand'],['fast-hands-tools','Fast Hands: tolvajszerszám'],['fast-hands-object','Fast Hands: Use an Object']);
+    if(klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))bonus.push(['versatile-trickster','Versatile Trickster – Mage Hand figyelemelvonás']);
     if(klass==='Rogue'&&level>=5)reaction.push(['uncanny-dodge','Uncanny Dodge']);
+    if(klass==='Rogue'&&level>=7)trigger.push(['evasion','Evasion – Ügyességmentő sebzésének módosítása']);
+    if(klass==='Rogue'&&level>=17&&subclass.includes('thief')&&currentCombatRound()===1&&!combatRulesRead()?.used?.thiefsReflexes)trigger.push(['thiefs-reflexes','Thief’s Reflexes – második forduló (kezdeményezés −10)']);
+    if(klass==='Rogue'&&level>=20&&(Number(document.getElementById('classFeature_strokeOfLuck')?.value)||0)>0)trigger.push(['stroke-of-luck','Stroke of Luck – hibából siker']);
     if(klass==='Sorcerer'&&level>=2){
         const points=Number(sorcererPointsField()?.value)||0;
         for(let slotLevel=1;slotLevel<=5;slotLevel++){
@@ -7087,6 +7150,8 @@ function updateCombatClassOptions(preserveSelection=true){
     const previous=new Map([...panel.querySelectorAll('input[type=checkbox]')].map(input=>[input.id,input.checked]));
     const options=[];
     if(getCombatRollType()==='damage'&&klass==='Rogue'&&level>=1)options.push(`<label><input id="combatSneakAttack" type="checkbox"> Orvtámadás (+${Math.ceil(level/2)}d6; finesse vagy távolsági fegyver, előny vagy szövetséges 1,5 m-en belül, hátrány nélkül; körönként egyszer)</label>`);
+    if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=3&&subclass.includes('assassin'))options.push('<small class="combat-class-note">Assassinate: előnyöd van az olyan célpont elleni támadásra, aki még nem került sorra ebben a harcban. A meglepett célpont elleni találat kritikus találat.</small>');
+    if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))options.push('<small class="combat-class-note">Versatile Trickster: ha ebben a körben bónuszakcióval kijelölted a Mage Hand mellett álló célpontot, a kör végéig előnyöd van az ellene végzett támadásokra.</small>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=2&&characterSpellSlotMaximums().some(Boolean))options.push('<label><input id="combatDivineSmite" type="checkbox"> Isteni Sújtás (közelharci fegyveres találat után; a legkisebb elérhető varázsrekesz fogyasztása)</label><label class="combat-class-suboption"><input id="combatSmiteFiendUndead" type="checkbox"> Élőholt vagy alvilági ellenfél (+1d8, legfeljebb +6d8)</label>');
     if(getCombatRollType()==='damage'&&klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Colossus Slayer')options.push('<label><input id="combatColossusSlayer" type="checkbox"> Colossus Slayer (+1d8; sérült célpont, fordulónként egyszer)</label>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Giant Killer'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Giant Killer: ha egy legfeljebb 1,5 m-re lévő Nagy vagy nagyobb lény eltalál vagy elhibáz, reakcióból közelharci támadást indíthatsz ellene.</small>');
@@ -7718,6 +7783,10 @@ function bardExpertiseSkills(){
     if(classFeatureContext().klass!=='Bard')return new Set();
     return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_bardExpertise'+index)?.value).filter(Boolean));
 }
+function rogueExpertiseSkills(){
+    if(classFeatureContext().klass!=='Rogue')return new Set();
+    return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_rogueExpertise'+index)?.value).filter(Boolean));
+}
 
 function characterSkillBaseName(skill){
     if(skill.dataset.skillBaseName)return skill.dataset.skillBaseName;
@@ -7864,7 +7933,7 @@ function updateDerivedFields(){
         return getModifier(Number.isFinite(score) ? score : 10);
     };
     ['STR','DEX','CON','INT','WIS','CHA'].forEach(ability => {
-        const proficient = document.getElementById(`saveProf${ability}`)?.checked;
+        const proficient = document.getElementById(`saveProf${ability}`)?.checked||(ability==='WIS'&&classFeatureContext().klass==='Rogue'&&classFeatureContext().level>=15);
         const extra = parseInt(document.getElementById(`saveExtra${ability}`)?.value, 10) || 0;
         const result = modifierFor(ability) + (proficient ? prof : 0) + extra;
         const output = document.getElementById(`saveValue${ability}`);
@@ -7937,7 +8006,8 @@ function updateSkills() {
 
         const proficient=skill.classList.contains('proficient');
         value += abilityCheckTrainingBonus(ability,proficient);
-        if(proficient&&bardExpertiseSkills().has(characterSkillBaseName(skill)))value+=proficiency;
+        const skillName=characterSkillBaseName(skill);
+        if(proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName)))value+=proficiency;
 
         skill.querySelector('.skill-value')
             .textContent = formatModifier(value);

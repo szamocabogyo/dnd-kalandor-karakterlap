@@ -3978,6 +3978,19 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'wild-shape': { category: 'action', resource: 'wildShapeUses', klass: 'Druid', level: 2 },
         'moon-wild-shape': { category: 'bonus', resource: 'wildShapeUses', klass: 'Druid', level: 2, subclass: 'moon' },
         'channel-divinity': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2 },
+        'turn-undead': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2 },
+        'knowledge-ages': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'knowledge' },
+        'knowledge-thoughts': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 6, subclass: 'knowledge' },
+        'preserve-life': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'life' },
+        'radiance-dawn': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'light' },
+        'charm-nature': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'nature' },
+        'destructive-wrath': { category: 'trigger', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'tempest', trigger: true },
+        'invoke-duplicity': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'trickery' },
+        'cloak-shadows': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 6, subclass: 'trickery' },
+        'guided-strike': { category: 'trigger', resource: 'channelDivinity', klass: 'Cleric', level: 2, subclass: 'war domain', trigger: true },
+        'war-gods-blessing': { category: 'reaction', resource: 'channelDivinity', klass: 'Cleric', level: 6, subclass: 'war domain', trigger: true },
+        'warding-flare': { category: 'reaction', resource: 'wardingFlare', klass: 'Cleric', level: 1, subclass: 'light', trigger: true },
+        'wrath-storm': { category: 'reaction', resource: 'wrathStorm', klass: 'Cleric', level: 1, subclass: 'tempest', trigger: true },
         'second-wind': { category: 'bonus', resource: 'secondWind', klass: 'Fighter', level: 1 },
         'patient-defense': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
         'step-wind': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
@@ -4591,6 +4604,32 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     if (category !== 'action') fail('A Countercharm használata akció.');
                     spend('action');return;
                 }
+                if(choice==='blessing-trickster'){
+                    requireClass('Cleric',1,'trickery');
+                    if(category!=='action')fail('A Blessing of the Trickster akciót használ.');
+                    spend('action');return;
+                }
+                if(choice==='dampen-elements'){
+                    requireClass('Cleric',6,'nature');
+                    if(category!=='reaction')fail('A Dampen Elements reakciót használ.');
+                    spend('reaction');return;
+                }
+                if(choice==='master-nature'){
+                    requireClass('Cleric',17,'nature');
+                    if(category!=='bonus')fail('A Master of Nature bónuszakciót használ.');
+                    spend('bonus');return;
+                }
+                if(choice==='corona-light'){
+                    requireClass('Cleric',17,'light');
+                    if(category!=='action')fail('A Corona of Light akciót használ.');
+                    spend('action');return;
+                }
+                if(choice==='divine-intervention'){
+                    requireClass('Cleric',10);
+                    if(category!=='action')fail('Az Isteni Beavatkozás akciót használ.');
+                    if(document.getElementById('classFeature_divineInterventionUsed')?.checked)fail('Az Isteni Beavatkozás jelenleg nem használható.');
+                    spend('action');return;
+                }
                 if (['fast-hands-sleight','fast-hands-tools','fast-hands-object'].includes(choice)) {
                     requireClass('Rogue',3,'thief');
                     if(category!=='bonus')fail('A Fast Hands a Cunning Action bónuszakcióját használja.');
@@ -5071,6 +5110,31 @@ function combatRulesRecordEvent(){
     }
     if(option.value==='cutting-words')detail='Cutting Words: vond le az inspirációs kockát a látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobásából. '+detail;
     if(option.value==='countercharm')detail='A következő saját köröd végéig a 30 ft-on belüli, téged halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra. '+detail;
+    const clericDetails={
+        'turn-undead':'Turn Undead: a 30 ft-on belüli, látó vagy halló élőholtak WIS mentőt dobnak; sikertelenségnél 1 percig vagy sebzésig menekülnek és nem reagálhatnak.',
+        'knowledge-ages':'Knowledge of the Ages: válassz egy készséget vagy eszközt; 10 percig jártas vagy benne.',
+        'knowledge-thoughts':'Read Thoughts: egy 60 ft-on belüli célpont WIS mentőt dob; gondolatolvasás után Suggestion mondható rá varázsrekesz nélkül.',
+        'preserve-life':'Preserve Life: oszd szét a gyógyító tartalékot 30 ft-on belül; célpontonként legfeljebb a maximum HP feléig gyógyíthat.',
+        'radiance-dawn':'Radiance of the Dawn: mágikus sötétség oszlik el; 30 ft-on belül az ellenségek CON mentőt dobnak, sikerre fele sebzést szenvednek.',
+        'charm-nature':'Charm Animals and Plants: a 30 ft-on belüli vadállatok és növényi lények WIS mentőt dobnak; sikertelenségnél 1 percig vagy sebzésig elbájoltak.',
+        'destructive-wrath':'Destructive Wrath: a villám- vagy mennydörgéssebzés kockái dobás nélkül a legnagyobb értéket okozzák.',
+        'invoke-duplicity':'Invoke Duplicity: 1 percig koncentrációt igénylő illúzió jelenik meg; varázsolhatsz a helyéről, közös közeli célpont ellen előnyt ad.',
+        'cloak-shadows':'Cloak of Shadows: a következő saját köröd végéig láthatatlan vagy; támadás vagy varázslás megszünteti.',
+        'guided-strike':'Guided Strike: +10 a saját támadásdobásodhoz a dobás után, az eredmény kihirdetése előtt.',
+        'war-gods-blessing':'War God’s Blessing: reakcióval +10 egy 30 ft-on belüli lény támadásdobásához.',
+        'warding-flare':'Warding Flare: reakcióval hátrányt adsz a látott, 30 ft-on belüli támadó dobására; vak lényre nem hat.',
+        'wrath-storm':'Wrath of the Storm: a téged 5 ft-on belül eltaláló lény DEX mentőt dob; 2d8 villám- vagy mennydörgéssebzés, sikerre fele.',
+        'blessing-trickster':'Blessing of the Trickster: egy másik lény 1 órára előnyt kap Stealth próbákra.',
+        'dampen-elements':'Dampen Elements: a 30 ft-on belüli célpont ellenállást kap a kiváltó sav-, hideg-, tűz-, villám- vagy mennydörgéssebzésre.',
+        'master-nature':'Master of Nature: az elbájolt vadállatok és növényi lények a következő körödben végrehajtják a kimondott parancsot.',
+        'corona-light':'Corona of Light: 60 ft sugarú fényt árasztasz; ellenségeid hátránnyal mentenek a tűz- és sugárzó sebzést okozó varázslataid ellen.'
+    };
+    if(clericDetails[option.value])detail=clericDetails[option.value]+' '+detail;
+    if(option.value==='divine-intervention'){
+        const clericLevel=classFeatureContext().level,roll=clericLevel>=20?null:rollDie(100),success=clericLevel>=20||roll<=clericLevel;
+        const lock=document.getElementById('classFeature_divineInterventionUsed');if(lock)lock.checked=true;
+        detail=(clericLevel>=20?'Isteni Beavatkozás: automatikus siker.':'Isteni Beavatkozás: d100 = '+roll+'; '+(success?'siker.':'sikertelen.'))+' '+(success?'A következő használat 7 nap múlva lehetséges.':'Hosszú pihenő után újrapróbálható.')+' '+detail;
+    }
     if(option.value==='fast-hands-sleight')detail='Fast Hands: Dexterity (Sleight of Hand) próba bónuszakcióval. '+detail;
     if(option.value==='fast-hands-tools')detail='Fast Hands: zárnyitás vagy csapdahatástalanítás tolvajszerszámmal, bónuszakcióként. '+detail;
     if(option.value==='fast-hands-object')detail='Fast Hands: Use an Object bónuszakcióval. '+detail;
@@ -6313,10 +6377,47 @@ const classFeatureModels={
         {type:'output',key:'valorExtraAttack',label:'College of Valor – Extra Attack',minLevel:6,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Támadás akcióval két fegyvertámadás; a Combat mód automatikusan kezeli.'},
         {type:'output',key:'battleMagic',label:'College of Valor – Battle Magic',minLevel:14,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Egyakciós bárdvarázslat után bónuszakcióval egy fegyvertámadás; a Combat módban elérhető.'}
     ]},
-    Cleric:{note:'Az Isteni Energia rövid vagy hosszú pihenőre töltődik vissza. Az Isteni Beavatkozás sikeres használat után 7 napig nem használható újra.',fields:[
-        {type:'counter',key:'channelDivinity',label:'Isteni Energia használata',max:c=>c.level>=18?3:c.level>=6?2:1,rest:'both',minLevel:2},
-        {type:'counter',key:'warPriest',label:'War Priest bónusztámadás',max:c=>Math.max(1,c.wisMod),rest:'long',when:c=>c.subclass.includes('war domain')},
-        {type:'toggle',key:'divineInterventionUsed',label:'Isteni Beavatkozás sikeresen használva (kézzel állítható)',minLevel:10}
+    Cleric:{note:'PHB 2014: az Isteni Energia rövid vagy hosszú pihenőre töltődik vissza. Az Isteni Beavatkozás sikertelenség után hosszú pihenővel, siker után 7 nappal használható újra.',fields:[
+        {type:'output',key:'clericSpellcasting',label:'Varázslás',wide:true,value:c=>'Bölcsességalapú előkészített varázslás. Előkészíthető cleric varázslatok: '+Math.max(1,c.level+c.wisMod)+'; a domainvarázslatok ezen felül mindig előkészítettek.'},
+        {type:'output',key:'ritualCasting',label:'Rituális varázslás és fókusz',wide:true,value:()=> 'Az előkészített, rituálé jelölésű cleric varázslatok rituáléként használhatók. Varázslási fókuszként szent szimbólum használható.'},
+        {type:'counter',key:'channelDivinity',label:'Isteni Energia – megmaradt használatok',max:c=>c.level>=18?3:c.level>=6?2:1,rest:'both',minLevel:2},
+        {type:'output',key:'turnUndead',label:'Channel Divinity – Turn Undead',minLevel:2,wide:true,value:c=>'Akció; 30 ft; WIS mentő DC '+(8+c.proficiency+c.wisMod)+'. Sikertelenségnél az élőholt 1 percig vagy sebzésig menekül, nem reagálhat.'},
+        {type:'output',key:'destroyUndead',label:'Destroy Undead',minLevel:5,value:c=>'CR '+(c.level>=17?'4':c.level>=14?'3':c.level>=11?'2':c.level>=8?'1':'1/2')+' vagy kisebb'},
+        {type:'output',key:'divineIntervention',label:'Isteni Beavatkozás',minLevel:10,wide:true,value:c=>c.level>=20?'Akció; automatikusan sikerül. Siker után 7 napig nem használható.':'Akció; d100 eredménye legfeljebb '+c.level+' esetén siker. Sikertelenség után hosszú pihenő, siker után 7 nap szükséges.'},
+        {type:'toggle',key:'divineInterventionUsed',label:'Isteni Beavatkozás jelenleg nem használható',minLevel:10},
+        {type:'output',key:'knowledgeBlessings',label:'Knowledge – Blessings of Knowledge',wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Két választott nyelv; két választott Arcana, History, Nature vagy Religion készségnél jártasság és dupla jártassági bónusz.'},
+        {type:'select',key:'knowledgeExpertise1',label:'Knowledge – Expertise 1',when:c=>c.subclass.includes('knowledge'),options:['Arcana','History','Nature','Religion']},
+        {type:'select',key:'knowledgeExpertise2',label:'Knowledge – Expertise 2',when:c=>c.subclass.includes('knowledge'),options:['Arcana','History','Nature','Religion']},
+        {type:'textarea',key:'knowledgeLanguages',label:'Knowledge – két választott nyelv',wide:true,when:c=>c.subclass.includes('knowledge')},
+        {type:'output',key:'knowledgeOfAges',label:'Knowledge – Knowledge of the Ages',minLevel:2,wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Channel Divinity akcióval 10 percre jártasság egy választott készségben vagy eszközben.'},
+        {type:'output',key:'readThoughts',label:'Knowledge – Read Thoughts',minLevel:6,wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Channel Divinity akcióval egy 60 ft-on belüli lény gondolatainak olvasása és a Suggestion elmondása varázsrekesz nélkül.'},
+        {type:'output',key:'potentSpellcasting',label:'Potent Spellcasting',minLevel:8,wide:true,when:c=>['knowledge domain','light domain'].some(x=>c.subclass.includes(x)),value:c=>'A cleric trükkök sebzéséhez hozzáadódik a Bölcsességmódosító ('+signed(c.wisMod)+').'},
+        {type:'output',key:'visionsPast',label:'Knowledge – Visions of the Past',minLevel:17,wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Legalább 1 perc meditációval tárgy- vagy helyolvasás; a használat után rövid vagy hosszú pihenő szükséges.'},
+        {type:'output',key:'discipleLife',label:'Life – Disciple of Life',wide:true,when:c=>c.subclass.includes('life'),value:()=> 'Az 1. vagy magasabb szintű gyógyító varázslat +2 + a varázslat szintje HP-t gyógyít.'},
+        {type:'output',key:'preserveLife',label:'Life – Preserve Life',minLevel:2,wide:true,when:c=>c.subclass.includes('life'),value:c=>'Channel Divinity akcióval '+(5*c.level)+' HP osztható szét 30 ft-on belül; egy célpont legfeljebb maximum HP-ja feléig gyógyítható.'},
+        {type:'output',key:'blessedHealer',label:'Life – Blessed Healer',minLevel:6,wide:true,when:c=>c.subclass.includes('life'),value:()=> 'Más lény 1. vagy magasabb szintű varázslatos gyógyításakor te is 2 + varázslatszint HP-t gyógyulsz.'},
+        {type:'output',key:'supremeHealing',label:'Life – Supreme Healing',minLevel:17,wide:true,when:c=>c.subclass.includes('life'),value:()=> 'A gyógyító varázslatok kockái dobás helyett mindig a legnagyobb értéket adják.'},
+        {type:'counter',key:'wardingFlare',label:'Light – Warding Flare használatok',max:c=>Math.max(1,c.wisMod),rest:'long',when:c=>c.subclass.includes('light')},
+        {type:'output',key:'radianceDawn',label:'Light – Radiance of the Dawn',minLevel:2,wide:true,when:c=>c.subclass.includes('light'),value:c=>'Channel Divinity akció; 30 ft; CON mentő DC '+(8+c.proficiency+c.wisMod)+'; '+(2*c.level+10)+' sugárzó sebzés, sikerre fele, és mágikus sötétség megszüntetése.'},
+        {type:'output',key:'improvedFlare',label:'Light – Improved Flare',minLevel:6,wide:true,when:c=>c.subclass.includes('light'),value:()=> 'A Warding Flare egy 30 ft-on belüli, látott szövetséges elleni támadásra is használható.'},
+        {type:'output',key:'coronaLight',label:'Light – Corona of Light',minLevel:17,wide:true,when:c=>c.subclass.includes('light'),value:()=> 'Akcióval 60 ft fényaurát hozol létre; az ellenségek hátránnyal mentenek tűz- és sugárzó sebzést okozó varázslataid ellen.'},
+        {type:'output',key:'natureAcolyte',label:'Nature – Acolyte of Nature',wide:true,when:c=>c.subclass.includes('nature'),value:()=> 'Egy druida trükk, egy választott Animal Handling, Nature vagy Survival jártasság, valamint nehézpáncél-jártasság.'},
+        {type:'output',key:'charmNature',label:'Nature – Charm Animals and Plants',minLevel:2,wide:true,when:c=>c.subclass.includes('nature'),value:c=>'Channel Divinity akció; 30 ft; WIS mentő DC '+(8+c.proficiency+c.wisMod)+'. Sikertelenségnél 1 percig vagy sebzésig elbájolt.'},
+        {type:'output',key:'dampenElements',label:'Nature – Dampen Elements',minLevel:6,wide:true,when:c=>c.subclass.includes('nature'),value:()=> 'Reakcióval sav-, hideg-, tűz-, villám- vagy mennydörgés-ellenállást adsz egy 30 ft-on belüli lénynek az adott sebzésre.'},
+        {type:'output',key:'masterNature',label:'Nature – Master of Nature',minLevel:17,wide:true,when:c=>c.subclass.includes('nature'),value:()=> 'Bónuszakcióval szóban irányíthatod a Charm Animals and Plants által elbájolt lényeket.'},
+        {type:'counter',key:'wrathStorm',label:'Tempest – Wrath of the Storm használatok',max:c=>Math.max(1,c.wisMod),rest:'long',when:c=>c.subclass.includes('tempest')},
+        {type:'output',key:'destructiveWrath',label:'Tempest – Destructive Wrath',minLevel:2,wide:true,when:c=>c.subclass.includes('tempest'),value:()=> 'Channel Divinity: villám- vagy mennydörgéssebzés dobása helyett a kockák legnagyobb értékét okozhatod.'},
+        {type:'output',key:'thunderboltStrike',label:'Tempest – Thunderbolt Strike',minLevel:6,wide:true,when:c=>c.subclass.includes('tempest'),value:()=> 'Nagy vagy kisebb lény villámsebzésekor legfeljebb 10 ft-tal ellökheted.'},
+        {type:'output',key:'stormborn',label:'Tempest – Stormborn',minLevel:17,wide:true,when:c=>c.subclass.includes('tempest'),value:()=> 'Ha nem vagy föld alatt vagy beltérben, járási sebességeddel azonos repülési sebességed van.'},
+        {type:'output',key:'blessingTrickster',label:'Trickery – Blessing of the Trickster',wide:true,when:c=>c.subclass.includes('trickery'),value:()=> 'Akcióval egy másik lény 1 órára előnyt kap Stealth próbákra; egyszerre egy lényen aktív.'},
+        {type:'output',key:'invokeDuplicity',label:'Trickery – Invoke Duplicity',minLevel:2,wide:true,when:c=>c.subclass.includes('trickery'),value:()=> 'Channel Divinity akcióval 1 perces, koncentrációt igénylő illúzió. Varázsolhatsz a helyéről, és 5 ft-on belüli közös célpont ellen előnyöd van.'},
+        {type:'output',key:'cloakShadows',label:'Trickery – Cloak of Shadows',minLevel:6,wide:true,when:c=>c.subclass.includes('trickery'),value:()=> 'Channel Divinity akcióval a következő köröd végéig láthatatlanná válsz; támadás vagy varázslás megszünteti.'},
+        {type:'output',key:'improvedDuplicity',label:'Trickery – Improved Duplicity',minLevel:17,wide:true,when:c=>c.subclass.includes('trickery'),value:()=> 'Invoke Duplicity használatakor legfeljebb négy másolatot hozhatsz létre.'},
+        {type:'counter',key:'warPriest',label:'War – War Priest bónusztámadások',max:c=>Math.max(1,c.wisMod),rest:'long',when:c=>c.subclass.includes('war domain')},
+        {type:'output',key:'guidedStrike',label:'War – Guided Strike',minLevel:2,wide:true,when:c=>c.subclass.includes('war domain'),value:()=> 'Channel Divinityvel +10 adható a saját támadásdobásodhoz a dobás után, az eredmény kihirdetése előtt.'},
+        {type:'output',key:'warGodBlessing',label:'War – War God’s Blessing',minLevel:6,wide:true,when:c=>c.subclass.includes('war domain'),value:()=> 'Reakcióval és Channel Divinityvel +10-et adhatsz egy 30 ft-on belüli lény támadásdobásához.'},
+        {type:'output',key:'avatarBattle',label:'War – Avatar of Battle',minLevel:17,wide:true,when:c=>c.subclass.includes('war domain'),value:()=> 'Ellenállás nem mágikus fegyverek zúzó, szúró és vágó sebzésével szemben.'},
+        {type:'output',key:'divineStrike',label:'Divine Strike',minLevel:8,wide:true,when:c=>['life domain','nature domain','tempest domain','trickery domain','war domain'].some(x=>c.subclass.includes(x)),value:c=>'Saját fordulónként egyszer fegyveres találatnál +'+(c.level>=14?'2d8':'1d8')+' alosztályfüggő sebzés.'}
     ]},
     Druid:{note:'PHB 2014: 2 Vad alak használat 2. szinttől, rövid vagy hosszú pihenőre teljesen visszatöltődik. A Hold köre 10. szinttől elemi alakra 2 használatot költ; 20. szinten korlátlan.',fields:[
         {type:'counter',key:'wildShapeUses',label:'Vad alak – megmaradt használatok',max:c=>c.level>=20?Infinity:2,rest:'both',minLevel:2}
@@ -6810,7 +6911,26 @@ function renderCombatTurnChoices(){
             if(subclass.includes('moon'))bonus.push(['moon-wild-shape','Vad alak ('+(uses===Infinity?'∞':uses+' / 2')+' használat) – bónuszakció']);
         }
     }
-    if(klass==='Cleric'&&level>=2&&(Number(document.getElementById('classFeature_channelDivinity')?.value)||0)>0)action.push(['channel-divinity','Isteni Energia (Channel Divinity)']);
+    if(klass==='Cleric'){
+        const channel=Number(document.getElementById('classFeature_channelDivinity')?.value)||0;
+        if(level>=2&&channel>0){
+            action.push(['turn-undead','Channel Divinity: Turn Undead']);
+            if(subclass.includes('knowledge')){action.push(['knowledge-ages','Channel Divinity: Knowledge of the Ages']);if(level>=6)action.push(['knowledge-thoughts','Channel Divinity: Read Thoughts']);}
+            if(subclass.includes('life'))action.push(['preserve-life','Channel Divinity: Preserve Life']);
+            if(subclass.includes('light'))action.push(['radiance-dawn','Channel Divinity: Radiance of the Dawn']);
+            if(subclass.includes('nature'))action.push(['charm-nature','Channel Divinity: Charm Animals and Plants']);
+            if(subclass.includes('tempest'))trigger.push(['destructive-wrath','Channel Divinity: Destructive Wrath – maximális sebzés']);
+            if(subclass.includes('trickery')){action.push(['invoke-duplicity','Channel Divinity: Invoke Duplicity']);if(level>=6)action.push(['cloak-shadows','Channel Divinity: Cloak of Shadows']);}
+            if(subclass.includes('war domain')){trigger.push(['guided-strike','Channel Divinity: Guided Strike (+10)']);if(level>=6)reaction.push(['war-gods-blessing','Channel Divinity: War God’s Blessing (+10)']);}
+        }
+        if(subclass.includes('trickery'))action.push(['blessing-trickster','Blessing of the Trickster']);
+        if(subclass.includes('light')&&(Number(document.getElementById('classFeature_wardingFlare')?.value)||0)>0)reaction.push(['warding-flare',level>=6?'Improved Warding Flare':'Warding Flare']);
+        if(subclass.includes('tempest')&&(Number(document.getElementById('classFeature_wrathStorm')?.value)||0)>0)reaction.push(['wrath-storm','Wrath of the Storm']);
+        if(subclass.includes('nature')&&level>=6)reaction.push(['dampen-elements','Dampen Elements']);
+        if(subclass.includes('nature')&&level>=17)bonus.push(['master-nature','Master of Nature – elbájolt lények irányítása']);
+        if(subclass.includes('light')&&level>=17)action.push(['corona-light','Corona of Light']);
+        if(level>=10&&!document.getElementById('classFeature_divineInterventionUsed')?.checked)action.push(['divine-intervention','Isteni Beavatkozás']);
+    }
     if(klass==='Fighter'&&(Number(document.getElementById('classFeature_actionSurge')?.value)||0)>0)action.push(['action-surge','Action Surge – további akció']);
     if(klass==='Fighter'&&(Number(document.getElementById('classFeature_secondWind')?.value)||0)>0)bonus.push(['second-wind','Second Wind']);
     if(klass==='Monk'&&level>=1)bonus.push(['martial-arts','Harcművészet: bónuszakciós pusztakezes csapás (támadás után)']);
@@ -7787,6 +7907,11 @@ function rogueExpertiseSkills(){
     if(classFeatureContext().klass!=='Rogue')return new Set();
     return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_rogueExpertise'+index)?.value).filter(Boolean));
 }
+function clericKnowledgeExpertiseSkills(){
+    const c=classFeatureContext();
+    if(c.klass!=='Cleric'||!c.subclass.includes('knowledge'))return new Set();
+    return new Set([1,2].map(index=>document.getElementById('classFeature_knowledgeExpertise'+index)?.value).filter(Boolean));
+}
 
 function characterSkillBaseName(skill){
     if(skill.dataset.skillBaseName)return skill.dataset.skillBaseName;
@@ -8004,10 +8129,12 @@ function updateSkills() {
         let value =
             getModifier(abilityScore);
 
-        const proficient=skill.classList.contains('proficient');
-        value += abilityCheckTrainingBonus(ability,proficient);
         const skillName=characterSkillBaseName(skill);
+        const knowledgeExpertise=clericKnowledgeExpertiseSkills().has(skillName);
+        const proficient=skill.classList.contains('proficient')||knowledgeExpertise;
+        value += abilityCheckTrainingBonus(ability,proficient);
         if(proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName)))value+=proficiency;
+        if(knowledgeExpertise)value+=proficiency;
 
         skill.querySelector('.skill-value')
             .textContent = formatModifier(value);

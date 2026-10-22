@@ -4015,6 +4015,10 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'dark-ones-luck': { category: 'trigger', resource: 'darkOnesLuck', klass: 'Warlock', level: 6, subclass: 'fiend', trigger: true },
         'hurl-through-hell': { category: 'trigger', resource: 'hurlThroughHell', klass: 'Warlock', level: 14, subclass: 'fiend', trigger: true },
         'entropic-ward': { category: 'reaction', resource: 'entropicWard', klass: 'Warlock', level: 6, subclass: 'great old one', trigger: true },
+        'benign-transposition': { category: 'action', resource: 'benignTransposition', klass: 'Wizard', level: 6, subclass: 'conjuration' },
+        'overchannel': { category: 'trigger', resource: 'overchannelSafe', klass: 'Wizard', level: 14, subclass: 'evocation', trigger: true },
+        'illusory-self': { category: 'reaction', resource: 'illusorySelf', klass: 'Wizard', level: 10, subclass: 'illusion', trigger: true },
+        'shapechanger': { category: 'action', resource: 'shapechanger', klass: 'Wizard', level: 10, subclass: 'transmutation' },
         'dragon-breath': { category: 'action', resource: 'dragonBreath' },
         'hellish-rebuke': { category: 'reaction', resource: 'hellishRebuke', trigger: true },
         'relentless-endurance': { category: 'trigger', resource: 'relentlessEndurance', trigger: true }
@@ -4629,6 +4633,18 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                 }
                 if(choice==='eldritch-master'){
                     requireClass('Warlock',20);if(category!=='action')fail('Az Eldritch Master megkezdése akcióként rögzíthető, de a visszatöltéshez 1 perc megszakítatlan könyörgés szükséges.');resource('eldritchMaster',1);spend('action');return;
+                }
+                if(['minor-conjuration','hypnotic-gaze','third-eye','malleable-illusions','command-undead','master-transmuter'].includes(choice)){
+                    const requirements={
+                        'minor-conjuration':[2,'conjuration'],'hypnotic-gaze':[2,'enchantment'],'third-eye':[10,'divination'],
+                        'malleable-illusions':[6,'illusion'],'command-undead':[14,'necromancy'],'master-transmuter':[14,'transmutation']
+                    }[choice];requireClass('Wizard',requirements[0],requirements[1]);if(category!=='action')fail('Ez a wizard képesség akciót használ.');spend('action');return;
+                }
+                if(choice==='illusory-reality'){
+                    requireClass('Wizard',14,'illusion');if(category!=='bonus')fail('Az Illusory Reality bónuszakciót használ.');spend('bonus');return;
+                }
+                if(['projected-ward','instinctive-charm'].includes(choice)){
+                    const requirements=choice==='projected-ward'?[6,'abjuration']:[6,'enchantment'];requireClass('Wizard',requirements[0],requirements[1]);if(category!=='reaction')fail('Ez a wizard képesség reakciót használ.');spend('reaction');return;
                 }
                 if(choice==='weapon-bond-summon'){
                     requireClass('Fighter',3,'eldritch knight');
@@ -5248,6 +5264,22 @@ function combatRulesRecordEvent(){
         if(field&&slotLevel)field.value=maximums[slotLevel-1]+' / '+maximums[slotLevel-1];
         detail='Eldritch Master: az 1 perces könyörgés befejezése után minden Pact Magic rekesz visszatöltve. '+detail;
     }
+    const wizardDetails={
+        'projected-ward':'Projected Ward: a kijelölt 30 ft-on belüli lény sebzését előbb az Arcane Ward HP-jából vond le.',
+        'minor-conjuration':'Minor Conjuration: egy legfeljebb 3 ft oldalú, 10 font alatti, korábban látott tárgy jelenik meg az üres kezedben.',
+        'benign-transposition':'Benign Transposition: legfeljebb 30 ft teleport, vagy helycsere egy beleegyező Small/Medium lénnyel.',
+        'third-eye':'The Third Eye: a kasztjellemzőknél kiválasztott érzék incapacitated állapotig vagy pihenőig aktív.',
+        'hypnotic-gaze':'Hypnotic Gaze: az 5 ft-on belüli célpont sikertelen WIS mentőn a következő köröd végéig charmed, incapacitated és 0 sebességű; akcióval fenntartható.',
+        'instinctive-charm':'Instinctive Charm: a támadó sikertelen WIS mentőn egy másik, hozzá legközelebbi hatótávon belüli célpontot támad.',
+        'overchannel':'Overchannel: a választott 1–5. szintű sebző wizard varázslat kockái maximális értéket okoznak; ez a pihenés óta az első, biztonságos használat.',
+        'malleable-illusions':'Malleable Illusions: egy legalább 1 perces saját illúzió természetét a varázslat korlátain belül módosítod.',
+        'illusory-self':'Illusory Self: a kiváltó támadás automatikusan elhibáz.',
+        'illusory-reality':'Illusory Reality: az illúzió egy nem mágikus, élettelen része 1 percre valóságossá válik; közvetlenül nem okozhat sebzést.',
+        'command-undead':'Command Undead: egy 60 ft-on belüli élőholt CHA mentőt dob; sikertelenségnél irányításod alá kerül.',
+        'shapechanger':'Shapechanger: Polymorph rekesz és komponens nélkül magadra, legfeljebb CR 1 formára.',
+        'master-transmuter':'Master Transmuter: válaszd a Major Transformation, Panacea, Restore Life vagy Restore Youth hatást; a Transmuter’s Stone elfogy.'
+    };
+    if(wizardDetails[option.value])detail=wizardDetails[option.value]+' '+detail;
     if(option.value==='weapon-bond-summon')detail='Weapon Bond: az egyik kötött fegyver ugyanazon a létsíkon bónuszakcióval a kezedbe kerül. '+detail;
     const monkDetails={
         'slow-fall':'Slow Fall: az esési sebzés a monk szint ötszörösével csökken.',
@@ -5685,6 +5717,16 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         profile.maximum=1;profile.remaining=whole(document.getElementById('classFeature_entropicWard')?.value);
         profile.period='short';profile.periodLabel='Rövid pihenőnként';profile.resetLabel='Rövid vagy hosszú pihenő után';profile.resourceText='Használat: '+profile.remaining+' / 1 · rövid pihenő';
         if(profile.remaining===0)sourceReason='Az Entropic Ward használata elfogyott.';
+    }else if(choice==='projected-ward'&&className==='Wizard'&&level>=6&&context.subclass.includes('abjuration')){
+        profile.label='Projected Ward';profile.known=true;
+        if(whole(document.getElementById('classFeature_arcaneWardHp')?.value)===0)sourceReason='Az Arcane Wardnak nincs megmaradt HP-ja.';
+    }else if(choice==='instinctive-charm'&&className==='Wizard'&&level>=6&&context.subclass.includes('enchantment')){
+        profile.label='Instinctive Charm';profile.known=true;
+    }else if(choice==='illusory-self'&&className==='Wizard'&&level>=10&&context.subclass.includes('illusion')){
+        profile.label='Illusory Self';profile.known=true;
+        profile.maximum=1;profile.remaining=whole(document.getElementById('classFeature_illusorySelf')?.value);
+        profile.period='short';profile.periodLabel='Rövid pihenőnként';profile.resetLabel='Rövid vagy hosszú pihenő után';profile.resourceText='Használat: '+profile.remaining+' / 1 · rövid pihenő';
+        if(profile.remaining===0)sourceReason='Az Illusory Self használata elfogyott.';
     }else if(choice==='giant-killer'&&className==='Ranger'&&level>=3&&context.subclass.includes('hunter')&&context.hunterPrey==='Giant Killer'){
         profile.label='Giant Killer';profile.known=true;
     }else if(choice==='hellish-rebuke'&&race==='Tiefling'&&level>=3){
@@ -5749,7 +5791,7 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
     if(!profile.known)return profile;
     if(!String(choice).startsWith('spell:')){
         sourceAvailable=!sourceReason;
-        if(!['hellish-rebuke','misty-escape','entropic-ward'].includes(choice)){
+        if(!['hellish-rebuke','misty-escape','entropic-ward','illusory-self'].includes(choice)){
             profile.remaining=reactionLeft;profile.maximum=1;
             profile.resourceText='Nincs külön használati korlát. '+sharedText;
         }
@@ -5779,6 +5821,9 @@ function combatReactionProfiles(){
     if(context.klass==='Paladin'&&context.level>=15&&context.subclass.includes('vengeance'))choices.push('soul-vengeance');
     if(context.klass==='Warlock'&&context.level>=6&&context.subclass.includes('archfey'))choices.push('misty-escape');
     if(context.klass==='Warlock'&&context.level>=6&&context.subclass.includes('great old one'))choices.push('entropic-ward');
+    if(context.klass==='Wizard'&&context.level>=6&&context.subclass.includes('abjuration'))choices.push('projected-ward');
+    if(context.klass==='Wizard'&&context.level>=6&&context.subclass.includes('enchantment'))choices.push('instinctive-charm');
+    if(context.klass==='Wizard'&&context.level>=10&&context.subclass.includes('illusion'))choices.push('illusory-self');
     if(context.klass==='Ranger'&&context.level>=15&&context.subclass.includes('hunter'))choices.push('hunter-defense');
     if(race==='Tiefling'&&context.level>=3)choices.push('hellish-rebuke');
     rows.forEach(row=>{
@@ -6830,10 +6875,54 @@ const classFeatureModels={
         {type:'counter',key:'eldritchMaster',label:'Eldritch Master – megmaradt használatok',max:()=>1,rest:'long',minLevel:20},
         {type:'output',key:'eldritchMasterRules',label:'Eldritch Master',wide:true,minLevel:20,value:()=> '1 percig kérleled a patrónusodat, majd minden elhasznált Pact Magic rekeszed visszatöltődik; hosszú pihenőnként egyszer.'}
     ]},
-    Wizard:{note:'Az Arcane Recovery rövid pihenőkor használható egyszer; a hosszú pihenő visszaállítja. A varázslatok listája a Varázslás panelen kezelhető.',fields:[
-        {type:'output',key:'arcaneRecoveryPoints',label:'Arcane Recovery keret',value:c=>`${Math.ceil(c.level/2)} varázsrekesz-szint`,minLevel:2},
-        {type:'toggle',key:'wizardArcaneRecoveryUsed',label:'Arcane Recovery felhasználva',rest:'long',minLevel:2},
-        {type:'textarea',key:'spellbookNotes',label:'Varázskönyv / további jegyzetek',wide:true}
+    Wizard:{note:'PHB 2014: az Intelligencia a varázslási tulajdonság. Az Arcane Recovery naponta egyszer használható rövid pihenő végén; az iskolaképességeket a Combat mód is felajánlja.',fields:[
+        {type:'output',key:'wizardSpellcasting',label:'Varázslás és varázskönyv',wide:true,value:c=>'Intelligencia alapú előkészített varázslás. Mentődobás DC: '+(8+c.proficiency+c.intMod)+', varázstámadás: '+(c.proficiency+c.intMod>=0?'+':'')+(c.proficiency+c.intMod)+'. Előkészíthető varázslatok: '+Math.max(1,c.level+c.intMod)+'. A varázskönyv rituáléi előkészítés nélkül is használhatók.'},
+        {type:'output',key:'arcaneRecoveryPoints',label:'Arcane Recovery keret',value:c=>`${Math.ceil(c.level/2)} varázsrekesz-szint`},
+        {type:'toggle',key:'wizardArcaneRecoveryUsed',label:'Arcane Recovery felhasználva',rest:'long'},
+        {type:'textarea',key:'spellbookNotes',label:'Varázskönyv / további jegyzetek',wide:true},
+        {type:'textarea',key:'spellMastery',label:'Spell Mastery – választott 1. és 2. szintű varázslat',wide:true,minLevel:18},
+        {type:'output',key:'spellMasteryRules',label:'Spell Mastery',wide:true,minLevel:18,value:()=> 'A két előkészített varázslat legalacsonyabb szinten korlátlanul, rekesz nélkül használható; 8 óra tanulással cserélhetők.'},
+        {type:'textarea',key:'signatureSpells',label:'Signature Spells – két 3. szintű varázslat',wide:true,minLevel:20},
+        {type:'counter',key:'signatureSpell1',label:'Signature Spell 1 – ingyenes használat',max:()=>1,rest:'both',minLevel:20},
+        {type:'counter',key:'signatureSpell2',label:'Signature Spell 2 – ingyenes használat',max:()=>1,rest:'both',minLevel:20},
+        {type:'counter',key:'arcaneWardHp',label:'Abjuration – Arcane Ward aktuális HP',max:c=>Math.max(0,2*c.level+c.intMod),minLevel:2,when:c=>c.subclass.includes('abjuration')},
+        {type:'output',key:'arcaneWardRules',label:'Arcane Ward',wide:true,minLevel:2,when:c=>c.subclass.includes('abjuration'),value:c=>'Legalább 1. szintű abjuration varázslat után '+(2*c.level+c.intMod)+' HP-s ward keletkezik. Újabb ilyen varázslat a rekeszszint kétszeresével tölti, legfeljebb a maximumig.'},
+        {type:'output',key:'projectedWard',label:'Projected Ward',wide:true,minLevel:6,when:c=>c.subclass.includes('abjuration'),value:()=> 'Reakcióval a 30 ft-on belüli lény sebzését az Arcane Ward fogja fel.'},
+        {type:'output',key:'improvedAbjuration',label:'Improved Abjuration',wide:true,minLevel:10,when:c=>c.subclass.includes('abjuration'),value:c=>'Dispel Magic és Counterspell tulajdonságpróbáihoz hozzáadódik a jártassági bónusz (+'+c.proficiency+').'},
+        {type:'output',key:'spellResistance',label:'Spell Resistance',wide:true,minLevel:14,when:c=>c.subclass.includes('abjuration'),value:()=> 'Előny a varázslatok elleni mentődobásokra, és ellenállás a varázslatok sebzésével szemben.'},
+        {type:'output',key:'minorConjuration',label:'Minor Conjuration',wide:true,minLevel:2,when:c=>c.subclass.includes('conjuration'),value:()=> 'Akcióval egy legfeljebb 3 ft oldalú, 10 font alatti, korábban látott tárgyat idézel az üres kezedbe; 1 óráig, sebzésig vagy új használatig tart.'},
+        {type:'counter',key:'benignTransposition',label:'Benign Transposition – használat',max:()=>1,rest:'long',minLevel:6,when:c=>c.subclass.includes('conjuration')},
+        {type:'output',key:'benignTranspositionRules',label:'Benign Transposition',wide:true,minLevel:6,when:c=>c.subclass.includes('conjuration'),value:()=> 'Akcióval 30 ft teleport, vagy helycsere egy beleegyező Small/Medium lénnyel. Conjuration varázslat használata azonnal visszatölti.'},
+        {type:'output',key:'focusedConjuration',label:'Focused Conjuration',wide:true,minLevel:10,when:c=>c.subclass.includes('conjuration'),value:()=> 'Sebzés nem szakítja meg a koncentrációdat conjuration varázslaton.'},
+        {type:'output',key:'durableSummons',label:'Durable Summons',wide:true,minLevel:14,when:c=>c.subclass.includes('conjuration'),value:c=>'Az általad megidézett vagy létrehozott lények '+(30)+' ideiglenes HP-val jelennek meg.'},
+        {type:'textarea',key:'portentDice',label:'Divination – Portent dobások',wide:true,minLevel:2,when:c=>c.subclass.includes('divination')},
+        {type:'output',key:'portentRules',label:'Portent',wide:true,minLevel:2,when:c=>c.subclass.includes('divination'),value:c=>(c.level>=14?3:2)+' d20 dobás hosszú pihenő végén; saját vagy látott lény támadását, mentőjét vagy próbáját a dobás előtt egy eltett eredményre cserélheted.'},
+        {type:'output',key:'expertDivination',label:'Expert Divination',wide:true,minLevel:6,when:c=>c.subclass.includes('divination'),value:()=> '2. vagy magasabb szintű divination varázslat rekesszel használva visszatölt egy alacsonyabb, legfeljebb 5. szintű rekeszt.'},
+        {type:'select',key:'thirdEye',label:'The Third Eye',minLevel:10,when:c=>c.subclass.includes('divination'),options:['Darkvision 60 ft','Ethereal Sight 60 ft','Greater Comprehension','See Invisibility 10 ft']},
+        {type:'output',key:'thirdEyeRules',label:'The Third Eye',wide:true,minLevel:10,when:c=>c.subclass.includes('divination'),value:()=> 'Akcióval aktiválható a kiválasztott előny; incapacitated állapotig vagy rövid/hosszú pihenőig tart.'},
+        {type:'output',key:'hypnoticGaze',label:'Hypnotic Gaze',wide:true,minLevel:2,when:c=>c.subclass.includes('enchantment'),value:c=>'Akcióval egy 5 ft-on belüli látó lény WIS mentőt dob (DC '+(8+c.proficiency+c.intMod)+'); sikertelenségnél a következő köröd végéig charmed, incapacitated és 0 sebesség. Akcióval fenntartható.'},
+        {type:'output',key:'instinctiveCharm',label:'Instinctive Charm',wide:true,minLevel:6,when:c=>c.subclass.includes('enchantment'),value:c=>'Reakcióval az ellened támadó, 30 ft-on belüli látó lény WIS mentőt dob (DC '+(8+c.proficiency+c.intMod)+'); sikertelenségnél másik célpontot kell támadnia.'},
+        {type:'output',key:'splitEnchantment',label:'Split Enchantment',wide:true,minLevel:10,when:c=>c.subclass.includes('enchantment'),value:()=> 'Egyetlen célpontot célzó, legalább 1. szintű enchantment varázslat ingyen egy második célpontot is célozhat.'},
+        {type:'output',key:'alterMemories',label:'Alter Memories',wide:true,minLevel:14,when:c=>c.subclass.includes('enchantment'),value:c=>'Egy lény nem tudja, hogy elbájoltad; a hatás vége előtt INT mentővel (DC '+(8+c.proficiency+c.intMod)+') legfeljebb '+(1+c.intMod)+' órányi emléke törölhető.'},
+        {type:'output',key:'sculptSpells',label:'Sculpt Spells',wide:true,minLevel:2,when:c=>c.subclass.includes('evocation'),value:c=>'Saját és más lényeket érintő evocation varázslatnál legfeljebb 1 + varázslatszint választott lény automatikusan ment és nem szenved sebzést.'},
+        {type:'output',key:'potentCantrip',label:'Potent Cantrip',wide:true,minLevel:6,when:c=>c.subclass.includes('evocation'),value:()=> 'Mentődobásos, sebző wizard trükk sikeres mentőn is fél sebzést okoz; más hatása nincs.'},
+        {type:'output',key:'empoweredEvocation',label:'Empowered Evocation',wide:true,minLevel:10,when:c=>c.subclass.includes('evocation'),value:c=>'Egy wizard evocation varázslat egyik sebzésdobásához hozzáadhatod az INT módosítót ('+(c.intMod>=0?'+':'')+c.intMod+'). A Combat mód kezeli.'},
+        {type:'counter',key:'overchannelSafe',label:'Overchannel – biztonságos használat',max:()=>1,rest:'long',minLevel:14,when:c=>c.subclass.includes('evocation')},
+        {type:'output',key:'overchannelRules',label:'Overchannel',wide:true,minLevel:14,when:c=>c.subclass.includes('evocation'),value:()=> '1–5. szintű sebző wizard varázslat maximális sebzést okozhat. Az első használat biztonságos; további használat növekvő, ellenállhatatlan necrotic sebzést okoz.'},
+        {type:'output',key:'improvedMinorIllusion',label:'Improved Minor Illusion',wide:true,minLevel:2,when:c=>c.subclass.includes('illusion'),value:()=> 'Minor Illusion bónusztrükk; egy használattal hang és kép együtt létrehozható.'},
+        {type:'output',key:'malleableIllusions',label:'Malleable Illusions',wide:true,minLevel:6,when:c=>c.subclass.includes('illusion'),value:()=> 'Legalább 1 perces saját illúzió természetét akcióval módosíthatod a varázslat szokásos korlátain belül.'},
+        {type:'counter',key:'illusorySelf',label:'Illusory Self – használat',max:()=>1,rest:'both',minLevel:10,when:c=>c.subclass.includes('illusion')},
+        {type:'output',key:'illusorySelfRules',label:'Illusory Self',wide:true,minLevel:10,when:c=>c.subclass.includes('illusion'),value:()=> 'Reakcióval egy ellened dobott támadás automatikusan elhibáz; rövid vagy hosszú pihenő tölti vissza.'},
+        {type:'output',key:'illusoryReality',label:'Illusory Reality',wide:true,minLevel:14,when:c=>c.subclass.includes('illusion'),value:()=> 'Legalább 1. szintű illúzió használatakor bónuszakcióval egy nem mágikus, élettelen részét 1 percre valóságossá teheted; nem okozhat közvetlen sebzést.'},
+        {type:'output',key:'grimHarvest',label:'Grim Harvest',wide:true,minLevel:2,when:c=>c.subclass.includes('necromancy'),value:c=>'Varázslattal megölt lény után körönként egyszer a rekeszszint kétszerese, necromancy varázslatnál háromszorosa HP gyógyulás; élőholt és szerkezet nem számít.'},
+        {type:'output',key:'undeadThralls',label:'Undead Thralls',wide:true,minLevel:6,when:c=>c.subclass.includes('necromancy'),value:c=>'Animate Dead a varázskönyvbe kerül; további holttest célozható. Az általad létrehozott élőholtak max HP-ja +'+c.level+', fegyversebzése +'+c.proficiency+'.'},
+        {type:'output',key:'inuredUndeath',label:'Inured to Undeath',wide:true,minLevel:10,when:c=>c.subclass.includes('necromancy'),value:()=> 'Ellenállás necrotic sebzésre, és a maximum HP nem csökkenthető.'},
+        {type:'output',key:'commandUndead',label:'Command Undead',wide:true,minLevel:14,when:c=>c.subclass.includes('necromancy'),value:c=>'Akcióval egy 60 ft-on belüli élőholt CHA mentőt dob (DC '+(8+c.proficiency+c.intMod)+'); sikertelenségnél irányításod alá kerül. Egyszerre egy célpont.'},
+        {type:'output',key:'minorAlchemy',label:'Minor Alchemy',wide:true,minLevel:2,when:c=>c.subclass.includes('transmutation'),value:()=> '10 percenként 1 köbláb fa, kő, vas, réz vagy ezüst legfeljebb 1 órára másik felsorolt anyaggá alakítható.'},
+        {type:'select',key:'transmutersStone',label:'Transmuter’s Stone aktív előnye',minLevel:6,when:c=>c.subclass.includes('transmutation'),options:['Darkvision 60 ft','Speed +10 ft','CON saving throw proficiency','Acid resistance','Cold resistance','Fire resistance','Lightning resistance','Thunder resistance']},
+        {type:'counter',key:'shapechanger',label:'Shapechanger – Polymorph használat',max:()=>1,rest:'both',minLevel:10,when:c=>c.subclass.includes('transmutation')},
+        {type:'output',key:'shapechangerRules',label:'Shapechanger',wide:true,minLevel:10,when:c=>c.subclass.includes('transmutation'),value:()=> 'Polymorph a varázskönyvbe kerül. Rekesz nélkül magadra használható legfeljebb CR 1 formára; rövid vagy hosszú pihenő tölti vissza.'},
+        {type:'output',key:'masterTransmuter',label:'Master Transmuter',wide:true,minLevel:14,when:c=>c.subclass.includes('transmutation'),value:()=> 'Akcióval elfogyasztod a Transmuter’s Stone-t: Major Transformation, Panacea, Restore Life vagy Restore Youth. Új kő hosszú pihenő vagy transmutation varázslat után készül.'}
     ]}
 };
 const sorcererMetamagicCosts={
@@ -7280,6 +7369,16 @@ function renderCombatTurnChoices(){
         if(level>=20&&(Number(document.getElementById('classFeature_eldritchMaster')?.value)||0)>0)action.push(['eldritch-master','Eldritch Master – 1 perces rituálé']);
         if(level>=3&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade')action.push(['create-pact-weapon','Pact Weapon létrehozása']);
     }
+    if(klass==='Wizard'){
+        if(subclass.includes('abjuration')&&level>=6&&(Number(document.getElementById('classFeature_arcaneWardHp')?.value)||0)>0)reaction.push(['projected-ward','Projected Ward – szövetséges sebzésének felfogása']);
+        if(subclass.includes('conjuration')){action.push(['minor-conjuration','Minor Conjuration – tárgy létrehozása']);if(level>=6&&(Number(document.getElementById('classFeature_benignTransposition')?.value)||0)>0)action.push(['benign-transposition','Benign Transposition – teleport/helycsere']);}
+        if(subclass.includes('divination')&&level>=10)action.push(['third-eye','The Third Eye – kiválasztott érzék aktiválása']);
+        if(subclass.includes('enchantment')){action.push(['hypnotic-gaze','Hypnotic Gaze']);if(level>=6)reaction.push(['instinctive-charm','Instinctive Charm – támadás átirányítása']);}
+        if(subclass.includes('evocation')&&level>=14&&(Number(document.getElementById('classFeature_overchannelSafe')?.value)||0)>0)trigger.push(['overchannel','Overchannel – maximális varázssebzés']);
+        if(subclass.includes('illusion')){if(level>=6)action.push(['malleable-illusions','Malleable Illusions – illúzió módosítása']);if(level>=10&&(Number(document.getElementById('classFeature_illusorySelf')?.value)||0)>0)reaction.push(['illusory-self','Illusory Self – támadás automatikusan hibázik']);if(level>=14)bonus.push(['illusory-reality','Illusory Reality – illúzió valóságossá tétele']);}
+        if(subclass.includes('necromancy')&&level>=14)action.push(['command-undead','Command Undead']);
+        if(subclass.includes('transmutation')){if(level>=10&&(Number(document.getElementById('classFeature_shapechanger')?.value)||0)>0)action.push(['shapechanger','Shapechanger – Polymorph magadra']);if(level>=14)action.push(['master-transmuter','Master Transmuter – kő feláldozása']);}
+    }
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
     if(klass==='Rogue'&&level>=3&&subclass.includes('thief'))bonus.push(['fast-hands-sleight','Fast Hands: Sleight of Hand'],['fast-hands-tools','Fast Hands: tolvajszerszám'],['fast-hands-object','Fast Hands: Use an Object']);
     if(klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))bonus.push(['versatile-trickster','Versatile Trickster – Mage Hand figyelemelvonás']);
@@ -7628,6 +7727,9 @@ function warlockCombatDamageBonus(){
     if(document.getElementById('combatLifedrinker')?.checked)bonus+=c.chaMod;
     return bonus;
 }
+function wizardCombatDamageBonus(){
+    const c=classFeatureContext();return c.klass==='Wizard'&&document.getElementById('combatEmpoweredEvocation')?.checked?c.intMod:0;
+}
 function updateCombatClassOptions(preserveSelection=true){
     const panel=document.getElementById('combatClassOptions');
     if(!panel)return;
@@ -7650,6 +7752,10 @@ function updateCombatClassOptions(preserveSelection=true){
         if(eldritch&&document.getElementById('classFeature_agonizingBlast')?.checked)options.push(`<label><input id="combatAgonizingBlast" type="checkbox"> Agonizing Blast (${classFeatureContext().chaMod>=0?'+':''}${classFeatureContext().chaMod} sebzés ehhez a sugárhoz)</label>`);
         if(eldritch&&document.getElementById('classFeature_repellingBlast')?.checked)options.push('<small class="combat-class-note">Repelling Blast: találatkor a célpont legfeljebb 10 ft-tal távolabb lökhető.</small>');
         if(level>=12&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade'&&document.getElementById('classFeature_lifedrinker')?.checked)options.push(`<label><input id="combatLifedrinker" type="checkbox"> Lifedrinker (${classFeatureContext().chaMod>=0?'+':''}${classFeatureContext().chaMod} necrotic sebzés; paktumfegyveres találat)</label>`);
+    }
+    if(getCombatRollType()==='damage'&&klass==='Wizard'&&level>=10&&subclass.includes('evocation')){
+        const spell=readCombatSpell(),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row));
+        if(catalog?.school==='evocation')options.push(`<label><input id="combatEmpoweredEvocation" type="checkbox"> Empowered Evocation (${classFeatureContext().intMod>=0?'+':''}${classFeatureContext().intMod} egy sebzésdobáshoz)</label>`);
     }
     if(getCombatRollType()==='damage'&&klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Colossus Slayer')options.push('<label><input id="combatColossusSlayer" type="checkbox"> Colossus Slayer (+1d8; sérült célpont, fordulónként egyszer)</label>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Giant Killer'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Giant Killer: ha egy legfeljebb 1,5 m-re lévő Nagy vagy nagyobb lény eltalál vagy elhibáz, reakcióból közelharci támadást indíthatsz ellene.</small>');
@@ -7949,7 +8055,7 @@ function performCombatRoll(){
     if(flourishSelected){bardPool.value=String(Number(bardPool.value)-1);bardPool.dispatchEvent(new Event('input',{bubbles:true}));}
     const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0);
     const rageBonus=document.getElementById('combatRageDamageEligible')?.checked?barbarianRageDamageBonus():0;
-    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage')+warlockCombatDamageBonus();
+    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage')+warlockCombatDamageBonus()+wizardCombatDamageBonus();
     rangerRecordFoeSlayer();
     const offhandAdjustment=combatRulesDamageModifier();
     const total=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
@@ -7964,6 +8070,7 @@ function performCombatRoll(){
     if(paladinStyleBonus('damage'))featureNotes.push('Dueling +2');
     if(document.getElementById('combatAgonizingBlast')?.checked)featureNotes.push('Agonizing Blast '+(context.chaMod>=0?'+':'')+context.chaMod);
     if(document.getElementById('combatLifedrinker')?.checked)featureNotes.push('Lifedrinker '+(context.chaMod>=0?'+':'')+context.chaMod+' necrotic');
+    if(document.getElementById('combatEmpoweredEvocation')?.checked)featureNotes.push('Empowered Evocation '+(context.intMod>=0?'+':'')+context.intMod);
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
     if(stunningStrike)featureNotes.push('Stunning Strike: CON mentő DC '+(8+context.proficiency+context.wisMod)+'; 1 Ki elköltve');

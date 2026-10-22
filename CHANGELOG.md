@@ -22,6 +22,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Oath of Devotion, Oath of the Ancients és Oath of Vengeance jellemzők, Isteni Energia lehetőségek, reakciók és magasabb szintű Combat műveletek.
 - Warlock PHB 2014 Pact Magic, Pact Boon, Mystic Arcanum, Eldritch Master és követhető Eldritch Invocation képességek.
 - Archfey, Fiend és Great Old One patrónusjellemzők, pihenőalapú erőforrások, reakciók és Combat műveletek.
+- Wizard PHB 2014 varázskönyv, Arcane Recovery, Spell Mastery, Signature Spells és előkészítési összegzés.
+- Mind a nyolc Arcane Tradition jellemzői, követhető erőforrásai, Combat műveletei, reakciói és Evocation sebzésmódosítója.
 
 ### Tervezett
 

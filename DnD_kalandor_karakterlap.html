@@ -3973,6 +3973,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
     const RESOURCE_EVENTS = {
         rage: { category: 'bonus', resource: 'rageUses', klass: 'Barbarian', level: 1 },
         inspiration: { category: 'bonus', resource: 'bardicInspiration', klass: 'Bard', level: 1 },
+        'cutting-words': { category: 'reaction', resource: 'bardicInspiration', klass: 'Bard', level: 3, subclass: 'lore', trigger: true },
         'wild-shape': { category: 'action', resource: 'wildShapeUses', klass: 'Druid', level: 2 },
         'moon-wild-shape': { category: 'bonus', resource: 'wildShapeUses', klass: 'Druid', level: 2, subclass: 'moon' },
         'channel-divinity': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2 },
@@ -4584,6 +4585,11 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     state.flags.shapeReverted = true;
                     return;
                 }
+                if (choice === 'countercharm') {
+                    requireClass('Bard', 6);
+                    if (category !== 'action') fail('A Countercharm használata akció.');
+                    spend('action');return;
+                }
                 if (choice.startsWith('sorcerer-create-slot-')) {
                     requireClass('Sorcerer', 2);
                     if (category !== 'bonus') fail('A varázsrekesz létrehozása bónuszakció.');
@@ -5032,6 +5038,12 @@ function combatRulesRecordEvent(){
         if(points)points.value=String(Math.min(classFeatureContext().level,(Number(points.value)||0)+slotLevel));
         detail=slotLevel+'. szintű varázsrekesz elhasználva; '+slotLevel+' Varázserő-pont visszanyerve. '+detail;
     }
+    if(option.value==='inspiration'){
+        const die=classFeatureContext().level>=15?'d12':classFeatureContext().level>=10?'d10':classFeatureContext().level>=5?'d8':'d6';
+        detail='Egy 60 ft-on belüli, halló szövetséges '+die+' Bárdi inspirációt kap 10 percre.'+(classFeatureContext().subclass.includes('valor')&&classFeatureContext().level>=3?' Combat Inspiration: fegyversebzéshez vagy reakcióval AC-hoz is felhasználható.':'')+' '+detail;
+    }
+    if(option.value==='cutting-words')detail='Cutting Words: vond le az inspirációs kockát a látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobásából. '+detail;
+    if(option.value==='countercharm')detail='A következő saját köröd végéig a 30 ft-on belüli, téged halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra. '+detail;
     const racialFlags={'dragon-breath':'combatDragonBreathUsed','hellish-rebuke':'combatTieflingRebukeUsed','relentless-endurance':'combatHalfOrcEnduranceUsed'};
     if(racialFlags[option.value])document.getElementById(racialFlags[option.value]).value='true';
     if(option.value==='relentless-endurance')document.getElementById('currentHp').value='1';
@@ -6243,9 +6255,29 @@ const classFeatureModels={
         {type:'toggle',key:'rageActive',label:'Harag aktív',rest:'both'},
         {type:'toggle',key:'frenzyActive',label:'Frenzy aktív (harag végén 1 kimerültség)',rest:'both',minLevel:3,when:c=>c.subclass.includes('berserker')}
     ]},
-    Bard:{note:'A Bárdi inspiráció maximuma a Karizma-módosító (legalább 1); 5. szinttől rövid pihenőre is visszatöltődik.',fields:[
-        {type:'counter',key:'bardicInspiration',label:'Bárdi inspiráció',max:c=>Math.max(1,c.chaMod),rest:rest=>rest==='long'||(rest==='short'&&classFeatureContext().level>=5)},
-        {type:'output',key:'bardicDie',label:'Inspirációs kocka',value:c=>c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6'}
+    Bard:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Bárdi inspiráció hosszú pihenőre, 5. szinttől rövid pihenőre is visszatöltődik; a Combat mód automatikusan kezeli a felhasználásokat.',fields:[
+        {type:'output',key:'bardSpellcasting',label:'Varázslás',wide:true,value:c=>'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'. A rituálék csak ismert, rituálé címkéjű bárdvarázslatokból végezhetők.'},
+        {type:'counter',key:'bardicInspiration',label:'Bárdi inspiráció – megmaradt használatok',max:c=>Math.max(1,c.chaMod),rest:rest=>rest==='long'||(rest==='short'&&classFeatureContext().level>=5)},
+        {type:'output',key:'bardicDie',label:'Inspirációs kocka',value:c=>c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6'},
+        {type:'output',key:'bardicInspirationRules',label:'Bardic Inspiration',wide:true,value:c=>'Bónuszakcióval egy 60 ft-on belüli, halló szövetséges kap '+(c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6')+' kockát 10 percre. Egy tulajdonságpróbához, támadáshoz vagy mentődobáshoz adhatja, a dobás után, az eredmény kihirdetése előtt.'},
+        {type:'output',key:'jackOfAllTrades',label:'Jack of All Trades',minLevel:2,wide:true,value:c=>'A nem jártas tulajdonságpróbákhoz a jártassági bónusz fele lefelé kerekítve (jelenleg +'+Math.floor(c.proficiency/2)+') automatikusan hozzáadódik.'},
+        {type:'output',key:'songOfRest',label:'Song of Rest',minLevel:2,value:c=>c.level>=17?'d12':c.level>=13?'d10':c.level>=9?'d8':'d6'},
+        {type:'output',key:'songOfRestRules',label:'Song of Rest',minLevel:2,wide:true,value:()=> 'Rövid pihenőn az a szövetséges, aki legalább egy életerőkockát elkölt gyógyulásra, egyszer hozzáadja a Song of Rest kockát.'},
+        {type:'select',key:'bardExpertise1',label:'Expertise 1',minLevel:3,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'bardExpertise2',label:'Expertise 2',minLevel:3,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'bardExpertise3',label:'Expertise 3',minLevel:10,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'select',key:'bardExpertise4',label:'Expertise 4',minLevel:10,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
+        {type:'output',key:'fontOfInspiration',label:'Font of Inspiration',minLevel:5,wide:true,value:()=> 'A Bárdi inspiráció rövid vagy hosszú pihenő befejezésekor teljesen visszatöltődik.'},
+        {type:'output',key:'countercharm',label:'Countercharm',minLevel:6,wide:true,value:()=> 'Akcióval a következő saját köröd végéig te és a 30 ft-on belüli, halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra.'},
+        {type:'textarea',key:'magicalSecrets',label:'Magical Secrets – választott varázslatok / jegyzetek',minLevel:10,wide:true},
+        {type:'output',key:'superiorInspiration',label:'Superior Inspiration',minLevel:20,wide:true,value:()=> 'Kezdeményezés dobásakor, ha nincs Bárdi inspirációd, automatikusan visszakapsz egy használatot.'},
+        {type:'textarea',key:'loreBonusSkills',label:'College of Lore – három bónusz jártasság',minLevel:3,wide:true,when:c=>c.subclass.includes('lore')},
+        {type:'output',key:'cuttingWords',label:'College of Lore – Cutting Words',minLevel:3,wide:true,when:c=>c.subclass.includes('lore'),value:()=> 'Reakcióval és egy Bárdi inspirációval csökkentheted egy látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobását.'},
+        {type:'output',key:'peerlessSkill',label:'College of Lore – Peerless Skill',minLevel:14,wide:true,when:c=>c.subclass.includes('lore'),value:c=>'Saját tulajdonságpróbához elkölthetsz egy Bárdi inspirációt, és hozzáadhatsz '+(c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6')+'-t.'},
+        {type:'output',key:'valorProficiencies',label:'College of Valor – Bonus Proficiencies',minLevel:3,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Közepes páncél, pajzs és harci fegyverek.'},
+        {type:'output',key:'combatInspiration',label:'College of Valor – Combat Inspiration',minLevel:3,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Az inspirált szövetséges a kockát fegyversebzéshez adhatja, vagy reakcióval az AC-jéhez egy ellene dobott támadás után.'},
+        {type:'output',key:'valorExtraAttack',label:'College of Valor – Extra Attack',minLevel:6,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Támadás akcióval két fegyvertámadás; a Combat mód automatikusan kezeli.'},
+        {type:'output',key:'battleMagic',label:'College of Valor – Battle Magic',minLevel:14,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Egyakciós bárdvarázslat után bónuszakcióval egy fegyvertámadás; a Combat módban elérhető.'}
     ]},
     Cleric:{note:'Az Isteni Energia rövid vagy hosszú pihenőre töltődik vissza. Az Isteni Beavatkozás sikeres használat után 7 napig nem használható újra.',fields:[
         {type:'counter',key:'channelDivinity',label:'Isteni Energia használata',max:c=>c.level>=18?3:c.level>=6?2:1,rest:'both',minLevel:2},
@@ -6396,8 +6428,8 @@ function renderClassFeatures(){
     fields.dataset.className=context.klass;
     fields.innerHTML=model.fields.map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
-        control.addEventListener('input',()=>{updateClassFeatureCalculations();saveCharacter();});
-        control.addEventListener('change',()=>{updateClassFeatureCalculations();saveCharacter();});
+        control.addEventListener('input',()=>{updateClassFeatureCalculations();if(control.id.includes('bardExpertise'))updateSkills();saveCharacter();});
+        control.addEventListener('change',()=>{updateClassFeatureCalculations();if(control.id.includes('bardExpertise'))updateSkills();saveCharacter();});
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
@@ -6709,7 +6741,9 @@ function renderCombatTurnChoices(){
     if(characterCanCastSpells())addCombatSpellChoices(action,/akció/i);
     if(klass==='Barbarian'&&level>=1&&((Number(document.getElementById('classFeature_rageUses')?.value)||0)>0||level>=20)&&!document.getElementById('classFeature_rageActive')?.checked)bonus.push(['rage','Harag (Rage)']);
     if(klass==='Barbarian'&&level>=3&&subclass.includes('berserker')&&document.getElementById('classFeature_rageActive')?.checked)bonus.push(['frenzy','Frenzy támadás (harag közben)']);
-    if(klass==='Bard'&&(Number(document.getElementById('classFeature_bardicInspiration')?.value)||0)>0)bonus.push(['inspiration','Bárdi inspiráció']);
+    if(klass==='Bard'&&(Number(document.getElementById('classFeature_bardicInspiration')?.value)||0)>0)bonus.push(['inspiration','Bárdi inspiráció'+(subclass.includes('valor')&&level>=3?' / Combat Inspiration':'')]);
+    if(klass==='Bard'&&level>=6)action.push(['countercharm','Countercharm']);
+    if(klass==='Bard'&&level>=3&&subclass.includes('lore')&&(Number(document.getElementById('classFeature_bardicInspiration')?.value)||0)>0)reaction.push(['cutting-words','Cutting Words']);
     if(klass==='Druid'&&level>=2){
         const uses=druidWildShapeAvailable(),form=druidWildShapeSelection();
         const detail=(form.elemental?'Elemi alak':'Vad alak')+' ('+form.cost+' használat; '+(uses===Infinity?'∞':uses+' / 2')+')';
@@ -7199,6 +7233,11 @@ function performCombatInitiativeRoll(){
         field.focus();
         return;
     }
+    const initiativeClass=classFeatureContext();
+    if(initiativeClass.klass==='Bard'&&initiativeClass.level>=20){
+        const pool=document.getElementById('classFeature_bardicInspiration');
+        if(pool&&Number(pool.value)===0){pool.value='1';pool.dispatchEvent(new Event('input',{bubbles:true}));}
+    }
     let inspiration;
     try{inspiration=readRollInspiration('initiativeRollInspiration');}catch(error){result.textContent=error.message;return;}
     const bonus=getInitiativeModifier();
@@ -7675,6 +7714,10 @@ function abilityCheckTrainingBonus(ability,proficient=false){
     if(klass==='Fighter'&&level>=7&&subclass==='champion'&&['STR','DEX','CON'].includes(ability))return Math.ceil(prof/2);
     return 0;
 }
+function bardExpertiseSkills(){
+    if(classFeatureContext().klass!=='Bard')return new Set();
+    return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_bardExpertise'+index)?.value).filter(Boolean));
+}
 
 function characterSkillBaseName(skill){
     if(skill.dataset.skillBaseName)return skill.dataset.skillBaseName;
@@ -7892,7 +7935,9 @@ function updateSkills() {
         let value =
             getModifier(abilityScore);
 
-        value += abilityCheckTrainingBonus(ability,skill.classList.contains('proficient'));
+        const proficient=skill.classList.contains('proficient');
+        value += abilityCheckTrainingBonus(ability,proficient);
+        if(proficient&&bardExpertiseSkills().has(characterSkillBaseName(skill)))value+=proficiency;
 
         skill.querySelector('.skill-value')
             .textContent = formatModifier(value);

@@ -1494,8 +1494,6 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 .combat-mode-dialog .combat-turn-event label{display:flex;align-items:center;gap:7px;margin:2px 0 5px;font-size:.82rem}
 .combat-mode-dialog .combat-turn-events input[type="checkbox"]{flex:0 0 17px;width:17px;min-height:17px;margin:0}
 .combat-mode-dialog .combat-turn-event select{min-height:32px;padding:4px 6px;font-size:.76rem}
-.combat-turn-notes{margin-top:8px}
-.combat-turn-notes input{min-width:0}
 .combat-round-history{margin:0;padding:0;list-style:none;font-size:.82rem;line-height:1.45}.combat-round-history li{padding:8px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}.combat-history-disclosure{margin-top:10px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--card)}.combat-history-disclosure[hidden]{display:none!important}.combat-history-disclosure summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;color:var(--accent);font-size:.85rem;font-weight:bold;cursor:pointer;list-style:none;touch-action:manipulation}.combat-history-disclosure summary::-webkit-details-marker{display:none}.combat-history-disclosure summary::after{content:"";width:7px;height:7px;flex:0 0 7px;margin-right:4px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transition:transform .15s ease}.combat-history-disclosure[open] summary::after{transform:rotate(225deg)}.combat-history-disclosure summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .combat-round-history:empty{display:none}
 .combat-damage-panel[hidden],.combat-attack-panel[hidden]{display:none!important}
@@ -1813,7 +1811,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .combat-guide-hp{flex:0 0 auto;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;white-space:nowrap;font-weight:bold;color:var(--text);background:var(--bg)}
 .combat-guide-hp.low-hp{border-color:#b76554}
 .combat-guided .combat-guide-close{flex:0 0 38px;width:38px;min-height:42px;padding:0;border:0;background:transparent;color:var(--accent);font-size:1.65rem;line-height:1}
-.combat-guide-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:10px 0}
+.combat-guide-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0}
 .combat-guided .combat-guide-progress button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:38px;padding:5px 3px;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:.73rem;background:var(--bg);line-height:1.3}
 .combat-guided .combat-guide-progress button.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
 .combat-guided .combat-guide-progress button.done:not(.active){color:var(--accent);border-color:var(--accent)}
@@ -1860,10 +1858,6 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .combat-guided .combat-guide-other-kinds button{flex:1 1 75px;padding:7px 6px;border-radius:6px;border-color:var(--border);font-size:.8rem}
 .combat-guide-other-kinds button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
 .combat-guide-event-status{color:var(--accent);font-size:.82rem;line-height:1.4}
-.combat-guide-summary-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:14px 0}
-.combat-guide-summary-stats div{min-width:0;padding:10px 6px;border:1px solid var(--border);border-radius:8px;background:var(--bg);text-align:center}
-.combat-guide-summary-stats strong{display:block;color:var(--accent);font-size:1.4rem;line-height:1.2}
-.combat-guide-summary-stats small{display:block;margin-top:6px;color:var(--muted);font-size:.68rem;line-height:1.35;overflow-wrap:anywhere}
 .combat-guide-roll-hint{margin:0 0 14px;padding:10px 11px;border-left:2px solid var(--accent);border-radius:0 6px 6px 0;background:var(--bg);color:var(--muted);font-size:.82rem;line-height:1.45}
 .combat-guided .combat-attack-panel{scroll-margin-top:0}
 .combat-guided .combat-mode-actions{position:static!important;bottom:auto!important;padding:0!important;background:transparent!important;margin-top:14px;z-index:auto}
@@ -2786,7 +2780,6 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       <nav id="combatGuideProgress" class="combat-guide-progress" aria-label="A kör lépései">
         <button type="button" data-combat-guide-step="0">1. Kezdés <small id="combatGuideInitiativeBadge" hidden></small></button>
         <button type="button" data-combat-guide-step="1" disabled>2. Műveletek</button>
-        <button type="button" data-combat-guide-step="2" disabled>3. Áttekintés</button>
       </nav>
       <div id="combatModeTabs" class="combat-mode-tabs" role="tablist" aria-label="Combat művelet">
         <button id="combatAttackTab" type="button" role="tab" aria-selected="true" aria-pressed="true">⚔ Saját kör</button>
@@ -2870,17 +2863,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
             <input id="combatGuideEventNote" type="text" placeholder="pl. célpont, megtett távolság, hatás…">
             <p id="combatGuideEventStatus" class="combat-guide-event-status" role="status"></p>
           </section>
-          <section id="combatGuideSummary" hidden>
-            <h3>A kör összegzése</h3>
-            <p class="combat-guide-intro">Nézd át az eseményeket, majd indítsd a következő kört.</p>
-            <div class="combat-guide-summary-stats">
-              <div><strong id="combatGuideSummaryCount">0</strong><small>rögzített esemény</small></div>
-              <div><strong id="combatGuideSummaryOutgoing">0</strong><small>sebzésdobások összege</small></div>
-              <div><strong id="combatGuideSummaryIncoming">0</strong><small>elszenvedett sebzés</small></div>
-            </div>
-            <label class="combat-turn-notes" for="combatRoundNote">A kör megjegyzése</label>
-            <input id="combatRoundNote" type="text" placeholder="pl. állapot, célpont, következő teendő…">
-          </section>
+          <input id="combatRoundNote" type="hidden" value="">
           <p id="combatGuideRollHint" class="combat-guide-roll-hint" hidden></p>
 <div id="combatAttackPanel" class="combat-attack-panel">
     <h3 id="combatAttackStageTitle" class="combat-attack-stage-title" hidden></h3>
@@ -5495,7 +5478,7 @@ function combatRulesRender(){
     const canSpell=[...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].some(row=>spellRowCanCast(row)&&combatRulesPlan({...combatRulesIntent('spell','action','spell:'+row.dataset.spellEntryKey,true),preview:true}).ok);
     document.getElementById('combatGuideStartAttack').disabled=!primary.ok&&!canSpell;
     const hasAvailable=cat=>[...document.getElementById(combatGuideCategories[cat].choice).options].some(option=>option.value&&!option.disabled);
-    let next='review',message='A keretek elfogytak. Nézd át a kört, majd indíts új kört.';
+    let next='end',message='A műveleti keretek elfogytak. Befejezheted a körödet.';
     const petPool=state.attackPools.find(pool=>pool.choice==='companion-attack'&&pool.remaining>0);
     if(petPool&&combatRulesPlan(combatRulesIntent('attack',petPool.source,'companion-attack',true)).ok){next='companion-attack';message='Még '+petPool.remaining+' támadása maradt a társadnak a már kiadott parancsból. Folytasd további akció vagy bónuszakció nélkül.';}
     else if(bonusPool&&combatRulesPlan({...combatRulesIntent('attack','bonus',bonusPool.choice,true),preview:true}).ok){next='bonus-attack';message='Még '+bonusPool.remaining+' bónusztámadásod maradt. Folytasd a már megkezdett bónuszakciót.';}
@@ -5505,7 +5488,7 @@ function combatRulesRender(){
     else if(remaining>0&&hasAvailable('movement')){next='movement';message='Még '+rounded(remaining)+' '+state.move.unit+' mozgásod maradt. Mozoghatsz, vagy lezárhatod a saját fordulódat.';}
     else if(state.reactionLeft){message='A saját műveleteid elfogytak. Későbbi kiváltó eseménynél a külön Reakció fülön reagálhatsz.';}
     host.textContent=message;
-    const nextButton=document.getElementById('combatRulesNext');nextButton.dataset.next=next;nextButton.dataset.bonusChoice=bonusPool?.choice||'';nextButton.textContent={attack:attacks?'Következő támadás':'Támadás / varázslás',action:'Akció választása',bonus:'Bónuszakció választása','bonus-attack':'Bónuszcsapás folytatása','companion-attack':'Társ következő támadása',movement:'Mozgás megadása',review:'Kör áttekintése'}[next];
+    const nextButton=document.getElementById('combatRulesNext');nextButton.dataset.next=next;nextButton.dataset.bonusChoice=bonusPool?.choice||'';nextButton.textContent={attack:attacks?'Következő támadás':'Támadás / varázslás',action:'Akció választása',bonus:'Bónuszakció választása','bonus-attack':'Bónuszcsapás folytatása','companion-attack':'Társ következő támadása',movement:'Mozgás megadása',end:'Kör befejezése'}[next];
     document.getElementById('combatGuideStartAttackLabel').textContent=attacks?'Következő támadás ('+attacks+' maradt)':context.wildShape?(context.wildShape.multiattack?'Többtámadás':'Állati támadás'):characterCanCastSpells()?'Támadás vagy varázslás':'Fegyveres támadás';
     const selectedOption=document.getElementById(combatGuideCategories[category]?.choice)?.selectedOptions[0];
     if(selectedOption?.disabled)document.getElementById('combatGuideRecordEvent').disabled=true;
@@ -5558,7 +5541,7 @@ function setupCombatTurnRules(){
             const pool=combatRulesRead()?.attackPools.find(candidate=>candidate.source==='bonus'&&candidate.remaining>0);
             if(pool)chooseCombatGuideRoll('bonus','',{category:'bonus',choice:pool.choice,triggerConfirmed:true,requirementsConfirmed:true});
             else renderCombatGuide();
-        }else if(next==='attack')chooseCombatGuideRoll();else if(next==='review')showCombatGuideReview();else chooseCombatGuideEvent(next);
+        }else if(next==='attack')chooseCombatGuideRoll();else if(next==='end')confirmCombatRoundEnd();else chooseCombatGuideEvent(next);
     });
     document.getElementById('combatRulesConditions').addEventListener('change',()=>renderCombatGuide());
     document.getElementById('combatRulesConditions').addEventListener('input',event=>{if(['combatRulesDistance','combatRulesModeSpeed'].includes(event.target.id))renderCombatGuide();});
@@ -6109,16 +6092,6 @@ function chooseCombatGuideEvent(category){
 
 function recordCombatGuideManualEvent(){combatRulesRecordEvent();}
 
-function showCombatGuideReview(){
-    if(!hasCombatRoundInitiative())return;
-    settlePendingCombatAttack();
-    resetCombatAttackFlow();
-    combatGuideState.panel='attack';
-    combatGuideState.stage='review';
-    renderCombatGuide();
-    scrollCombatGuideToTop();
-}
-
 function renderCombatGuideLog(container,log){
     if(!container)return;
     container.replaceChildren();
@@ -6142,6 +6115,7 @@ function renderCombatGuideLog(container,log){
 
 function renderCombatGuide(){
     if(!document.getElementById('combatGuideDashboard'))return;
+    if(combatGuideState.stage==='review')combatGuideState.stage='choose';
     const ready=hasCombatRoundInitiative();
     const damage=combatGuideState.panel==='damage';
     const reaction=combatGuideState.panel==='reaction';
@@ -6168,15 +6142,14 @@ function renderCombatGuide(){
     document.getElementById('combatRoundActions').hidden=damage||(own&&!ready);
     document.getElementById('combatGuideDashboard').hidden=!own||stage!=='choose';
     document.getElementById('combatGuideEventPanel').hidden=damage||stage!=='event';
-    document.getElementById('combatGuideSummary').hidden=!own||stage!=='review';
     combatAttackPanel.hidden=damage||(own&&!ready)||stage!=='roll';
     combatDamagePanel.hidden=!damage;
-    document.getElementById('combatGuideJournal').hidden=!own||!ready||!['choose','review'].includes(stage);
+    document.getElementById('combatGuideJournal').hidden=!own||!ready||stage!=='choose';
     document.getElementById('combatGuideRollHint').hidden=damage||stage!=='roll';
     const phase=combatAttackFlow.phase;
     const hints={choose:'Válassz fegyvert vagy varázslatot, majd dobd ki az eredményt.',rolled:combatAttackFlow.lastNatural===1?'Kritikus hiba: nincs sebzés. Indíts új támadást, vagy térj vissza a körhöz.':'Jelöld, hogy a támadás sikeres volt vagy nem talált.',damage:'Add meg a fegyver és a választott képességek sebzéskockáit.',complete:'Az eredmény bekerült a kör naplójába. Folytathatod a kör többi műveletét.'};
     document.getElementById('combatGuideRollHint').textContent=hints[phase]||hints.choose;
-    const progressStage=stage==='initiative'?0:stage==='review'?2:1;
+    const progressStage=stage==='initiative'?0:1;
     document.querySelectorAll('[data-combat-guide-step]').forEach(button=>{
         const index=Number(button.dataset.combatGuideStep);
         button.disabled=!ready&&index>0;
@@ -6216,11 +6189,6 @@ function renderCombatGuide(){
     renderCombatGuideLog(document.getElementById('combatGuideEventLog'),log);
     document.getElementById('combatGuideLogCount').textContent=String(log.length);
     document.getElementById('combatGuideEmptyLog').hidden=Boolean(log.length);
-    const outgoing=log.filter(entry=>entry.kind==='damage').reduce((sum,entry)=>sum+(Number(entry.total)||0),0);
-    const incoming=log.filter(entry=>entry.kind==='incoming').reduce((sum,entry)=>sum+(Number(entry.total)||0),0);
-    document.getElementById('combatGuideSummaryCount').textContent=String(log.length);
-    document.getElementById('combatGuideSummaryOutgoing').textContent=String(outgoing);
-    document.getElementById('combatGuideSummaryIncoming').textContent=String(incoming);
     const footer=document.getElementById('combatGuideFooter');
     footer.hidden=own&&stage==='initiative'&&!ready;
     const back=document.getElementById('combatGuideBackButton');
@@ -6285,8 +6253,7 @@ function setupCombatGuide(){
     document.querySelectorAll('[data-combat-guide-step]').forEach(button=>button.addEventListener('click',()=>{
         const step=Number(button.dataset.combatGuideStep);
         if(step===0){combatGuideState.panel='attack';combatGuideState.stage='initiative';renderCombatGuide();scrollCombatGuideToTop();}
-        else if(step===1)showCombatGuideActions();
-        else showCombatGuideReview();
+        else showCombatGuideActions();
     }));
     document.getElementById('combatGuideEventNote').addEventListener('input',()=>document.getElementById('combatGuideEventStatus').textContent='');
     document.getElementById('combatRollInputs').addEventListener('input',()=>{

@@ -26,6 +26,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Mind a nyolc Arcane Tradition jellemzői, követhető erőforrásai, Combat műveletei, reakciói és Evocation sebzésmódosítója.
 - Mobilnézetben balra igazított karakter-, kaszt- és alosztálycímkék, valamint ikonok a Tulajdonságok és Harci értékek címsorában.
 - A Combat kör bármely szakaszban, külön áttekintés nélkül lezárható a „Befejeztem a körömet” megerősítés után.
+- A kör befejezésének megerősítése a Combat mód megjelenéséhez igazodó, reszponzív párbeszédablakot kapott.
 
 ### Tervezett
 

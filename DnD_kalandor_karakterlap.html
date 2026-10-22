@@ -1157,6 +1157,10 @@ body.parchment-theme .hp-card {
 .sheet.mobile-mode .character-portrait-card{grid-column:1/-1;flex-wrap:wrap}
 .sheet.mobile-mode .character-portrait-controls{flex-basis:calc(100% - 100px)}
 .sheet.mobile-mode .character-portrait-controls .character-name-field{width:100%;min-width:0}
+.sheet.mobile-mode .character-portrait-controls .character-name-field,
+.sheet.mobile-mode .class-choice-grid label{align-items:flex-start;text-align:left}
+.sheet.mobile-mode .character-portrait-controls .character-name-field input,
+.sheet.mobile-mode .class-choice-grid label select{text-align:left}
 .sheet.mobile-mode .character-portrait-controls input[type=file]{width:100%;font-size:.82rem}
 
 .sheet.mobile-mode .grid-top .card::before {
@@ -1748,6 +1752,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet.mobile-mode .attacks>.attacks-heading .attacks-rule{display:none}
 .sheet.mobile-mode .attacks>.attacks-heading .attacks-mark{display:none}
 .sheet.mobile-mode .attacks>.attacks-heading h3::before{content:"⚔";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
+.sheet.mobile-mode .abilities>.mobile-generated-section-heading h3::before{content:"✣";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
+.sheet.mobile-mode .combat>.mobile-generated-section-heading h3::before{content:"⚔";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
 .sheet.mobile-mode .abilities,
 .sheet.mobile-mode .combat{
   position:relative;

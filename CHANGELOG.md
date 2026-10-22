@@ -24,6 +24,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Archfey, Fiend és Great Old One patrónusjellemzők, pihenőalapú erőforrások, reakciók és Combat műveletek.
 - Wizard PHB 2014 varázskönyv, Arcane Recovery, Spell Mastery, Signature Spells és előkészítési összegzés.
 - Mind a nyolc Arcane Tradition jellemzői, követhető erőforrásai, Combat műveletei, reakciói és Evocation sebzésmódosítója.
+- Mobilnézetben balra igazított karakter-, kaszt- és alosztálycímkék, valamint ikonok a Tulajdonságok és Harci értékek címsorában.
 
 ### Tervezett
 

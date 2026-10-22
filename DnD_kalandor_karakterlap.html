@@ -4009,6 +4009,12 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'holy-nimbus': { category: 'action', resource: 'holyNimbus', klass: 'Paladin', level: 20, subclass: 'devotion' },
         'elder-champion': { category: 'action', resource: 'elderChampion', klass: 'Paladin', level: 20, subclass: 'ancients' },
         'avenging-angel': { category: 'action', resource: 'avengingAngel', klass: 'Paladin', level: 20, subclass: 'vengeance' },
+        'fey-presence': { category: 'action', resource: 'feyPresence', klass: 'Warlock', level: 1, subclass: 'archfey' },
+        'misty-escape': { category: 'reaction', resource: 'mistyEscape', klass: 'Warlock', level: 6, subclass: 'archfey', trigger: true },
+        'dark-delirium': { category: 'action', resource: 'darkDelirium', klass: 'Warlock', level: 14, subclass: 'archfey' },
+        'dark-ones-luck': { category: 'trigger', resource: 'darkOnesLuck', klass: 'Warlock', level: 6, subclass: 'fiend', trigger: true },
+        'hurl-through-hell': { category: 'trigger', resource: 'hurlThroughHell', klass: 'Warlock', level: 14, subclass: 'fiend', trigger: true },
+        'entropic-ward': { category: 'reaction', resource: 'entropicWard', klass: 'Warlock', level: 6, subclass: 'great old one', trigger: true },
         'dragon-breath': { category: 'action', resource: 'dragonBreath' },
         'hellish-rebuke': { category: 'reaction', resource: 'hellishRebuke', trigger: true },
         'relentless-endurance': { category: 'trigger', resource: 'relentlessEndurance', trigger: true }
@@ -4615,6 +4621,15 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                 if(choice==='relentless-avenger'){
                     requireClass('Paladin',7,'vengeance');if(category!=='trigger')fail('A Relentless Avenger sikeres lehetőségi támadás után használható.');return;
                 }
+                if(choice==='dark-ones-blessing'){
+                    requireClass('Warlock',1,'fiend');if(category!=='trigger')fail('A Dark One’s Blessing ellenség 0 HP-ra csökkentésekor használható.');return;
+                }
+                if(choice==='create-pact-weapon'){
+                    requireClass('Warlock',3);if(category!=='action'||document.getElementById('classFeature_pactBoon')?.value!=='Pact of the Blade')fail('Ehhez Pact of the Blade szükséges.');spend('action');return;
+                }
+                if(choice==='eldritch-master'){
+                    requireClass('Warlock',20);if(category!=='action')fail('Az Eldritch Master megkezdése akcióként rögzíthető, de a visszatöltéshez 1 perc megszakítatlan könyörgés szükséges.');resource('eldritchMaster',1);spend('action');return;
+                }
                 if(choice==='weapon-bond-summon'){
                     requireClass('Fighter',3,'eldritch knight');
                     if(category!=='bonus')fail('A kötött fegyver megidézése bónuszakció.');
@@ -4869,7 +4884,7 @@ function combatRulesContext(){
     if(c.klass==='Fighter'&&c.level>=5)attacksPerAction=c.level>=20?4:c.level>=11?3:2;
     else if(['Barbarian','Monk','Paladin','Ranger'].includes(c.klass)&&c.level>=5)attacksPerAction=2;
     else if(c.klass==='Bard'&&c.level>=6&&/valor|swords/.test(c.subclass))attacksPerAction=2;
-    else if(c.klass==='Warlock'&&c.level>=5&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade'&&/thirsting blade/i.test(document.getElementById('classFeature_eldritchInvocations')?.value||''))attacksPerAction=2;
+    else if(c.klass==='Warlock'&&c.level>=5&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade'&&(document.getElementById('classFeature_thirstingBlade')?.checked||/thirsting blade/i.test(document.getElementById('classFeature_eldritchInvocations')?.value||'')))attacksPerAction=2;
     const raging=c.klass==='Barbarian'&&Boolean(document.getElementById('classFeature_rageActive')?.checked);
     const wildShapeActive=c.klass==='Druid'&&document.getElementById('combatWildShapeActive')?.value==='true';
     const spellcastingBlocked=raging||(wildShapeActive&&c.level<18);
@@ -5208,6 +5223,30 @@ function combatRulesRecordEvent(){
     if(option.value==='undying-sentinel'){
         document.getElementById('currentHp').value='1';
         detail='Undying Sentinel: 0 HP helyett 1 HP-n maradsz. '+detail;
+    }
+    const warlockDetails={
+        'fey-presence':'Fey Presence: a 10 ft-os kockában lévő lények WIS mentőt dobnak; sikertelenségnél a következő köröd végéig elbájoltak vagy megijedtek.',
+        'misty-escape':'Misty Escape: sebzés után láthatatlanná válsz és legfeljebb 60 ft-ot teleportálsz; a láthatatlanság a következő köröd kezdetéig vagy támadás/varázslás használatáig tart.',
+        'dark-delirium':'Dark Delirium: egy 60 ft-on belüli lény sikertelen WIS mentő után koncentrációval legfeljebb 1 percig elbájolt vagy megijedt.',
+        'dark-ones-luck':'Dark One’s Own Luck: dobj 1d10-et, és add az eredményt a mostani tulajdonságpróbához vagy mentődobáshoz.',
+        'entropic-ward':'Entropic Ward: hátrány a kiváltó támadásra; ha elhibáz, előnyöd van a következő köröd végéig az első ellene végzett támadásodra.',
+        'create-pact-weapon':'Pact of the Blade: a választott közelharci paktumfegyver létrejön az üres kezedben; jártas vagy vele és mágikusnak számít.'
+    };
+    if(warlockDetails[option.value])detail=warlockDetails[option.value]+' '+detail;
+    if(option.value==='dark-ones-luck')detail='Dark One’s Own Luck: d10 = '+rollDie(10)+'. Add hozzá a kiváltó tulajdonságpróbához vagy mentődobáshoz. '+document.getElementById('combatGuideEventNote').value.trim();
+    if(option.value==='dark-ones-blessing'){
+        const value=Math.max(1,classFeatureContext().level+classFeatureContext().chaMod),temp=document.getElementById('tempHp');
+        if(temp)temp.value=String(Math.max(Number(temp.value)||0,value));
+        detail='Dark One’s Blessing: '+value+' ideiglenes HP. '+detail;
+    }
+    if(option.value==='hurl-through-hell'){
+        const rolls=Array.from({length:10},()=>rollDie(10)),total=rolls.reduce((sum,value)=>sum+value,0);
+        detail='Hurl Through Hell: nem alvilági célpont ellen 10d10 psychic = '+rolls.join('+')+' = '+total+'. '+detail;
+    }
+    if(option.value==='eldritch-master'){
+        const maximums=characterSpellSlotMaximums(),slotLevel=highestSpellSlotLevel(maximums),field=document.getElementById('spellSlots'+slotLevel);
+        if(field&&slotLevel)field.value=maximums[slotLevel-1]+' / '+maximums[slotLevel-1];
+        detail='Eldritch Master: az 1 perces könyörgés befejezése után minden Pact Magic rekesz visszatöltve. '+detail;
     }
     if(option.value==='weapon-bond-summon')detail='Weapon Bond: az egyik kötött fegyver ugyanazon a létsíkon bónuszakcióval a kezedbe kerül. '+detail;
     const monkDetails={
@@ -5636,6 +5675,16 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         profile.label='Protection Fighting Style';profile.known=true;
     }else if(choice==='soul-vengeance'&&className==='Paladin'&&level>=15&&context.subclass.includes('vengeance')){
         profile.label='Soul of Vengeance';profile.known=true;
+    }else if(choice==='misty-escape'&&className==='Warlock'&&level>=6&&context.subclass.includes('archfey')){
+        profile.label='Misty Escape';profile.known=true;
+        profile.maximum=1;profile.remaining=whole(document.getElementById('classFeature_mistyEscape')?.value);
+        profile.period='short';profile.periodLabel='Rövid pihenőnként';profile.resetLabel='Rövid vagy hosszú pihenő után';profile.resourceText='Használat: '+profile.remaining+' / 1 · rövid pihenő';
+        if(profile.remaining===0)sourceReason='A Misty Escape használata elfogyott.';
+    }else if(choice==='entropic-ward'&&className==='Warlock'&&level>=6&&context.subclass.includes('great old one')){
+        profile.label='Entropic Ward';profile.known=true;
+        profile.maximum=1;profile.remaining=whole(document.getElementById('classFeature_entropicWard')?.value);
+        profile.period='short';profile.periodLabel='Rövid pihenőnként';profile.resetLabel='Rövid vagy hosszú pihenő után';profile.resourceText='Használat: '+profile.remaining+' / 1 · rövid pihenő';
+        if(profile.remaining===0)sourceReason='Az Entropic Ward használata elfogyott.';
     }else if(choice==='giant-killer'&&className==='Ranger'&&level>=3&&context.subclass.includes('hunter')&&context.hunterPrey==='Giant Killer'){
         profile.label='Giant Killer';profile.known=true;
     }else if(choice==='hellish-rebuke'&&race==='Tiefling'&&level>=3){
@@ -5700,7 +5749,7 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
     if(!profile.known)return profile;
     if(!String(choice).startsWith('spell:')){
         sourceAvailable=!sourceReason;
-        if(choice!=='hellish-rebuke'){
+        if(!['hellish-rebuke','misty-escape','entropic-ward'].includes(choice)){
             profile.remaining=reactionLeft;profile.maximum=1;
             profile.resourceText='Nincs külön használati korlát. '+sharedText;
         }
@@ -5728,6 +5777,8 @@ function combatReactionProfiles(){
     if(context.klass==='Monk'&&context.level>=17&&context.subclass.includes('way of shadow'))choices.push('opportunist');
     if(['Fighter','Paladin'].includes(context.klass)&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Protection'))choices.push('protection-style');
     if(context.klass==='Paladin'&&context.level>=15&&context.subclass.includes('vengeance'))choices.push('soul-vengeance');
+    if(context.klass==='Warlock'&&context.level>=6&&context.subclass.includes('archfey'))choices.push('misty-escape');
+    if(context.klass==='Warlock'&&context.level>=6&&context.subclass.includes('great old one'))choices.push('entropic-ward');
     if(context.klass==='Ranger'&&context.level>=15&&context.subclass.includes('hunter'))choices.push('hunter-defense');
     if(race==='Tiefling'&&context.level>=3)choices.push('hellish-rebuke');
     rows.forEach(row=>{
@@ -6733,9 +6784,41 @@ const classFeatureModels={
         {type:'output',key:'sorcerousRestoration',label:'Sorcerous Restoration',minLevel:20,wide:true,value:()=> 'Rövid pihenő befejezésekor 4 elhasznált Varázserő-pontot visszakapsz.'},
         {type:'textarea',key:'metamagicNotes',label:'Metamagic és eredet – egyéb jegyzetek',wide:true}
     ]},
-    Warlock:{note:'A paktummágia varázsrekeszei a fenti varázslás panelen vannak, rövid pihenőnél automatikusan visszatöltődnek.',fields:[
-        {type:'select',key:'pactBoon',label:'Paktum ajándéka',options:['Pact of the Chain','Pact of the Blade','Pact of the Tome'],minLevel:3},
+    Warlock:{note:'PHB 2014: a Paktummágia összes rekesze azonos szintű, és rövid vagy hosszú pihenőn visszatöltődik. A patrónus- és invokációs erőforrásokat a Combat mód is követi.',fields:[
+        {type:'output',key:'pactMagicRules',label:'Pact Magic',wide:true,value:c=>{const slots=characterSpellSlotMaximums(),slotLevel=highestSpellSlotLevel(slots);return 'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'. '+slots[slotLevel-1]+' darab '+slotLevel+'. szintű paktumrekesz; rövid vagy hosszú pihenőn mind visszatöltődik.';}},
+        {type:'output',key:'knownMagic',label:'Ismert varázslatok és invokációk',wide:true,value:c=>{const spells=[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15][c.level-1],inv=c.level<2?0:c.level<5?2:c.level<7?3:c.level<9?4:c.level<12?5:c.level<15?6:c.level<18?7:8;return spells+' ismert, 1–5. szintű varázslat; '+inv+' ismert Eldritch Invocation.';}},
         {type:'textarea',key:'eldritchInvocations',label:'Eldritch invokációk',wide:true,minLevel:2},
+        {type:'toggle',key:'agonizingBlast',label:'Agonizing Blast kiválasztva',minLevel:2},
+        {type:'toggle',key:'repellingBlast',label:'Repelling Blast kiválasztva',minLevel:2},
+        {type:'toggle',key:'thirstingBlade',label:'Thirsting Blade kiválasztva',minLevel:5},
+        {type:'toggle',key:'lifedrinker',label:'Lifedrinker kiválasztva',minLevel:12},
+        {type:'output',key:'invocationCombatRules',label:'Harci invokációk',wide:true,minLevel:2,value:c=>'Agonizing Blast: Eldritch Blast találatonként '+(c.chaMod>=0?'+':'')+c.chaMod+' sebzés. Repelling Blast: találatonként 10 ft lökés. Thirsting Blade: a paktumfegyverrel két támadás. Lifedrinker: paktumfegyveres találatkor '+(c.chaMod>=0?'+':'')+c.chaMod+' necrotic sebzés.'},
+        {type:'select',key:'pactBoon',label:'Paktum ajándéka',options:['Pact of the Chain','Pact of the Blade','Pact of the Tome'],minLevel:3},
+        {type:'output',key:'pactBoonRules',label:'Pact Boon',wide:true,minLevel:3,value:()=>({
+            'Pact of the Chain':'Find Familiar rituáléként, plusz imp, pseudodragon, quasit vagy sprite forma. Az Attack akció egyik támadása átadható a familiar reakciótámadására.',
+            'Pact of the Blade':'Akcióval paktumfegyver hozható létre; jártas vagy vele, és mágikusnak számít a nem mágikus ellenállások ellen.',
+            'Pact of the Tome':'Book of Shadows: három, tetszőleges kasztlistáról választott trükk; nálad warlock varázslatnak számítanak.'
+        }[document.getElementById('classFeature_pactBoon')?.value]||'Válassz paktumajándékot.')},
+        {type:'counter',key:'feyPresence',label:'Archfey – Fey Presence',max:()=>1,rest:'both',when:c=>c.subclass.includes('archfey')},
+        {type:'output',key:'feyPresenceRules',label:'Fey Presence',wide:true,when:c=>c.subclass.includes('archfey'),value:c=>'Akcióval a 10 ft-os kockában lévő lények WIS mentőt dobnak (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél a következő köröd végéig elbájoltak vagy megijedtek.'},
+        {type:'counter',key:'mistyEscape',label:'Archfey – Misty Escape',max:()=>1,rest:'both',minLevel:6,when:c=>c.subclass.includes('archfey')},
+        {type:'output',key:'mistyEscapeRules',label:'Misty Escape',wide:true,minLevel:6,when:c=>c.subclass.includes('archfey'),value:()=> 'Sebzés után reakcióval láthatatlanná válsz és legfeljebb 60 ft-ot teleportálsz; a láthatatlanság a következő köröd kezdetéig vagy támadás/varázslás használatáig tart.'},
+        {type:'output',key:'beguilingDefenses',label:'Beguiling Defenses',wide:true,minLevel:10,when:c=>c.subclass.includes('archfey'),value:c=>'Nem bájolhatnak el. Ha egy lény megpróbálja, reakció nélkül WIS mentőt dob (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél 1 percre vagy sebzésig ő lesz általad elbájolva.'},
+        {type:'counter',key:'darkDelirium',label:'Archfey – Dark Delirium',max:()=>1,rest:'both',minLevel:14,when:c=>c.subclass.includes('archfey')},
+        {type:'output',key:'darkDeliriumRules',label:'Dark Delirium',wide:true,minLevel:14,when:c=>c.subclass.includes('archfey'),value:c=>'Akcióval egy 60 ft-on belüli lény WIS mentőt dob (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél koncentrációval legfeljebb 1 percig elbájolt vagy megijedt, illuzórikus ködben.'},
+        {type:'output',key:'darkOnesBlessing',label:'Fiend – Dark One’s Blessing',wide:true,when:c=>c.subclass.includes('fiend'),value:c=>'Ha egy ellenséget 0 HP-ra csökkentesz, '+Math.max(1,c.level+c.chaMod)+' ideiglenes HP-t kapsz. A Combat esemény automatikusan beírja.'},
+        {type:'counter',key:'darkOnesLuck',label:'Fiend – Dark One’s Own Luck',max:()=>1,rest:'both',minLevel:6,when:c=>c.subclass.includes('fiend')},
+        {type:'output',key:'darkOnesLuckRules',label:'Dark One’s Own Luck',wide:true,minLevel:6,when:c=>c.subclass.includes('fiend'),value:()=> 'Tulajdonságpróba vagy mentődobás eredményének látása után, a hatás előtt +1d10 adható a dobáshoz.'},
+        {type:'select',key:'fiendishResilience',label:'Fiendish Resilience – választott sebzéstípus',minLevel:10,when:c=>c.subclass.includes('fiend'),options:['Acid','Cold','Fire','Force','Lightning','Necrotic','Poison','Psychic','Radiant','Thunder']},
+        {type:'output',key:'fiendishResilienceRules',label:'Fiendish Resilience',wide:true,minLevel:10,when:c=>c.subclass.includes('fiend'),value:()=> 'Rövid vagy hosszú pihenő végén választható; a mágikus és ezüst fegyverek sebzése megkerüli ezt az ellenállást.'},
+        {type:'counter',key:'hurlThroughHell',label:'Fiend – Hurl Through Hell',max:()=>1,rest:'long',minLevel:14,when:c=>c.subclass.includes('fiend')},
+        {type:'output',key:'hurlThroughHellRules',label:'Hurl Through Hell',wide:true,minLevel:14,when:c=>c.subclass.includes('fiend'),value:()=> 'Támadási találatkor a célpont eltűnik a következő köröd végéig; visszatérve 10d10 psychic sebzést szenved, ha nem alvilági.'},
+        {type:'output',key:'awakenedMind',label:'Great Old One – Awakened Mind',wide:true,when:c=>c.subclass.includes('great old one'),value:()=> 'Telepatikusan szólhatsz egy 30 ft-on belüli, legalább egy nyelvet értő lényhez; közös nyelv nem szükséges.'},
+        {type:'counter',key:'entropicWard',label:'Great Old One – Entropic Ward',max:()=>1,rest:'both',minLevel:6,when:c=>c.subclass.includes('great old one')},
+        {type:'output',key:'entropicWardRules',label:'Entropic Ward',wide:true,minLevel:6,when:c=>c.subclass.includes('great old one'),value:()=> 'Reakcióval hátrányt adsz egy ellened dobott támadásra. Ha elhibáz, a következő köröd végéig előnyöd van az első ellene végzett támadásodra.'},
+        {type:'output',key:'thoughtShield',label:'Thought Shield',wide:true,minLevel:10,when:c=>c.subclass.includes('great old one'),value:()=> 'Beleegyezésed nélkül nem olvashatják a gondolataidat; ellenállsz a psychic sebzésnek, és ugyanannyi psychic sebzést okozol annak, aki ilyet okoz neked.'},
+        {type:'textarea',key:'createThrallTarget',label:'Create Thrall – elbájolt humanoid',wide:true,minLevel:14,when:c=>c.subclass.includes('great old one')},
+        {type:'output',key:'createThrallRules',label:'Create Thrall',wide:true,minLevel:14,when:c=>c.subclass.includes('great old one'),value:()=> 'Akcióval megérintett, incapacitated humanoid elbájolódik a Remove Curse használatáig; ugyanazon a létsíkon telepatikusan kommunikálhattok.'},
         {type:'textarea',key:'mysticArcanum6Spell',label:'Mystic Arcanum – 6. szintű varázslat',wide:true,minLevel:11},
         {type:'counter',key:'mysticArcanum6Used',label:'6. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:11},
         {type:'textarea',key:'mysticArcanum7Spell',label:'Mystic Arcanum – 7. szintű varázslat',wide:true,minLevel:13},
@@ -6743,7 +6826,9 @@ const classFeatureModels={
         {type:'textarea',key:'mysticArcanum8Spell',label:'Mystic Arcanum – 8. szintű varázslat',wide:true,minLevel:15},
         {type:'counter',key:'mysticArcanum8Used',label:'8. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:15},
         {type:'textarea',key:'mysticArcanum9Spell',label:'Mystic Arcanum – 9. szintű varázslat',wide:true,minLevel:17},
-        {type:'counter',key:'mysticArcanum9Used',label:'9. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:17}
+        {type:'counter',key:'mysticArcanum9Used',label:'9. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:17},
+        {type:'counter',key:'eldritchMaster',label:'Eldritch Master – megmaradt használatok',max:()=>1,rest:'long',minLevel:20},
+        {type:'output',key:'eldritchMasterRules',label:'Eldritch Master',wide:true,minLevel:20,value:()=> '1 percig kérleled a patrónusodat, majd minden elhasznált Pact Magic rekeszed visszatöltődik; hosszú pihenőnként egyszer.'}
     ]},
     Wizard:{note:'Az Arcane Recovery rövid pihenőkor használható egyszer; a hosszú pihenő visszaállítja. A varázslatok listája a Varázslás panelen kezelhető.',fields:[
         {type:'output',key:'arcaneRecoveryPoints',label:'Arcane Recovery keret',value:c=>`${Math.ceil(c.level/2)} varázsrekesz-szint`,minLevel:2},
@@ -7180,6 +7265,21 @@ function renderCombatTurnChoices(){
         if(level>=20&&subclass.includes('ancients')&&(Number(document.getElementById('classFeature_elderChampion')?.value)||0)>0)action.push(['elder-champion','Elder Champion']);
         if(level>=20&&subclass.includes('vengeance')&&(Number(document.getElementById('classFeature_avengingAngel')?.value)||0)>0)action.push(['avenging-angel','Avenging Angel']);
     }
+    if(klass==='Warlock'){
+        if(subclass.includes('archfey')){
+            if((Number(document.getElementById('classFeature_feyPresence')?.value)||0)>0)action.push(['fey-presence','Fey Presence – bájolás vagy ijesztés']);
+            if(level>=6&&(Number(document.getElementById('classFeature_mistyEscape')?.value)||0)>0)reaction.push(['misty-escape','Misty Escape – láthatatlanság és teleport']);
+            if(level>=14&&(Number(document.getElementById('classFeature_darkDelirium')?.value)||0)>0)action.push(['dark-delirium','Dark Delirium']);
+        }
+        if(subclass.includes('fiend')){
+            trigger.push(['dark-ones-blessing','Dark One’s Blessing – ellenség 0 HP']);
+            if(level>=6&&(Number(document.getElementById('classFeature_darkOnesLuck')?.value)||0)>0)trigger.push(['dark-ones-luck','Dark One’s Own Luck (+1d10)']);
+            if(level>=14&&(Number(document.getElementById('classFeature_hurlThroughHell')?.value)||0)>0)trigger.push(['hurl-through-hell','Hurl Through Hell – találat után']);
+        }
+        if(subclass.includes('great old one')&&level>=6&&(Number(document.getElementById('classFeature_entropicWard')?.value)||0)>0)reaction.push(['entropic-ward','Entropic Ward – hátrány a támadónak']);
+        if(level>=20&&(Number(document.getElementById('classFeature_eldritchMaster')?.value)||0)>0)action.push(['eldritch-master','Eldritch Master – 1 perces rituálé']);
+        if(level>=3&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade')action.push(['create-pact-weapon','Pact Weapon létrehozása']);
+    }
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
     if(klass==='Rogue'&&level>=3&&subclass.includes('thief'))bonus.push(['fast-hands-sleight','Fast Hands: Sleight of Hand'],['fast-hands-tools','Fast Hands: tolvajszerszám'],['fast-hands-object','Fast Hands: Use an Object']);
     if(klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))bonus.push(['versatile-trickster','Versatile Trickster – Mage Hand figyelemelvonás']);
@@ -7521,6 +7621,13 @@ function paladinStyleBonus(type){
     if(c.level<2||!document.getElementById('combatPaladinStyle')?.checked)return 0;
     return type==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Dueling'?2:0;
 }
+function warlockCombatDamageBonus(){
+    const c=classFeatureContext();if(c.klass!=='Warlock')return 0;
+    let bonus=0;
+    if(document.getElementById('combatAgonizingBlast')?.checked)bonus+=c.chaMod;
+    if(document.getElementById('combatLifedrinker')?.checked)bonus+=c.chaMod;
+    return bonus;
+}
 function updateCombatClassOptions(preserveSelection=true){
     const panel=document.getElementById('combatClassOptions');
     if(!panel)return;
@@ -7538,6 +7645,12 @@ function updateCombatClassOptions(preserveSelection=true){
     if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))options.push('<small class="combat-class-note">Versatile Trickster: ha ebben a körben bónuszakcióval kijelölted a Mage Hand mellett álló célpontot, a kör végéig előnyöd van az ellene végzett támadásokra.</small>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=2&&characterSpellSlotMaximums().some(Boolean))options.push('<label><input id="combatDivineSmite" type="checkbox"> Isteni Sújtás (közelharci fegyveres találat után; a legkisebb elérhető varázsrekesz fogyasztása)</label><label class="combat-class-suboption"><input id="combatSmiteFiendUndead" type="checkbox"> Élőholt vagy alvilági ellenfél (+1d8, legfeljebb +6d8)</label>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=11)options.push('<label><input id="combatImprovedDivineSmite" type="checkbox"> Improved Divine Smite (+1d8 radiant; minden közelharci fegyveres találat)</label>');
+    if(getCombatRollType()==='damage'&&klass==='Warlock'){
+        const spell=readCombatSpell(),eldritch=/eldritch blast/i.test(spell?.name||'');
+        if(eldritch&&document.getElementById('classFeature_agonizingBlast')?.checked)options.push(`<label><input id="combatAgonizingBlast" type="checkbox"> Agonizing Blast (${classFeatureContext().chaMod>=0?'+':''}${classFeatureContext().chaMod} sebzés ehhez a sugárhoz)</label>`);
+        if(eldritch&&document.getElementById('classFeature_repellingBlast')?.checked)options.push('<small class="combat-class-note">Repelling Blast: találatkor a célpont legfeljebb 10 ft-tal távolabb lökhető.</small>');
+        if(level>=12&&document.getElementById('classFeature_pactBoon')?.value==='Pact of the Blade'&&document.getElementById('classFeature_lifedrinker')?.checked)options.push(`<label><input id="combatLifedrinker" type="checkbox"> Lifedrinker (${classFeatureContext().chaMod>=0?'+':''}${classFeatureContext().chaMod} necrotic sebzés; paktumfegyveres találat)</label>`);
+    }
     if(getCombatRollType()==='damage'&&klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Colossus Slayer')options.push('<label><input id="combatColossusSlayer" type="checkbox"> Colossus Slayer (+1d8; sérült célpont, fordulónként egyszer)</label>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Giant Killer'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Giant Killer: ha egy legfeljebb 1,5 m-re lévő Nagy vagy nagyobb lény eltalál vagy elhibáz, reakcióból közelharci támadást indíthatsz ellene.</small>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Horde Breaker'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Horde Breaker: saját fordulónként egyszer további támadás ugyanazzal a fegyverrel egy másik, az elsőtől 1,5 m-en belüli, fegyvertávban lévő célpontra, akit ebben a fordulóban még nem támadtál meg.</small>');
@@ -7836,7 +7949,7 @@ function performCombatRoll(){
     if(flourishSelected){bardPool.value=String(Number(bardPool.value)-1);bardPool.dispatchEvent(new Event('input',{bubbles:true}));}
     const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0);
     const rageBonus=document.getElementById('combatRageDamageEligible')?.checked?barbarianRageDamageBonus():0;
-    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage');
+    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage')+warlockCombatDamageBonus();
     rangerRecordFoeSlayer();
     const offhandAdjustment=combatRulesDamageModifier();
     const total=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
@@ -7849,6 +7962,8 @@ function performCombatRoll(){
     if(rangerStyleBonus('damage'))featureNotes.push('Dueling +2');
     if(fighterStyleBonus('damage'))featureNotes.push('Dueling +2');
     if(paladinStyleBonus('damage'))featureNotes.push('Dueling +2');
+    if(document.getElementById('combatAgonizingBlast')?.checked)featureNotes.push('Agonizing Blast '+(context.chaMod>=0?'+':'')+context.chaMod);
+    if(document.getElementById('combatLifedrinker')?.checked)featureNotes.push('Lifedrinker '+(context.chaMod>=0?'+':'')+context.chaMod+' necrotic');
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
     if(stunningStrike)featureNotes.push('Stunning Strike: CON mentő DC '+(8+context.proficiency+context.wisMod)+'; 1 Ki elköltve');

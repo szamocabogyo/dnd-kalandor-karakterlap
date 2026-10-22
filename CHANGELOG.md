@@ -20,6 +20,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Way of the Open Hand, Way of Shadow és Way of the Four Elements jellemzők, Ki-költségek és Combat műveletek.
 - Paladin PHB 2014 kasztképességek, automatikus Aura of Protection, Fighting Style, Divine Smite, Lay on Hands és esküerőforrások.
 - Oath of Devotion, Oath of the Ancients és Oath of Vengeance jellemzők, Isteni Energia lehetőségek, reakciók és magasabb szintű Combat műveletek.
+- Warlock PHB 2014 Pact Magic, Pact Boon, Mystic Arcanum, Eldritch Master és követhető Eldritch Invocation képességek.
+- Archfey, Fiend és Great Old One patrónusjellemzők, pihenőalapú erőforrások, reakciók és Combat műveletek.
 
 ### Tervezett
 

@@ -14,6 +14,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - A Combat mód kezeli a Fast Hands, Uncanny Dodge, Evasion, Assassinate, Versatile Trickster, Thief’s Reflexes és Stroke of Luck használatát.
 - Cleric PHB 2014 kasztképességek, automatikus varázslási keret, Turn/Destroy Undead, Divine Intervention és mind a hét PHB domain jellemzői.
 - A Combat mód külön kezeli a domainenkénti Channel Divinity lehetőségeket, reakciókat, bónuszakciókat és használatszámlálókat.
+- Fighter PHB 2014 kasztképességek, Fighting Style, Extra Attack, Second Wind, Action Surge és Indomitable erőforrások.
+- Champion, Battle Master és Eldritch Knight jellemzők, automatikus kritikus tartomány, manőverkockák, War Magic és Fighter Combat műveletek.
 
 ### Tervezett
 

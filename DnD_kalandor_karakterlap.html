@@ -2961,7 +2961,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     </div>
     <footer id="combatGuideFooter" class="combat-guide-footer" hidden>
       <button id="combatGuideBackButton" type="button" hidden>Vissza a körhöz</button>
-      <button id="combatGuideReviewButton" class="combat-guide-next" type="button" hidden>Kör áttekintése</button>
+      <button id="combatGuideReviewButton" class="combat-guide-next" type="button" hidden>Kör befejezése</button>
       <button id="combatGuideRecordEvent" class="combat-guide-next" type="button" hidden>Esemény rögzítése</button>
       <button id="combatNextRoundButton" class="combat-guide-next" type="button" hidden disabled>Új kör</button>
     </footer>
@@ -6205,10 +6205,10 @@ function renderCombatGuide(){
     const back=document.getElementById('combatGuideBackButton');
     back.hidden=own&&stage==='choose'||reaction&&stage==='event';
     back.textContent=reaction?'Vissza a reakciókhoz':damage?(combatActiveFlowPanel==='reaction'?'Vissza a reakciókhoz':'Vissza a körhöz'):stage==='initiative'?'Tovább a körhöz':'Vissza a körhöz';
-    document.getElementById('combatGuideReviewButton').hidden=!own||stage!=='choose';
+    document.getElementById('combatGuideReviewButton').hidden=!ready;
     document.getElementById('combatGuideRecordEvent').hidden=damage||stage!=='event';
     const next=document.getElementById('combatNextRoundButton');
-    next.hidden=!own||stage!=='review';next.disabled=!ready;
+    next.hidden=true;next.disabled=!ready;
     combatRulesRender();
     renderCombatReactionPanel();
 }
@@ -6252,7 +6252,7 @@ function setupCombatGuide(){
     document.getElementById('combatGuideChooseOther').addEventListener('click',()=>chooseCombatGuideEvent('item'));
     document.querySelectorAll('[data-combat-guide-other]').forEach(button=>button.addEventListener('click',()=>chooseCombatGuideEvent(button.dataset.combatGuideOther)));
     document.getElementById('combatGuideRecordEvent').addEventListener('click',recordCombatGuideManualEvent);
-    document.getElementById('combatGuideReviewButton').addEventListener('click',showCombatGuideReview);
+    document.getElementById('combatGuideReviewButton').addEventListener('click',confirmCombatRoundEnd);
     document.getElementById('combatAttackMissButton').addEventListener('click',finishCombatGuideMiss);
     document.getElementById('combatGuideBackButton').addEventListener('click',()=>{
         const reaction=combatGuideState.panel==='reaction'||combatGuideState.panel==='damage'&&combatActiveFlowPanel==='reaction';
@@ -7461,8 +7461,13 @@ function renderCombatRoundTracker(){
         item.appendChild(details);list.appendChild(item);
     });
 }
+function confirmCombatRoundEnd(){
+    if(!hasCombatRoundInitiative()||!window.confirm('Befejeztem a körömet'))return;
+    advanceCombatRound();
+}
 function advanceCombatRound(){
-    if(!hasCombatRoundInitiative()||combatGuideState.panel!=='attack'||combatGuideState.stage!=='review')return;
+    if(!hasCombatRoundInitiative())return;
+    settlePendingCombatAttack(false);
     const round=currentCombatRound();
     const checked=combatTurnEventFields.filter(({id})=>document.getElementById(id)?.checked);
     const events=checked.map(({choice,label})=>{const selected=document.getElementById(choice)?.selectedOptions[0];return selected?.value?label+': '+selected.textContent:label;});

@@ -25,6 +25,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Wizard PHB 2014 varázskönyv, Arcane Recovery, Spell Mastery, Signature Spells és előkészítési összegzés.
 - Mind a nyolc Arcane Tradition jellemzői, követhető erőforrásai, Combat műveletei, reakciói és Evocation sebzésmódosítója.
 - Mobilnézetben balra igazított karakter-, kaszt- és alosztálycímkék, valamint ikonok a Tulajdonságok és Harci értékek címsorában.
+- A Combat kör bármely szakaszban, külön áttekintés nélkül lezárható a „Befejeztem a körömet” megerősítés után.
 
 ### Tervezett
 

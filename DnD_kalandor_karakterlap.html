@@ -3968,7 +3968,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
     // event log together only after all roll inputs have passed validation.
     const VERSION = 1;
     const ATTACK_BONUSES = new Set(['martial-arts', 'flurry', 'frenzy', 'war-priest', 'two-weapon', 'war-magic', 'improved-war-magic', 'battle-magic', 'animal-triggered-attack']);
-    const ATTACK_REACTIONS = new Set(['opportunity', 'readied', 'giant-killer', 'opportunist']);
+    const ATTACK_REACTIONS = new Set(['opportunity', 'readied', 'giant-killer', 'opportunist', 'soul-vengeance']);
     const ACTIONS = new Set(['dash', 'disengage', 'dodge', 'help', 'hide', 'ready', 'search', 'use-object']);
     const RESOURCE_EVENTS = {
         rage: { category: 'bonus', resource: 'rageUses', klass: 'Barbarian', level: 1 },
@@ -3998,6 +3998,17 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'wholeness-body': { category: 'action', resource: 'wholenessBody', klass: 'Monk', level: 6, subclass: 'open hand' },
         'lay-on-hands': { category: 'action', resource: 'layOnHands', klass: 'Paladin', level: 1, amount: true },
         'divine-sense': { category: 'action', resource: 'divineSense', klass: 'Paladin', level: 1 },
+        'sacred-weapon': { category: 'action', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'devotion' },
+        'turn-unholy': { category: 'action', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'devotion' },
+        'natures-wrath': { category: 'action', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'ancients' },
+        'turn-faithless': { category: 'action', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'ancients' },
+        'abjure-enemy': { category: 'action', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'vengeance' },
+        'vow-enmity': { category: 'bonus', resource: 'paladinChannelDivinity', klass: 'Paladin', level: 3, subclass: 'vengeance' },
+        'cleansing-touch': { category: 'action', resource: 'cleansingTouch', klass: 'Paladin', level: 14 },
+        'undying-sentinel': { category: 'trigger', resource: 'undyingSentinel', klass: 'Paladin', level: 15, subclass: 'ancients', trigger: true },
+        'holy-nimbus': { category: 'action', resource: 'holyNimbus', klass: 'Paladin', level: 20, subclass: 'devotion' },
+        'elder-champion': { category: 'action', resource: 'elderChampion', klass: 'Paladin', level: 20, subclass: 'ancients' },
+        'avenging-angel': { category: 'action', resource: 'avengingAngel', klass: 'Paladin', level: 20, subclass: 'vengeance' },
         'dragon-breath': { category: 'action', resource: 'dragonBreath' },
         'hellish-rebuke': { category: 'reaction', resource: 'hellishRebuke', trigger: true },
         'relentless-endurance': { category: 'trigger', resource: 'relentlessEndurance', trigger: true }
@@ -4423,6 +4434,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                         if (normalized(context.hunterPrey) !== 'giant killer' && context.allowReaction?.['giant-killer'] !== true) fail('A karakter nem választotta a Giant Killer képességet.');
                     }
                     if(choice==='opportunist')requireClass('Monk',17,'way of shadow');
+                    if(choice==='soul-vengeance')requireClass('Paladin',15,'vengeance');
                     spend('reaction');
                     if (choice === 'readied') state.flags.ready = false;
                     takePool(addPool('reaction', choice, 1));
@@ -4595,9 +4607,13 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     return;
                 }
                 if(choice==='protection-style'){
-                    requireClass('Fighter',1);
+                    if(!['Fighter','Paladin'].includes(context.klass))fail('Ehhez Fighter vagy Paladin kaszt szükséges.');
+                    if(context.klass==='Paladin'&&context.level<2)fail('A paladin Fighting Style 2. szinttől érhető el.');
                     if(category!=='reaction'||![document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Protection'))fail('Ehhez a Protection Fighting Style szükséges.');
                     spend('reaction');return;
+                }
+                if(choice==='relentless-avenger'){
+                    requireClass('Paladin',7,'vengeance');if(category!=='trigger')fail('A Relentless Avenger sikeres lehetőségi támadás után használható.');return;
                 }
                 if(choice==='weapon-bond-summon'){
                     requireClass('Fighter',3,'eldritch knight');
@@ -5091,7 +5107,7 @@ function combatRulesFilterDamageOptions(){
     });
 }
 
-function combatRulesEventKind(choice,category){return choice.startsWith('spell:')?'spell':['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','opportunist','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon'].includes(choice)?'attack':category==='movement'?'movement':'event';}
+function combatRulesEventKind(choice,category){return choice.startsWith('spell:')?'spell':['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','opportunist','soul-vengeance','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon'].includes(choice)?'attack':category==='movement'?'movement':'event';}
 
 function combatRulesRecordEvent(){
     if(combatGuideState.stage!=='event'||(!hasCombatRoundInitiative()&&combatGuideState.category!=='reaction'))return;
@@ -5172,6 +5188,27 @@ function combatRulesRecordEvent(){
     if(option.value==='countercharm')detail='A következő saját köröd végéig a 30 ft-on belüli, téged halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra. '+detail;
     if(option.value==='indomitable')detail='Indomitable: a sikertelen mentődobást újradobod, és az új eredményt kell használnod. '+detail;
     if(option.value==='protection-style')detail='Protection: pajzs használata mellett hátrányt adsz az 5 ft-on belüli másik célpontot támadó, látott lény támadásdobására. '+detail;
+    if(option.value==='sacred-weapon'){const active=document.getElementById('classFeature_sacredWeaponActive');if(active)active.checked=true;}
+    const paladinDetails={
+        'divine-sense':'Divine Sense: a következő köröd végéig érzékeled a 60 ft-on belüli, nem teljes fedezékben lévő égi, alvilági és élőholt lényeket, valamint a megszentelt vagy megszentségtelenített helyeket.',
+        'sacred-weapon':'Sacred Weapon: 1 percre Karizma módosítót (minimum +1) adsz a kiválasztott fegyver támadásdobásaihoz; a fegyver mágikus és fényt áraszt.',
+        'turn-unholy':'Turn the Unholy: a 30 ft-on belüli alvilági és élőholt lények WIS mentőt dobnak; sikertelenségnél 1 percig vagy sebzésig elfordítottak.',
+        'natures-wrath':'Nature’s Wrath: egy 10 ft-on belüli lényt növényi indák fognak le, ha elvéti a választott STR vagy DEX mentőt; körönként ismételhet.',
+        'turn-faithless':'Turn the Faithless: a 30 ft-on belüli alvilági és tündérlények WIS mentőt dobnak; sikertelenségnél 1 percig vagy sebzésig elfordítottak.',
+        'abjure-enemy':'Abjure Enemy: egy 60 ft-on belüli célpont WIS mentőt dob; sikertelenségnél megijed és a sebessége 0, sikerrel a sebessége feleződik.',
+        'vow-enmity':'Vow of Enmity: 1 percig vagy a célpont 0 HP-jáig/ájulásáig előnyöd van a 10 ft-on belül kijelölt lény elleni támadásokra.',
+        'cleansing-touch':'Cleansing Touch: érintéssel megszüntetsz egy varázslatot magadon vagy egy beleegyező lényen.',
+        'relentless-avenger':'Relentless Avenger: sikeres lehetőségi támadás után a sebességed feléig mozoghatsz további lehetőségi támadás kiváltása nélkül.',
+        'soul-vengeance':'Soul of Vengeance: a Vow of Enmity célpontjának támadására reakcióból közelharci fegyvertámadást végzel.',
+        'holy-nimbus':'Holy Nimbus: 1 percre 30 ft-os fényt árasztasz; az ellenségek a körük kezdetén 10 radiant sebzést szenvednek.',
+        'elder-champion':'Elder Champion: 1 percre körönként 10 HP-t gyógyulsz, az 1 akciós paladinvarázslatok bónuszakciók, és a közeli ellenségek hátránnyal mentenek a paladinképességeid ellen.',
+        'avenging-angel':'Avenging Angel: 1 órára 60 ft repülési sebességet és 30 ft-os félelmetes aurát kapsz.'
+    };
+    if(paladinDetails[option.value])detail=paladinDetails[option.value]+' '+detail;
+    if(option.value==='undying-sentinel'){
+        document.getElementById('currentHp').value='1';
+        detail='Undying Sentinel: 0 HP helyett 1 HP-n maradsz. '+detail;
+    }
     if(option.value==='weapon-bond-summon')detail='Weapon Bond: az egyik kötött fegyver ugyanazon a létsíkon bónuszakcióval a kezedbe kerül. '+detail;
     const monkDetails={
         'slow-fall':'Slow Fall: az esési sebzés a monk szint ötszörösével csökken.',
@@ -5595,6 +5632,10 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         profile.label='Slow Fall';profile.known=true;
     }else if(choice==='opportunist'&&className==='Monk'&&level>=17&&context.subclass.includes('way of shadow')){
         profile.label='Opportunist';profile.known=true;
+    }else if(choice==='protection-style'&&['Fighter','Paladin'].includes(className)&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Protection')){
+        profile.label='Protection Fighting Style';profile.known=true;
+    }else if(choice==='soul-vengeance'&&className==='Paladin'&&level>=15&&context.subclass.includes('vengeance')){
+        profile.label='Soul of Vengeance';profile.known=true;
     }else if(choice==='giant-killer'&&className==='Ranger'&&level>=3&&context.subclass.includes('hunter')&&context.hunterPrey==='Giant Killer'){
         profile.label='Giant Killer';profile.known=true;
     }else if(choice==='hellish-rebuke'&&race==='Tiefling'&&level>=3){
@@ -5685,6 +5726,8 @@ function combatReactionProfiles(){
     if(context.klass==='Monk'&&context.level>=3)choices.push('deflect-missiles');
     if(context.klass==='Monk'&&context.level>=4)choices.push('slow-fall');
     if(context.klass==='Monk'&&context.level>=17&&context.subclass.includes('way of shadow'))choices.push('opportunist');
+    if(['Fighter','Paladin'].includes(context.klass)&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Protection'))choices.push('protection-style');
+    if(context.klass==='Paladin'&&context.level>=15&&context.subclass.includes('vengeance'))choices.push('soul-vengeance');
     if(context.klass==='Ranger'&&context.level>=15&&context.subclass.includes('hunter'))choices.push('hunter-defense');
     if(race==='Tiefling'&&context.level>=3)choices.push('hellish-rebuke');
     rows.forEach(row=>{
@@ -6570,10 +6613,43 @@ const classFeatureModels={
         {type:'textarea',key:'elementalDisciplines',label:'Four Elements – ismert elemi diszciplínák',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements')},
         {type:'output',key:'elementalDisciplinesRules',label:'Disciple of the Elements',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements'),value:()=> 'Elemental Attunement és a szint alapján választott diszciplínák; a varázslatkatalógus a kiválasztott diszciplínák Ki-költségét automatikusan kezeli.'}
     ]},
-    Paladin:{note:'A Lay on Hands és Divine Sense hosszú pihenőre töltődik vissza; az eskü Isteni Energiája rövid vagy hosszú pihenőre.',fields:[
-        {type:'counter',key:'layOnHands',label:'Lay on Hands gyógyító tartalék',max:c=>c.level*5,rest:'long'},
-        {type:'counter',key:'divineSense',label:'Divine Sense használata',max:c=>Math.max(1,1+c.chaMod),rest:'long'},
-        {type:'counter',key:'paladinChannelDivinity',label:'Eskü: Isteni Energia',max:()=>1,rest:'both',minLevel:3}
+    Paladin:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Lay on Hands, Divine Sense és a magasabb szintű képességek hosszú pihenőre; az eskü Isteni Energiája rövid vagy hosszú pihenőre töltődik vissza.',fields:[
+        {type:'counter',key:'layOnHands',label:'Lay on Hands – gyógyító tartalék',max:c=>c.level*5,rest:'long'},
+        {type:'output',key:'layOnHandsRules',label:'Lay on Hands',wide:true,value:c=>'Akcióval érintéssel legfeljebb '+(c.level*5)+' HP osztható ki. 5 ponttal egy betegség vagy méreg semlegesíthető; élőholtra és szerkezetre nem hat.'},
+        {type:'counter',key:'divineSense',label:'Divine Sense – megmaradt használatok',max:c=>Math.max(1,1+c.chaMod),rest:'long'},
+        {type:'output',key:'divineSenseRules',label:'Divine Sense',wide:true,value:()=> 'Akcióval a következő köröd végéig érzékeled a 60 ft-on belüli, nem teljes fedezékben lévő égi, alvilági és élőholt lények helyét és típusát, valamint a megszentelt vagy megszentségtelenített helyeket.'},
+        {type:'select',key:'fightingStyle',label:'Fighting Style',minLevel:2,options:['Defense','Dueling','Great Weapon Fighting','Protection']},
+        {type:'output',key:'fightingStyleRules',label:'Harci stílus',minLevel:2,wide:true,value:()=> 'Defense: páncélban +1 AC. Dueling: egykezes közelharci fegyverrel, más fegyver nélkül +2 sebzés. Great Weapon Fighting: kétkezes/versatile fegyver sebzéskockáján az 1 és 2 egyszer újradobható. Protection: pajzzsal reakcióból hátrány egy közeli szövetségest támadó lénynek.'},
+        {type:'output',key:'paladinSpellcasting',label:'Varázslás',minLevel:2,wide:true,value:c=>'Karizma alapú előkészített varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'. Előkészíthető paladinvarázslatok: '+Math.max(1,Math.floor(c.level/2)+c.chaMod)+'; az esküvarázslatok ezen felül mindig előkészítettek.'},
+        {type:'output',key:'divineSmiteRules',label:'Divine Smite',minLevel:2,wide:true,value:()=> 'Közelharci fegyveres találat után varázsrekeszt költhetsz: 1. szinten +2d8 radiant, rekeszszintenként további +1d8, legfeljebb 5d8; élőholt vagy alvilági ellen +1d8, legfeljebb 6d8.'},
+        {type:'counter',key:'paladinChannelDivinity',label:'Eskü: Isteni Energia',max:()=>1,rest:'both',minLevel:3},
+        {type:'output',key:'divineHealth',label:'Divine Health',minLevel:3,wide:true,value:()=> 'Immunis vagy a betegségekre.'},
+        {type:'output',key:'extraAttack',label:'Extra Attack',minLevel:5,wide:true,value:()=> 'Támadás akcióként két támadást hajthatsz végre.'},
+        {type:'output',key:'auraProtection',label:'Aura of Protection',minLevel:6,wide:true,value:c=>'Amíg tudatodnál vagy, te és a '+(c.level>=18?'30':'10')+' ft-on belüli baráti lények '+(Math.max(1,c.chaMod)>=0?'+':'')+Math.max(1,c.chaMod)+' bónuszt kaptok minden mentődobásra. A saját mentődobásaidba a karakterlap automatikusan beleszámolja.'},
+        {type:'output',key:'auraCourage',label:'Aura of Courage',minLevel:10,wide:true,value:c=>'Amíg tudatodnál vagy, te és a '+(c.level>=18?'30':'10')+' ft-on belüli baráti lények nem lehettek megijedve.'},
+        {type:'output',key:'improvedDivineSmite',label:'Improved Divine Smite',minLevel:11,wide:true,value:()=> 'Minden közelharci fegyveres találat további 1d8 radiant sebzést okoz. A Combat sebzésdobásnál jelölhető.'},
+        {type:'counter',key:'cleansingTouch',label:'Cleansing Touch – megmaradt használatok',max:c=>Math.max(1,c.chaMod),rest:'long',minLevel:14},
+        {type:'output',key:'cleansingTouchRules',label:'Cleansing Touch',minLevel:14,wide:true,value:()=> 'Akcióval érintéssel megszüntetsz egy varázslatot magadon vagy egy beleegyező lényen.'},
+        {type:'output',key:'devotionSacredWeapon',label:'Devotion – Sacred Weapon',minLevel:3,wide:true,when:c=>c.subclass.includes('devotion'),value:c=>'Isteni Energia és akció: 1 percig a kezelt fegyver támadásdobásaihoz Karizma módosító (minimum +1; jelenleg +'+Math.max(1,c.chaMod)+') jár, a fegyver mágikus és fényt áraszt.'},
+        {type:'toggle',key:'sacredWeaponActive',label:'Sacred Weapon aktív',minLevel:3,when:c=>c.subclass.includes('devotion')},
+        {type:'output',key:'devotionTurnUnholy',label:'Devotion – Turn the Unholy',minLevel:3,wide:true,when:c=>c.subclass.includes('devotion'),value:c=>'Isteni Energia és akció: a 30 ft-on belüli alvilági és élőholt lények WIS mentőt dobnak (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél 1 percig vagy sebzésig elfordítottak.'},
+        {type:'output',key:'auraDevotion',label:'Aura of Devotion',minLevel:7,wide:true,when:c=>c.subclass.includes('devotion'),value:c=>'Te és a '+(c.level>=18?'30':'10')+' ft-on belüli baráti lények nem lehettek elbájolva, amíg tudatodnál vagy.'},
+        {type:'output',key:'puritySpirit',label:'Purity of Spirit',minLevel:15,wide:true,when:c=>c.subclass.includes('devotion'),value:()=> 'Folyamatosan a Protection from Evil and Good varázslat hatása alatt állsz.'},
+        {type:'counter',key:'holyNimbus',label:'Holy Nimbus – megmaradt használatok',max:()=>1,rest:'long',minLevel:20,when:c=>c.subclass.includes('devotion')},
+        {type:'output',key:'holyNimbusRules',label:'Holy Nimbus',minLevel:20,wide:true,when:c=>c.subclass.includes('devotion'),value:()=> 'Akcióval 1 percre 30 ft fény: az ellenség a körét benne kezdve 10 radiant sebzést szenved; előnyöd van az alvilágiak és élőholtak varázslatai elleni mentőkre.'},
+        {type:'output',key:'ancientsNaturesWrath',label:'Ancients – Nature’s Wrath',minLevel:3,wide:true,when:c=>c.subclass.includes('ancients'),value:c=>'Isteni Energia és akció: egy 10 ft-on belüli lény STR vagy DEX mentőt dob (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél növényi indák restrained állapotba fogják, körönként új mentővel.'},
+        {type:'output',key:'ancientsTurnFaithless',label:'Ancients – Turn the Faithless',minLevel:3,wide:true,when:c=>c.subclass.includes('ancients'),value:c=>'Isteni Energia és akció: a 30 ft-on belüli alvilági és tündérlények WIS mentőt dobnak (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél 1 percig vagy sebzésig elfordítottak.'},
+        {type:'output',key:'auraWarding',label:'Aura of Warding',minLevel:7,wide:true,when:c=>c.subclass.includes('ancients'),value:c=>'Te és a '+(c.level>=18?'30':'10')+' ft-on belüli baráti lények ellenállók a varázslatok által okozott sebzéssel szemben.'},
+        {type:'counter',key:'undyingSentinel',label:'Undying Sentinel – megmaradt használatok',max:()=>1,rest:'long',minLevel:15,when:c=>c.subclass.includes('ancients')},
+        {type:'output',key:'undyingSentinelRules',label:'Undying Sentinel',minLevel:15,wide:true,when:c=>c.subclass.includes('ancients'),value:()=> 'Ha 0 HP-ra kerülsz, de nem halsz meg azonnal, 1 HP-ra kerülhetsz helyette; hosszú pihenőnként egyszer.'},
+        {type:'counter',key:'elderChampion',label:'Elder Champion – megmaradt használatok',max:()=>1,rest:'long',minLevel:20,when:c=>c.subclass.includes('ancients')},
+        {type:'output',key:'elderChampionRules',label:'Elder Champion',minLevel:20,wide:true,when:c=>c.subclass.includes('ancients'),value:()=> 'Akcióval 1 percre: kör elején 10 HP gyógyulás; az 1 akciós paladinvarázslatok bónuszakciók; a 10 ft-on belüli ellenségek hátránnyal mentenek a paladinvarázslataid és Isteni Energiád ellen.'},
+        {type:'output',key:'vengeanceAbjure',label:'Vengeance – Abjure Enemy',minLevel:3,wide:true,when:c=>c.subclass.includes('vengeance'),value:c=>'Isteni Energia és akció: egy 60 ft-on belüli lény WIS mentőt dob (DC '+(8+c.proficiency+c.chaMod)+', alvilági/élőholt hátránnyal); sikertelenségnél megijed és a sebessége 0, sikerrel a sebessége feleződik 1 percre vagy sebzésig.'},
+        {type:'output',key:'vengeanceVow',label:'Vengeance – Vow of Enmity',minLevel:3,wide:true,when:c=>c.subclass.includes('vengeance'),value:()=> 'Isteni Energia és bónuszakció: egy 10 ft-on belüli célpont ellen 1 percig vagy annak 0 HP-jáig/ájulásáig előnyöd van minden támadásra.'},
+        {type:'output',key:'relentlessAvenger',label:'Relentless Avenger',minLevel:7,wide:true,when:c=>c.subclass.includes('vengeance'),value:()=> 'Lehetőségi támadás találata után ugyanazon reakció részeként a sebességed feléig mozoghatsz anélkül, hogy lehetőségi támadást váltanál ki.'},
+        {type:'output',key:'soulVengeance',label:'Soul of Vengeance',minLevel:15,wide:true,when:c=>c.subclass.includes('vengeance'),value:()=> 'Amikor a Vow of Enmity célpontja támad, reakcióval egy közelharci fegyvertámadást hajthatsz végre ellene, ha hatótávban van.'},
+        {type:'counter',key:'avengingAngel',label:'Avenging Angel – megmaradt használatok',max:()=>1,rest:'long',minLevel:20,when:c=>c.subclass.includes('vengeance')},
+        {type:'output',key:'avengingAngelRules',label:'Avenging Angel',minLevel:20,wide:true,when:c=>c.subclass.includes('vengeance'),value:c=>'Akcióval 1 órára 60 ft repülés és 30 ft félelmetes aura (WIS mentő DC '+(8+c.proficiency+c.chaMod)+'); hosszú pihenőnként egyszer.'}
     ]},
     Ranger:{
     note:'Ranger kasztjellemzők és támadások: 2024. A varázslatkatalógus továbbra is a 2014-es listát használja; egyéni varázslatok felvihetők. A kézzel követett képességek használatát és választásait itt is módosíthatod.',
@@ -7088,6 +7164,22 @@ function renderCombatTurnChoices(){
     if(klass==='Monk'&&subclass.includes('way of shadow')&&level>=17)reaction.push(['opportunist','Opportunist – reakciótámadás']);
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_layOnHands')?.value)||0)>0)action.push(['lay-on-hands','Lay on Hands']);
     if(klass==='Paladin'&&(Number(document.getElementById('classFeature_divineSense')?.value)||0)>0)action.push(['divine-sense','Divine Sense']);
+    if(klass==='Paladin'){
+        const channel=Number(document.getElementById('classFeature_paladinChannelDivinity')?.value)||0;
+        if(level>=3&&channel>0){
+            if(subclass.includes('devotion'))action.push(['sacred-weapon','Isteni Energia: Sacred Weapon'],['turn-unholy','Isteni Energia: Turn the Unholy']);
+            if(subclass.includes('ancients'))action.push(['natures-wrath','Isteni Energia: Nature’s Wrath'],['turn-faithless','Isteni Energia: Turn the Faithless']);
+            if(subclass.includes('vengeance')){action.push(['abjure-enemy','Isteni Energia: Abjure Enemy']);bonus.push(['vow-enmity','Isteni Energia: Vow of Enmity']);}
+        }
+        if(level>=2&&document.getElementById('classFeature_fightingStyle')?.value==='Protection')reaction.push(['protection-style','Protection – hátrány a támadónak']);
+        if(level>=14&&(Number(document.getElementById('classFeature_cleansingTouch')?.value)||0)>0)action.push(['cleansing-touch','Cleansing Touch – varázslat megszüntetése']);
+        if(level>=15&&subclass.includes('ancients')&&(Number(document.getElementById('classFeature_undyingSentinel')?.value)||0)>0)trigger.push(['undying-sentinel','Undying Sentinel – 0 HP helyett 1 HP']);
+        if(level>=7&&subclass.includes('vengeance'))trigger.push(['relentless-avenger','Relentless Avenger – mozgás lehetőségi támadás után']);
+        if(level>=15&&subclass.includes('vengeance'))reaction.push(['soul-vengeance','Soul of Vengeance – reakciótámadás']);
+        if(level>=20&&subclass.includes('devotion')&&(Number(document.getElementById('classFeature_holyNimbus')?.value)||0)>0)action.push(['holy-nimbus','Holy Nimbus']);
+        if(level>=20&&subclass.includes('ancients')&&(Number(document.getElementById('classFeature_elderChampion')?.value)||0)>0)action.push(['elder-champion','Elder Champion']);
+        if(level>=20&&subclass.includes('vengeance')&&(Number(document.getElementById('classFeature_avengingAngel')?.value)||0)>0)action.push(['avenging-angel','Avenging Angel']);
+    }
     if(klass==='Rogue'&&level>=2)bonus.push(['cunning-dash','Cunning Action: Dash'],['cunning-disengage','Cunning Action: Disengage'],['cunning-hide','Cunning Action: Hide']);
     if(klass==='Rogue'&&level>=3&&subclass.includes('thief'))bonus.push(['fast-hands-sleight','Fast Hands: Sleight of Hand'],['fast-hands-tools','Fast Hands: tolvajszerszám'],['fast-hands-object','Fast Hands: Use an Object']);
     if(klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))bonus.push(['versatile-trickster','Versatile Trickster – Mage Hand figyelemelvonás']);
@@ -7361,6 +7453,7 @@ function selectedCombatBonusDice(){
             groups.push({key:'smite',label:'Isteni Sújtás',count,sides:8,slotLevel});
         }
     }
+    if(selected('combatImprovedDivineSmite'))groups.push({key:'improved-smite',label:'Improved Divine Smite',count:1,sides:8});
     if(selected('combatManeuverDamage'))groups.push({key:'maneuver',label:'Battle Master manőver',count:1,sides:context.level>=18?12:context.level>=10?10:8});
     if(selected('combatBladeFlourish'))groups.push({key:'flourish',label:'Blade Flourish',count:1,sides:context.level>=15?12:context.level>=10?10:context.level>=5?8:6});
     if(combatRulesIsCritical())groups.forEach(group=>group.count*=2);
@@ -7421,6 +7514,13 @@ function fighterStyleBonus(type){
     const styles=[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value];
     return type==='attack'&&styles.includes('Archery')||type==='damage'&&styles.includes('Dueling')?2:0;
 }
+function paladinStyleBonus(type){
+    const c=classFeatureContext();
+    if(c.klass!=='Paladin')return 0;
+    if(type==='attack'&&document.getElementById('combatSacredWeapon')?.checked)return Math.max(1,c.chaMod);
+    if(c.level<2||!document.getElementById('combatPaladinStyle')?.checked)return 0;
+    return type==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Dueling'?2:0;
+}
 function updateCombatClassOptions(preserveSelection=true){
     const panel=document.getElementById('combatClassOptions');
     if(!panel)return;
@@ -7430,10 +7530,14 @@ function updateCombatClassOptions(preserveSelection=true){
     if(klass==='Fighter'&&getCombatRollType()==='attack'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Archery'))options.push('<label><input id="combatFighterStyle" type="checkbox"> Archery Fighting Style (+2 támadás; távolsági fegyvernél)</label>');
     if(klass==='Fighter'&&getCombatRollType()==='damage'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Dueling'))options.push('<label><input id="combatFighterStyle" type="checkbox"> Dueling Fighting Style (+2 sebzés; egykezes közelharci fegyvernél, másik fegyver nélkül)</label>');
     if(klass==='Fighter'&&getCombatRollType()==='damage'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Great Weapon Fighting'))options.push('<small class="combat-class-note">Great Weapon Fighting: két kézzel használt two-handed vagy versatile fegyver sebzéskockájának 1-es és 2-es eredménye egyszer újradobható; az új eredményt kell használni.</small>');
+    if(klass==='Paladin'&&level>=2&&getCombatRollType()==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Dueling')options.push('<label><input id="combatPaladinStyle" type="checkbox"> Dueling Fighting Style (+2 sebzés; egykezes közelharci fegyvernél, másik fegyver nélkül)</label>');
+    if(klass==='Paladin'&&level>=2&&getCombatRollType()==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Great Weapon Fighting')options.push('<small class="combat-class-note">Great Weapon Fighting: két kézzel használt two-handed vagy versatile fegyver sebzéskockájának 1-es és 2-es eredménye egyszer újradobható; az új eredményt kell használni.</small>');
+    if(klass==='Paladin'&&getCombatRollType()==='attack'&&document.getElementById('classFeature_sacredWeaponActive')?.checked)options.push(`<label><input id="combatSacredWeapon" type="checkbox"> Sacred Weapon (+${Math.max(1,classFeatureContext().chaMod)} támadás; a megszentelt fegyvernél)</label>`);
     if(getCombatRollType()==='damage'&&klass==='Rogue'&&level>=1)options.push(`<label><input id="combatSneakAttack" type="checkbox"> Orvtámadás (+${Math.ceil(level/2)}d6; finesse vagy távolsági fegyver, előny vagy szövetséges 1,5 m-en belül, hátrány nélkül; körönként egyszer)</label>`);
     if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=3&&subclass.includes('assassin'))options.push('<small class="combat-class-note">Assassinate: előnyöd van az olyan célpont elleni támadásra, aki még nem került sorra ebben a harcban. A meglepett célpont elleni találat kritikus találat.</small>');
     if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))options.push('<small class="combat-class-note">Versatile Trickster: ha ebben a körben bónuszakcióval kijelölted a Mage Hand mellett álló célpontot, a kör végéig előnyöd van az ellene végzett támadásokra.</small>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=2&&characterSpellSlotMaximums().some(Boolean))options.push('<label><input id="combatDivineSmite" type="checkbox"> Isteni Sújtás (közelharci fegyveres találat után; a legkisebb elérhető varázsrekesz fogyasztása)</label><label class="combat-class-suboption"><input id="combatSmiteFiendUndead" type="checkbox"> Élőholt vagy alvilági ellenfél (+1d8, legfeljebb +6d8)</label>');
+    if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=11)options.push('<label><input id="combatImprovedDivineSmite" type="checkbox"> Improved Divine Smite (+1d8 radiant; minden közelharci fegyveres találat)</label>');
     if(getCombatRollType()==='damage'&&klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Colossus Slayer')options.push('<label><input id="combatColossusSlayer" type="checkbox"> Colossus Slayer (+1d8; sérült célpont, fordulónként egyszer)</label>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Giant Killer'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Giant Killer: ha egy legfeljebb 1,5 m-re lévő Nagy vagy nagyobb lény eltalál vagy elhibáz, reakcióból közelharci támadást indíthatsz ellene.</small>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Horde Breaker'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Horde Breaker: saját fordulónként egyszer további támadás ugyanazzal a fegyverrel egy másik, az elsőtől 1,5 m-en belüli, fegyvertávban lévő célpontra, akit ebben a fordulóban még nem támadtál meg.</small>');
@@ -7671,7 +7775,7 @@ function performCombatRoll(){
         if(!combatRulesTakeRoll())return;
         if(die===1)showCombatCriticalFailure(attack.name,manualValue!==null);
         else{
-            const foeBonus=rangerFoeSlayerBonus(),styleBonus=rangerStyleBonus('attack')+fighterStyleBonus('attack');
+            const foeBonus=rangerFoeSlayerBonus(),styleBonus=rangerStyleBonus('attack')+fighterStyleBonus('attack')+paladinStyleBonus('attack');
             const bonus=(Number.parseInt(attack.bonus.replace(/\s/g,''),10)||0)+foeBonus+styleBonus;
             rangerRecordFoeSlayer();
             const context=classFeatureContext();
@@ -7732,7 +7836,7 @@ function performCombatRoll(){
     if(flourishSelected){bardPool.value=String(Number(bardPool.value)-1);bardPool.dispatchEvent(new Event('input',{bubbles:true}));}
     const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0);
     const rageBonus=document.getElementById('combatRageDamageEligible')?.checked?barbarianRageDamageBonus():0;
-    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage');
+    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage');
     rangerRecordFoeSlayer();
     const offhandAdjustment=combatRulesDamageModifier();
     const total=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
@@ -7744,6 +7848,7 @@ function performCombatRoll(){
     if(rangerFoeSlayerSelected())featureNotes.push('Foe Slayer '+rangerFoeSlayerBonus());
     if(rangerStyleBonus('damage'))featureNotes.push('Dueling +2');
     if(fighterStyleBonus('damage'))featureNotes.push('Dueling +2');
+    if(paladinStyleBonus('damage'))featureNotes.push('Dueling +2');
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
     if(stunningStrike)featureNotes.push('Stunning Strike: CON mentő DC '+(8+context.proficiency+context.wisMod)+'; 1 Ki elköltve');
@@ -8240,7 +8345,8 @@ function updateDerivedFields(){
         const saveContext=classFeatureContext();
         const proficient = document.getElementById(`saveProf${ability}`)?.checked||(ability==='WIS'&&saveContext.klass==='Rogue'&&saveContext.level>=15)||(saveContext.klass==='Monk'&&saveContext.level>=14);
         const extra = parseInt(document.getElementById(`saveExtra${ability}`)?.value, 10) || 0;
-        const result = modifierFor(ability) + (proficient ? prof : 0) + extra;
+        const paladinAura=saveContext.klass==='Paladin'&&saveContext.level>=6?Math.max(1,saveContext.chaMod):0;
+        const result = modifierFor(ability) + (proficient ? prof : 0) + extra + paladinAura;
         const output = document.getElementById(`saveValue${ability}`);
         if(output) output.value = formatModifier(result);
     });

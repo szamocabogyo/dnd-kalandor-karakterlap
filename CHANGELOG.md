@@ -18,6 +18,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Champion, Battle Master és Eldritch Knight jellemzők, automatikus kritikus tartomány, manőverkockák, War Magic és Fighter Combat műveletek.
 - Monk PHB 2014 kasztképességek, automatikus harcművészeti kocka, páncél nélküli AC, mozgásbónusz, Ki-mentő DC és Diamond Soul mentődobások.
 - Way of the Open Hand, Way of Shadow és Way of the Four Elements jellemzők, Ki-költségek és Combat műveletek.
+- Paladin PHB 2014 kasztképességek, automatikus Aura of Protection, Fighting Style, Divine Smite, Lay on Hands és esküerőforrások.
+- Oath of Devotion, Oath of the Ancients és Oath of Vengeance jellemzők, Isteni Energia lehetőségek, reakciók és magasabb szintű Combat műveletek.
 
 ### Tervezett
 

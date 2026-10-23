@@ -1542,6 +1542,54 @@ input:focus, textarea:focus, select:focus {
   .sheet:not(.mobile-mode) .abilities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
+/* Desktop alignment pass: keep every panel and control on a stable shared grid. */
+@media(min-width:769px){
+  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%;gap:10px}
+  .sheet:not(.mobile-mode)>.view-switcher>button,
+  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu,
+  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary{width:100%;min-width:0;min-height:44px}
+  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;text-align:center}
+  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>.settings-menu-panel{left:0;right:auto;transform:none;max-width:min(360px,calc(100vw - 64px))}
+  .sheet:not(.mobile-mode) .main{align-items:start;width:100%}
+  .sheet:not(.mobile-mode) .abilities,
+  .sheet:not(.mobile-mode) .center,
+  .sheet:not(.mobile-mode) .right-column{width:100%;align-self:start}
+  .sheet:not(.mobile-mode) .grid-top{align-items:end;width:100%;margin-bottom:0}
+  .sheet:not(.mobile-mode) .grid-top>*,
+  .sheet:not(.mobile-mode) .class-choice-grid>*{min-width:0}
+  .sheet:not(.mobile-mode) .grid-top label{display:flex;flex-direction:column;justify-content:flex-end;min-height:61px;margin:0;line-height:1.25}
+  .sheet:not(.mobile-mode) .grid-top input,
+  .sheet:not(.mobile-mode) .grid-top select,
+  .sheet:not(.mobile-mode) .background-picker{width:100%;min-width:0}
+  .sheet:not(.mobile-mode) .character-portrait-card{align-items:center}
+  .sheet:not(.mobile-mode) .character-portrait-card label{min-height:0}
+  .sheet:not(.mobile-mode) .combat{align-items:stretch;width:100%}
+  .sheet:not(.mobile-mode) .combat>.card{width:100%;height:100%;min-width:0;justify-content:space-between}
+  .sheet:not(.mobile-mode) .combat>.card>label{display:flex;align-items:center;justify-content:center;min-height:2.6em;margin-bottom:7px;line-height:1.2;text-align:center}
+  .sheet:not(.mobile-mode) .hp-row>*{min-width:0}
+  .sheet:not(.mobile-mode) .section-header{gap:12px}
+  .sheet:not(.mobile-mode) .section-header h3{min-width:0;overflow-wrap:anywhere}
+  .sheet:not(.mobile-mode) .extra-sheet-grid>.card{width:100%;align-self:start}
+}
+@media(min-width:769px) and (max-width:1100px){
+  .sheet:not(.mobile-mode) .grid-top{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .sheet:not(.mobile-mode) .grid-top>.class-choice-card{grid-column:span 2}
+  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterLevel),
+  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterRace){grid-column:span 1}
+  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterAlignment),
+  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterBackground){grid-column:span 2}
+  .sheet:not(.mobile-mode)[data-class] .class-fantasy-banner{grid-template-columns:92px minmax(0,1fr) 112px;gap:14px;min-height:118px;padding:13px 16px}
+  .sheet:not(.mobile-mode)[data-class] .class-crest-wrap{width:84px;height:84px}
+  .sheet:not(.mobile-mode)[data-class] .class-crest{width:54px;height:54px}
+  .sheet:not(.mobile-mode)[data-class] .class-banner-copy h2{font-size:clamp(1.2rem,3vw,1.75rem);letter-spacing:.08em}
+  .sheet:not(.mobile-mode)[data-class] .class-banner-runes{gap:5px}
+}
+@media(min-width:1000px) and (max-width:1279px){
+  .sheet:not(.mobile-mode) .right-column{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-flow:dense;gap:var(--panel-gap)}
+  .sheet:not(.mobile-mode) .right-column>.combat,
+  .sheet:not(.mobile-mode) .right-column>.card{width:100%;align-self:start}
+}
+
 /* Mobile-first sheet polish: use the available width, prevent sideways overflow,
    and keep fields readable without wasting vertical space. */
 body:has(.sheet.mobile-mode){padding:0;overflow-x:hidden}

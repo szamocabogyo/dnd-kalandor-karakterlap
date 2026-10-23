@@ -6,6 +6,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A desktop elrendezés stabilabb töréspontokat kapott: a karakteradatok nem szorulnak keskeny mezőkbe, a heraldikai fejléc arányosan zsugorodik, a felső műveleti gombok egy vonalba kerülnek, a közepes desktopméreten pedig a Harci értékek és a Skills panel kiegyensúlyozott kéthasábos sort alkot.
 - Minden választható faj saját, semleges, árnyékban maradó arcú fantasy portrét kapott a `DnD portrék` mappa aranykeretes képei alapján. A képek optimalizálva és közvetlenül a HTML-be ágyazva működnek; a feltöltött egyéni portré továbbra is elsőbbséget élvez, eltávolításakor pedig automatikusan az aktuális faj alapképe jelenik meg.
 - A Barbár sötét vérvörös, kovácsoltvas és bronz palettát, a Sorcerer pedig ametisztlila és cián kristályfényeket kapott, így mindkettő markánsan elkülönül a többi kaszttémától.
 - A mobilnézet alapértelmezett panelsorrendje most: Karakter adatok, Kasztjellemzők, Hit Points, Tulajdonságok, Skills, majd a további blokkok. A korábban kézzel mentett elrendezés továbbra is elsőbbséget élvez.

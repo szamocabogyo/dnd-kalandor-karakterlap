@@ -1579,26 +1579,25 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 
 .combat-death-save-panel .field-label{white-space:nowrap;font-size:clamp(.62rem,3.4vw,.9rem);letter-spacing:0}
 .mobile-layout-handle{display:none;position:absolute;pointer-events:auto;user-select:none;-webkit-user-select:none;z-index:2;top:7px;right:7px;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid var(--accent);border-radius:8px;background:var(--panel-bg,#3a2d20);color:var(--accent);font-size:1.15rem;line-height:1;touch-action:none;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.sheet #mobileLayoutToggle{display:none}
-.sheet.mobile-mode #mobileLayoutToggle{display:inline-flex;align-items:center;justify-content:center}
+.sheet #mobileLayoutToggle{display:inline-flex;align-items:center;justify-content:center}
 .sheet #portraitSettingsButton{display:inline-flex;align-items:center;justify-content:center}
-.sheet.mobile-mode.layout-edit-mode .mobile-layout-handle{display:inline-flex}
-.sheet.mobile-mode.layout-edit-mode .center>.combat,.sheet.mobile-mode.layout-edit-mode .center>.card,.sheet.mobile-mode.layout-edit-mode .right-column>.card,.sheet.mobile-mode.layout-edit-mode .extra-sheet-grid>.card{position:relative;padding-top:34px}
-.sheet.mobile-mode.layout-edit-mode .mobile-layout-handle:active{cursor:grabbing}
-.sheet.mobile-mode .mobile-sort-dragging{opacity:.55;outline:2px dashed var(--accent);outline-offset:2px;z-index:3}
-.sheet.mobile-mode.layout-edit-mode .abilities,.sheet.mobile-mode.layout-edit-mode .center,.sheet.mobile-mode.layout-edit-mode .right-column{position:relative;border:1px dashed rgba(200,169,106,.75);border-radius:10px;padding:38px 8px 8px;background:rgba(200,169,106,.04)}
-.sheet.mobile-mode.layout-edit-mode .abilities::before,.sheet.mobile-mode.layout-edit-mode .center::before,.sheet.mobile-mode.layout-edit-mode .right-column::before{position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
-.sheet.mobile-mode.layout-edit-mode .abilities::before{content:'ABILITY SCORES'}
-.sheet.mobile-mode.layout-edit-mode .center::before{content:'CENTER PANELS'}
-.sheet.mobile-mode.layout-edit-mode .right-column::before{content:'RIGHT PANELS'}
-.sheet.mobile-mode.layout-edit-mode .abilities>.ability{display:none!important}
-.sheet.mobile-mode.layout-edit-mode [data-mobile-sortable="true"].card:not(.inspiration-card)>:not(.section-header):not(.attacks-heading):not(h3):not(.mobile-layout-handle){display:none!important}
-.sheet.mobile-mode.layout-edit-mode .collapsible>.section-content{max-height:0!important;min-height:0!important;margin:0!important;padding:0!important;opacity:0!important;overflow:hidden!important}
-.sheet.mobile-mode.layout-edit-mode .collapsible .toggle-icon{transform:none!important}
-.sheet.mobile-mode.layout-edit-mode .attacks-heading .attacks-mark,.sheet.mobile-mode.layout-edit-mode .attacks-heading .attacks-rule{display:none!important}
-.sheet.mobile-mode.layout-edit-mode .combat{position:relative;display:block;min-height:66px;padding:36px 8px 8px;border:1px dashed rgba(200,169,106,.75);border-radius:10px;background:rgba(200,169,106,.04)}
-.sheet.mobile-mode.layout-edit-mode .combat::before{content:'COMBAT STATS';position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
-.sheet.mobile-mode.layout-edit-mode .combat>.card{display:none!important}
+.sheet.layout-edit-mode .mobile-layout-handle{display:inline-flex}
+.sheet.layout-edit-mode .center>.combat,.sheet.layout-edit-mode .center>.card,.sheet.layout-edit-mode .right-column>.card,.sheet.layout-edit-mode .extra-sheet-grid>.card{position:relative;padding-top:34px}
+.sheet.layout-edit-mode .mobile-layout-handle:active{cursor:grabbing}
+.sheet .mobile-sort-dragging{opacity:.55;outline:2px dashed var(--accent);outline-offset:2px;z-index:3}
+.sheet.layout-edit-mode .abilities,.sheet.layout-edit-mode .center,.sheet.layout-edit-mode .right-column{position:relative;border:1px dashed rgba(200,169,106,.75);border-radius:10px;padding:38px 8px 8px;background:rgba(200,169,106,.04)}
+.sheet.layout-edit-mode .abilities::before,.sheet.layout-edit-mode .center::before,.sheet.layout-edit-mode .right-column::before{position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
+.sheet.layout-edit-mode .abilities::before{content:'TULAJDONSÁGOK'}
+.sheet.layout-edit-mode .center::before{content:'KÖZÉPSŐ PANELEK'}
+.sheet.layout-edit-mode .right-column::before{content:'JOBB OLDALI PANELEK'}
+.sheet.layout-edit-mode .abilities>.ability{display:none!important}
+.sheet.layout-edit-mode [data-mobile-sortable="true"].card:not(.inspiration-card)>:not(.section-header):not(.attacks-heading):not(h3):not(.mobile-layout-handle){display:none!important}
+.sheet.layout-edit-mode .collapsible>.section-content{max-height:0!important;min-height:0!important;margin:0!important;padding:0!important;opacity:0!important;overflow:hidden!important}
+.sheet.layout-edit-mode .collapsible .toggle-icon{transform:none!important}
+.sheet.layout-edit-mode .attacks-heading .attacks-mark,.sheet.layout-edit-mode .attacks-heading .attacks-rule{display:none!important}
+.sheet.layout-edit-mode .combat{position:relative;display:block;min-height:66px;padding:36px 8px 8px;border:1px dashed rgba(200,169,106,.75);border-radius:10px;background:rgba(200,169,106,.04)}
+.sheet.layout-edit-mode .combat::before{content:'HARCI ÉRTÉKEK';position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
+.sheet.layout-edit-mode .combat>.card{display:none!important}
 .sheet.mobile-mode{display:flex;flex-direction:column;gap:12px}
 .sheet.mobile-mode .main,.sheet.mobile-mode .center,.sheet.mobile-mode .right-column,.sheet.mobile-mode .extra-sheet-grid{display:contents!important}
 .sheet.mobile-mode.layout-edit-mode .center,.sheet.mobile-mode.layout-edit-mode .right-column{border:0;padding:0;background:transparent}
@@ -2302,6 +2301,9 @@ body.parchment-theme .sheet[data-class]{--accent:color-mix(in srgb,var(--class-p
 .sheet.mobile-mode[data-class] .mobile-section-heading,.sheet.mobile-mode[data-class] .section-header,.sheet.mobile-mode[data-class] .attacks-heading,.sheet.mobile-mode[data-class] .extra-card>h3{border-color:color-mix(in srgb,var(--class-border) 64%,transparent);background:linear-gradient(110deg,color-mix(in srgb,var(--class-primary) 11%,transparent),transparent 72%)}
 .sheet.mobile-mode[data-class] .mobile-section-heading h3,.sheet.mobile-mode[data-class] .section-header h3,.sheet.mobile-mode[data-class] .attacks-heading h3,.sheet.mobile-mode[data-class] .extra-card>h3{color:var(--class-symbol);text-shadow:0 0 10px var(--class-glow)}
 .sheet.mobile-mode[data-class] .add-attack-row,.sheet.mobile-mode[data-class] .layout-editor-actions button{border-color:var(--class-border);background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary) 28%,var(--class-surface)),color-mix(in srgb,var(--class-surface) 90%,#000));color:var(--class-symbol)}
+.sheet.mobile-mode[data-class] .abilities,.sheet.mobile-mode[data-class] .combat{border-color:color-mix(in srgb,var(--class-border) 78%,#4b3929);border-radius:var(--class-radius);background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 88%,#000));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border) 16%,transparent),inset 0 0 24px rgba(0,0,0,.24),0 8px 22px rgba(0,0,0,.22)}
+.sheet.mobile-mode[data-class] .abilities::before,.sheet.mobile-mode[data-class] .combat::before{border-color:color-mix(in srgb,var(--class-border) 30%,transparent);border-radius:calc(var(--class-radius) * .65)}
+.sheet.mobile-mode[data-class] .abilities::after,.sheet.mobile-mode[data-class] .combat::after{content:"";position:absolute;inset:-1px;pointer-events:none;background:linear-gradient(135deg,var(--class-primary) 0 2px,transparent 2px) top left/12px 12px no-repeat,linear-gradient(225deg,var(--class-primary) 0 2px,transparent 2px) top right/12px 12px no-repeat,linear-gradient(45deg,var(--class-primary) 0 2px,transparent 2px) bottom left/12px 12px no-repeat,linear-gradient(315deg,var(--class-primary) 0 2px,transparent 2px) bottom right/12px 12px no-repeat;opacity:.78}
 
 body.parchment-theme .sheet[data-class] .class-fantasy-banner{background-color:#e7d4ad;background-blend-mode:multiply;color:#302315}
 body.parchment-theme .sheet[data-class] .class-banner-copy p{color:#4d3a24}
@@ -2366,9 +2368,7 @@ body.parchment-theme .sheet[data-class] .mobile-section-heading,body.parchment-t
     <details id="settingsMenu" class="settings-menu">
       <summary>⚙ Beállítások</summary>
       <div class="settings-menu-panel">
-        <button id="desktopView">🖥 Desktop</button>
-        <button id="mobileView">📱 Mobile</button>
-        <button id="mobileLayoutToggle" type="button" aria-pressed="false" title="Mobil panelek rendezése">⚙ Elrendezés</button>
+        <button id="mobileLayoutToggle" type="button" aria-pressed="false" title="Karakterlappanelek rendezése">⚙ Elrendezés</button>
         <button id="portraitSettingsButton" type="button">🖼 Portré</button>
         <button id="exportCharacter">💾 Export</button>
         <button id="importCharacter">📂 Import</button>
@@ -10015,41 +10015,16 @@ function positionCombatStatsPanel(){
     else document.querySelector('.main>.right-column')?.prepend(combatStatsPanel);
 }
 
-document
-.getElementById('mobileView')
-.addEventListener('click', () => {
-
-    frame.classList.add('mobile-preview');
-    sheet.classList.add('mobile-mode');
-    positionCombatStatsPanel();
-
-    document
-        .getElementById('mobileView')
-        .classList.add('active-view');
-
-    document
-        .getElementById('desktopView')
-        .classList.remove('active-view');
-});
-
-document
-.getElementById('desktopView')
-.addEventListener('click', () => {
-
+const responsiveSheetMedia=window.matchMedia('(max-width: 768px)');
+function syncResponsiveSheetMode(){
+    const mobile=responsiveSheetMedia.matches;
     frame.classList.remove('mobile-preview');
-    sheet.classList.remove('mobile-mode');
+    sheet.classList.toggle('mobile-mode',mobile);
     positionCombatStatsPanel();
-
-    document
-        .getElementById('desktopView')
-        .classList.add('active-view');
-
-    document
-        .getElementById('mobileView')
-        .classList.remove('active-view');
-});
-
-document.getElementById('mobileView')?.click();
+    if(!mobile)sheet.querySelectorAll('.mobile-section-collapsed').forEach(panel=>panel.classList.remove('mobile-section-collapsed'));
+}
+responsiveSheetMedia.addEventListener?.('change',syncResponsiveSheetMode);
+syncResponsiveSheetMode();
 
 document
 .getElementById('exportCharacter')
@@ -10269,7 +10244,7 @@ if(
 updateThemeButton();
 
 
-// Mobile-only global panel ordering. Editing is opt-in and saved outside the character data.
+// Panel ordering is available in every viewport. It is saved outside character data.
 (() => {
     const sheet = document.querySelector('.sheet');
     const layoutButton = document.getElementById('mobileLayoutToggle');
@@ -10356,13 +10331,7 @@ updateThemeButton();
         if (enabled) { registerPanels(); applySavedOrder(); }
         else saveOrder();
     });
-    document.getElementById('mobileView')?.addEventListener('click', () => { registerPanels(); applySavedOrder(); });
-    document.getElementById('desktopView')?.addEventListener('click', () => {
-        sheet.classList.remove('layout-edit-mode');
-        layoutButton.setAttribute('aria-pressed', 'false');
-        layoutButton.textContent = '⚙ Elrendezés';
-        clearVisualOrder();
-    });
+    applySavedOrder();
 
     const finishDrag = () => {
         if (!drag) return;
@@ -10416,7 +10385,6 @@ document.getElementById('chooseCharacterPortrait')?.addEventListener('click', ()
 });
 document.getElementById('closePortraitEditor')?.addEventListener('click', () => { portraitEditorOverlay.hidden = true; });
 portraitEditorOverlay?.addEventListener('click', event => { if(event.target === portraitEditorOverlay) portraitEditorOverlay.hidden = true; });
-document.getElementById('desktopView')?.addEventListener('click', () => { portraitEditorOverlay.hidden = true; });
 document.getElementById('settingsMenu')?.addEventListener('click', event => {
     if(event.target.closest('button')) event.currentTarget.open = false;
 });

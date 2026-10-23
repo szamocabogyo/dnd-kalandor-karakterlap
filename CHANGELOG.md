@@ -11,6 +11,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - A tulajdonságmódosítók tematikus fantasy medálokat, a meglévő kaszterőforrások pedig díszített, az aktuális értékhez kapcsolt kijelzőket kaptak.
 - A kaszttémák a sötét és pergamen megjelenéssel egymástól függetlenül működnek, támogatják a csökkentett animációt, és nem igényelnek külső erőforrást.
 - A Beállítások, Combat és pihenőgombok, valamint a mobil panelcímek az aktív kaszt színeit követik; a heraldikai fejléc explicit mobilnézetben is kompakt, teljes szélességű és túlcsordulásmentes.
+- Az Elrendezés szerkesztő desktop és keskeny képernyőn egyaránt elérhető; a külön Desktop/Mobile kapcsolók megszűntek, a mobil elrendezés 768 px alatt automatikusan aktiválódik.
+- Mobilnézetben a Tulajdonságok és Harci értékek külső kerete, háttere és sarokornamentikája megegyezik a Fegyverek és a többi kaszttémás panel kialakításával.
 - A Háttér választó minden kasztnál és alosztálynál a teljes, 13 elemes PHB 2014 háttérlistát mutatja; a korábbi kasztonkénti ajánlási szűrés megszűnt.
 - A Skills panel csak a kaszt, faj, alosztály és háttér alapján szabályosan választható jártasságokat engedi kijelölni, figyeli a választási kereteket, és letiltja az elérhetetlen vagy automatikusan járó sorokat.
 - Az automatikusan járó skill-jártasságok ugyanazt az arany kiemelést és kitöltött jelölőt kapják, mint a kézzel választott jártasságok, miközben továbbra sem kapcsolhatók ki.

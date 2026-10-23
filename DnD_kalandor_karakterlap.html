@@ -2212,14 +2212,137 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .hit-dice-availability{min-width:0;max-width:100%;margin:12px 0 0;padding:9px 10px;border-left:2px solid var(--accent);border-radius:0 5px 5px 0;background:var(--bg);color:var(--text);font-size:.8rem;line-height:1.45;overflow-wrap:anywhere}
 .hit-dice-availability:empty{display:none}
 </style>
+<style id="premiumClassThemeStyles">
+/* Premium class identity layer. It only decorates existing controls and panels. */
+.sheet{
+  --class-primary:#c8a96a;--class-secondary:#725033;--class-glow:rgba(200,169,106,.28);
+  --class-border:#c8a96a;--class-surface:rgba(45,32,25,.88);--class-symbol:#f0d493;
+  --class-radius:4px;--class-angle:0deg;--class-pattern-opacity:.16;
+}
+.sheet[data-class="Barbarian"]{--class-primary:#d24b35;--class-secondary:#8f5a2f;--class-glow:rgba(239,72,39,.34);--class-border:#a96a3c;--class-surface:rgba(54,24,19,.9);--class-symbol:#ffb066;--class-radius:2px;--class-angle:-3deg}
+.sheet[data-class="Bard"]{--class-primary:#c65386;--class-secondary:#8d62c7;--class-glow:rgba(206,75,154,.3);--class-border:#d5a75b;--class-surface:rgba(54,24,45,.9);--class-symbol:#ffd27a;--class-radius:12px;--class-angle:2deg}
+.sheet[data-class="Cleric"]{--class-primary:#f0d77f;--class-secondary:#ddd4b8;--class-glow:rgba(255,232,151,.34);--class-border:#d8bc65;--class-surface:rgba(54,48,34,.9);--class-symbol:#fff4c7;--class-radius:8px;--class-angle:0deg}
+.sheet[data-class="Druid"]{--class-primary:#79ad58;--class-secondary:#9a7b3f;--class-glow:rgba(95,178,78,.3);--class-border:#7f9b55;--class-surface:rgba(25,45,31,.9);--class-symbol:#cce796;--class-radius:14px 4px;--class-angle:2deg}
+.sheet[data-class="Fighter"]{--class-primary:#aeb9c3;--class-secondary:#9c3e35;--class-glow:rgba(175,194,210,.25);--class-border:#9b7651;--class-surface:rgba(35,38,41,.92);--class-symbol:#e0e7ec;--class-radius:1px;--class-angle:0deg}
+.sheet[data-class="Monk"]{--class-primary:#58beb8;--class-secondary:#b6935e;--class-glow:rgba(67,199,189,.28);--class-border:#a88a5c;--class-surface:rgba(27,43,42,.9);--class-symbol:#a8efe5;--class-radius:18px;--class-angle:0deg}
+.sheet[data-class="Paladin"]{--class-primary:#e8c75e;--class-secondary:#496da4;--class-glow:rgba(255,218,92,.35);--class-border:#e0bd56;--class-surface:rgba(36,43,60,.92);--class-symbol:#fff1ad;--class-radius:8px 8px 3px 3px;--class-angle:0deg}
+.sheet[data-class="Ranger"]{--class-primary:#7e9b50;--class-secondary:#9b653d;--class-glow:rgba(119,157,72,.3);--class-border:#a87849;--class-surface:rgba(32,43,27,.92);--class-symbol:#c8d994;--class-radius:10px 3px;--class-angle:-1deg}
+.sheet[data-class="Rogue"]{--class-primary:#9a6dc3;--class-secondary:#89919e;--class-glow:rgba(139,78,185,.3);--class-border:#7d7188;--class-surface:rgba(28,22,35,.94);--class-symbol:#d3c0e4;--class-radius:1px 10px 1px 10px;--class-angle:4deg}
+.sheet[data-class="Sorcerer"]{--class-primary:#d74667;--class-secondary:#9f2d74;--class-glow:rgba(237,56,100,.34);--class-border:#b95b78;--class-surface:rgba(53,21,38,.92);--class-symbol:#ff9db0;--class-radius:11px;--class-angle:5deg}
+.sheet[data-class="Warlock"]{--class-primary:#8e62bc;--class-secondary:#4f9c6c;--class-glow:rgba(128,69,181,.36);--class-border:#68755d;--class-surface:rgba(28,21,37,.94);--class-symbol:#a9e0a5;--class-radius:3px 13px;--class-angle:-5deg}
+.sheet[data-class="Wizard"]{--class-primary:#568fd6;--class-secondary:#a8b8ca;--class-glow:rgba(61,139,231,.34);--class-border:#719aca;--class-surface:rgba(25,35,54,.94);--class-symbol:#b7d8ff;--class-radius:9px;--class-angle:0deg}
+
+body:not(.parchment-theme) .sheet[data-class]{--accent:var(--class-primary);--border:color-mix(in srgb,var(--class-border) 72%,#34271f);}
+body.parchment-theme .sheet[data-class]{--accent:color-mix(in srgb,var(--class-primary) 62%,#5d4529);--border:color-mix(in srgb,var(--class-border) 55%,#80633d);--class-surface:rgba(239,224,190,.9);--class-glow:color-mix(in srgb,var(--class-primary) 22%,transparent)}
+.sheet[data-class]{position:relative;isolation:isolate;background-image:radial-gradient(circle at 50% -8%,var(--class-glow),transparent 32%),linear-gradient(135deg,transparent 0 47%,color-mix(in srgb,var(--class-primary) 5%,transparent) 48% 52%,transparent 53%);transition:background-color .35s ease,border-color .35s ease,box-shadow .35s ease}
+.sheet[data-class]::before,.sheet[data-class]::after{content:"";position:absolute;z-index:-1;pointer-events:none;opacity:var(--class-pattern-opacity)}
+.sheet[data-class]::before{inset:82px 18px auto;min-height:360px;background:repeating-conic-gradient(from var(--class-angle) at 50% 50%,transparent 0 14deg,var(--class-primary) 14.5deg 15deg,transparent 15.5deg 30deg);mask:radial-gradient(circle,transparent 0 22%,#000 22.5% 23%,transparent 23.5% 36%,#000 36.5% 37%,transparent 37.5% 100%)}
+.sheet[data-class]::after{inset:0;background:linear-gradient(115deg,transparent 10%,var(--class-glow) 10.2%,transparent 10.5% 89%,var(--class-glow) 89.2%,transparent 89.5%);opacity:.22}
+
+.class-fantasy-banner{position:relative;display:grid;grid-template-columns:126px minmax(0,1fr) 180px;align-items:center;gap:22px;min-height:150px;margin:-12px 0 22px;padding:16px 24px;overflow:hidden;border:1px solid var(--class-border);border-radius:var(--class-radius);background:radial-gradient(circle at 12% 50%,var(--class-glow),transparent 26%),linear-gradient(110deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 83%,#000));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border) 28%,transparent),inset 0 0 38px rgba(0,0,0,.35),0 12px 34px rgba(0,0,0,.28)}
+.class-fantasy-banner::before{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--class-border) 42%,transparent);clip-path:polygon(0 0,34% 0,36% 5px,64% 5px,66% 0,100% 0,100% 100%,66% 100%,64% calc(100% - 5px),36% calc(100% - 5px),34% 100%,0 100%);pointer-events:none}
+.class-fantasy-banner::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(118deg,transparent 0 38px,color-mix(in srgb,var(--class-primary) 8%,transparent) 39px 40px,transparent 41px 78px);mix-blend-mode:screen;opacity:.7;pointer-events:none}
+.class-crest-wrap{position:relative;display:grid;place-items:center;width:112px;height:112px;color:var(--class-symbol);filter:drop-shadow(0 0 12px var(--class-glow))}
+.class-crest-wrap::before,.class-crest-wrap::after{content:"";position:absolute;border-radius:50%;border:1px solid color-mix(in srgb,var(--class-primary) 78%,#fff);inset:3px;box-shadow:0 0 16px var(--class-glow),inset 0 0 18px var(--class-glow)}
+.class-crest-wrap::after{inset:13px;border-style:dashed;opacity:.72;animation:classRuneTurn 28s linear infinite}
+.class-crest{width:70px;height:70px;overflow:visible;z-index:1}
+.class-banner-copy{position:relative;z-index:1;min-width:0}
+.class-banner-kicker{display:block;margin-bottom:5px;color:var(--class-primary);font:700 .67rem/1.2 Georgia,serif;letter-spacing:.2em;text-transform:uppercase}
+.class-banner-copy h2{margin:0;color:var(--class-symbol);font:700 clamp(1.45rem,2.6vw,2.35rem)/1 Georgia,serif;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 18px var(--class-glow)}
+.class-banner-copy p{max-width:650px;margin:9px 0 0;color:color-mix(in srgb,var(--text) 82%,var(--class-primary));font:italic .9rem/1.45 Georgia,serif}
+.class-banner-runes{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;color:var(--class-primary);opacity:.78}
+.class-banner-runes i{display:grid;place-items:center;aspect-ratio:1;border:1px solid color-mix(in srgb,var(--class-border) 58%,transparent);border-radius:50%;font:normal 1rem Georgia,serif;box-shadow:inset 0 0 12px var(--class-glow)}
+
+/* Each class receives an additional motif instead of only a palette swap. */
+.sheet[data-class="Barbarian"] .class-fantasy-banner{background-image:radial-gradient(circle at 82% 115%,rgba(255,74,26,.34),transparent 31%),repeating-linear-gradient(165deg,transparent 0 47px,rgba(255,107,55,.13) 48px,transparent 50px),linear-gradient(110deg,#3b1b16,#17100e)}
+.sheet[data-class="Bard"] .class-fantasy-banner::after{background:repeating-radial-gradient(ellipse at 90% 45%,transparent 0 13px,rgba(230,177,102,.16) 14px 15px,transparent 16px 25px)}
+.sheet[data-class="Cleric"] .class-fantasy-banner{background-image:repeating-conic-gradient(from 0deg at 88% 50%,rgba(255,237,169,.18) 0 3deg,transparent 3deg 15deg),linear-gradient(110deg,#3d3526,#191714)}
+.sheet[data-class="Druid"] .class-fantasy-banner::after{background:radial-gradient(ellipse at 82% 30%,transparent 0 8px,rgba(133,189,88,.2) 9px 11px,transparent 12px),radial-gradient(ellipse at 90% 68%,transparent 0 12px,rgba(133,189,88,.18) 13px 15px,transparent 16px)}
+.sheet[data-class="Fighter"] .class-fantasy-banner{background-image:repeating-linear-gradient(90deg,transparent 0 78px,rgba(215,226,235,.08) 79px 80px),radial-gradient(circle at 90% 22%,#8794a0 0 2px,transparent 3px),linear-gradient(110deg,#303438,#151719)}
+.sheet[data-class="Monk"] .class-fantasy-banner::after{background:repeating-radial-gradient(circle at 88% 50%,transparent 0 17px,rgba(87,204,194,.16) 18px 19px,transparent 20px 31px)}
+.sheet[data-class="Paladin"] .class-fantasy-banner{background-image:repeating-conic-gradient(from 0deg at 88% 50%,rgba(245,210,95,.19) 0 2deg,transparent 2deg 12deg),linear-gradient(110deg,#273248,#15191f)}
+.sheet[data-class="Ranger"] .class-fantasy-banner::after{background:repeating-linear-gradient(55deg,transparent 0 30px,rgba(135,166,80,.12) 31px 32px,transparent 33px 60px)}
+.sheet[data-class="Rogue"] .class-fantasy-banner{clip-path:polygon(0 0,96% 0,100% 18%,100% 100%,4% 100%,0 82%);background-image:linear-gradient(125deg,transparent 0 70%,rgba(158,107,199,.13) 70.2% 71%,transparent 71.2%),linear-gradient(110deg,#251d2c,#0f0d11)}
+.sheet[data-class="Sorcerer"] .class-fantasy-banner::after{background:conic-gradient(from 15deg at 88% 50%,transparent,rgba(232,57,102,.25),transparent 13%,rgba(232,57,102,.16),transparent 27%)}
+.sheet[data-class="Warlock"] .class-fantasy-banner::after{background:repeating-conic-gradient(from 9deg at 88% 50%,transparent 0 18deg,rgba(120,196,133,.13) 19deg 20deg,transparent 21deg 36deg)}
+.sheet[data-class="Wizard"] .class-fantasy-banner::after{background:radial-gradient(circle at 88% 50%,transparent 0 23px,rgba(103,167,238,.18) 24px 25px,transparent 26px 42px,rgba(103,167,238,.13) 43px 44px,transparent 45px),repeating-conic-gradient(from 0deg at 88% 50%,transparent 0 14deg,rgba(103,167,238,.18) 15deg 16deg,transparent 17deg 30deg)}
+
+.sheet[data-class] .card{border-color:color-mix(in srgb,var(--class-border) 78%,#4b3929);border-radius:var(--class-radius);background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 88%,#000));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border) 16%,transparent),inset 0 0 24px rgba(0,0,0,.24),0 8px 22px rgba(0,0,0,.22)}
+.sheet[data-class] .card::before{border-color:color-mix(in srgb,var(--class-border) 30%,transparent);border-radius:calc(var(--class-radius) * .65)}
+.sheet[data-class] .card::after{content:"";position:absolute;inset:-1px;z-index:0;pointer-events:none;background:linear-gradient(135deg,var(--class-primary) 0 2px,transparent 2px) top left/18px 18px no-repeat,linear-gradient(225deg,var(--class-primary) 0 2px,transparent 2px) top right/18px 18px no-repeat,linear-gradient(45deg,var(--class-primary) 0 2px,transparent 2px) bottom left/18px 18px no-repeat,linear-gradient(315deg,var(--class-primary) 0 2px,transparent 2px) bottom right/18px 18px no-repeat;opacity:.78}
+.sheet[data-class] .card>*{position:relative;z-index:1}
+.sheet[data-class] .section-header,.sheet[data-class] .attacks-heading,.sheet[data-class] .extra-card>h3{border-bottom-color:color-mix(in srgb,var(--class-border) 62%,transparent)}
+.sheet[data-class] .section-header h3,.sheet[data-class] .attacks h3,.sheet[data-class] .extra-card>h3,.sheet[data-class] .mobile-section-heading h3{color:var(--class-symbol);text-shadow:0 0 12px var(--class-glow)}
+.sheet[data-class] .dnd-mark,.sheet[data-class] .toggle-icon,.sheet[data-class] .skill-value{color:var(--class-primary)}
+.sheet[data-class] input:focus,.sheet[data-class] textarea:focus,.sheet[data-class] select:focus{border-color:var(--class-primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--class-primary) 18%,transparent),0 0 16px var(--class-glow)}
+
+.sheet[data-class] .mod-circle{position:relative;width:84px;height:84px;border:1px solid var(--class-border);background:radial-gradient(circle at 38% 30%,color-mix(in srgb,var(--class-primary) 24%,transparent),transparent 31%),radial-gradient(circle,color-mix(in srgb,var(--class-surface) 80%,#fff),color-mix(in srgb,var(--class-surface) 90%,#000) 72%);box-shadow:0 0 0 3px color-mix(in srgb,var(--class-border) 24%,transparent),0 0 0 6px color-mix(in srgb,var(--class-primary) 10%,transparent),inset 0 0 18px rgba(0,0,0,.66),0 0 18px var(--class-glow)}
+.sheet[data-class] .mod-circle::before,.sheet[data-class] .mod-circle::after{content:"✦";position:absolute;color:var(--class-primary);font-size:9px;text-shadow:0 0 6px var(--class-glow)}
+.sheet[data-class] .mod-circle::before{left:-7px;top:36px}.sheet[data-class] .mod-circle::after{right:-7px;top:36px}
+.sheet[data-class] .mod-circle input{color:var(--class-symbol);text-shadow:0 0 9px var(--class-glow)}
+.sheet[data-class] .ability h3{color:var(--class-symbol)}
+
+.sheet[data-class] .class-feature-resource{position:relative;padding:11px 12px 11px 46px;border:1px solid color-mix(in srgb,var(--class-border) 42%,transparent);background:radial-gradient(circle at 22px 50%,var(--class-primary) 0 4px,transparent 5px),radial-gradient(circle at 22px 50%,var(--class-glow) 0 13px,transparent 14px),color-mix(in srgb,var(--class-primary) 7%,transparent);box-shadow:inset 0 0 18px rgba(0,0,0,.15)}
+.sheet[data-class] .class-feature-resource::before{content:"";position:absolute;left:14px;top:50%;width:16px;height:16px;transform:translateY(-50%) rotate(45deg);border:1px solid var(--class-border);box-shadow:0 0 10px var(--class-glow)}
+.sheet[data-class] .resource-value output{color:var(--class-symbol);font-weight:700;text-shadow:0 0 9px var(--class-glow)}
+.sheet[data-class] .hp-card{border-color:var(--class-border);background-image:radial-gradient(ellipse at 50% 0,var(--class-glow),transparent 64%),linear-gradient(180deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 85%,#000))}
+
+body.parchment-theme .sheet[data-class] .class-fantasy-banner{background-color:#e7d4ad;background-blend-mode:multiply;color:#302315}
+body.parchment-theme .sheet[data-class] .class-banner-copy p{color:#4d3a24}
+body.parchment-theme .sheet[data-class] .card{background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary) 12%,transparent),transparent 40%),linear-gradient(180deg,#f1e3c5,#d8bf91);color:#302315;box-shadow:inset 0 0 0 1px rgba(92,65,35,.12),0 7px 18px rgba(72,48,22,.13)}
+body.parchment-theme .sheet[data-class] .section-header h3,body.parchment-theme .sheet[data-class] .attacks h3,body.parchment-theme .sheet[data-class] .extra-card>h3,body.parchment-theme .sheet[data-class] .ability h3{color:color-mix(in srgb,var(--class-primary) 63%,#3b2a19);text-shadow:none}
+body.parchment-theme .sheet[data-class] .mod-circle{background:radial-gradient(circle at 38% 30%,#fff7df,#e1cba1 68%,#c4a775);box-shadow:0 0 0 3px color-mix(in srgb,var(--class-border) 34%,transparent),0 0 0 6px rgba(92,65,35,.08),inset 0 0 15px rgba(83,57,29,.16),0 0 14px var(--class-glow)}
+body.parchment-theme .sheet[data-class] .mod-circle input{color:#3c2a18;text-shadow:none}
+
+@keyframes classRuneTurn{to{transform:rotate(360deg)}}
+@keyframes classCrestPulse{50%{filter:drop-shadow(0 0 22px var(--class-glow));transform:scale(1.025)}}
+.sheet[data-class="Druid"] .class-crest,.sheet[data-class="Paladin"] .class-crest,.sheet[data-class="Sorcerer"] .class-crest,.sheet[data-class="Warlock"] .class-crest{animation:classCrestPulse 4.8s ease-in-out infinite}
+.sheet[data-class="Barbarian"] .class-crest{animation:classCrestPulse 2.8s ease-in-out infinite}
+
+@media(max-width:768px){
+  .sheet[data-class]::before,.sheet[data-class]::after{display:none}
+  .class-fantasy-banner{grid-template-columns:72px minmax(0,1fr);min-height:94px;gap:12px;margin:-6px 0 14px;padding:12px 14px}
+  .class-crest-wrap{width:68px;height:68px}.class-crest-wrap::after{inset:9px}.class-crest{width:43px;height:43px}
+  .class-banner-copy h2{font-size:1.13rem;letter-spacing:.07em}.class-banner-copy p{margin-top:5px;font-size:.72rem;line-height:1.3}.class-banner-kicker{font-size:.55rem}
+  .class-banner-runes{display:none}
+  .sheet[data-class] .card::after{background-size:12px 12px}
+  .sheet[data-class] .mod-circle{width:78px;height:78px}
+}
+@media(max-width:420px){.class-fantasy-banner{grid-template-columns:58px minmax(0,1fr);padding:10px}.class-crest-wrap{width:54px;height:54px}.class-crest{width:34px;height:34px}.class-banner-copy p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.class-banner-kicker{letter-spacing:.12em}}
+@media(prefers-reduced-motion:reduce){.class-crest-wrap::after,.sheet[data-class] .class-crest{animation:none!important}.sheet[data-class],.sheet[data-class] .card{transition:none!important}}
+</style>
 </head>
 <body>
+
+<svg class="class-crest-sprite" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;overflow:hidden">
+  <defs>
+    <symbol id="crest-adventurer" viewBox="0 0 100 100"><path d="M50 8 62 35l29 3-22 20 7 29-26-15-26 15 7-29L9 38l29-3Z" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="50" cy="50" r="10" fill="currentColor"/></symbol>
+    <symbol id="crest-barbarian" viewBox="0 0 100 100"><path d="m18 17 22 7-8 13 22 22-10 10-22-22-13 8Zm64 0-22 7 8 13-22 22 10 10 22-22 13 8Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M42 67h16l6 22H36Z" fill="none" stroke="currentColor" stroke-width="5"/></symbol>
+    <symbol id="crest-bard" viewBox="0 0 100 100"><path d="M37 16v48c0 18 28 23 38 6 8-14-5-30-20-23V22Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="M28 21h38M28 29h38M55 47v25M68 47v17" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="48" cy="68" r="9" fill="none" stroke="currentColor" stroke-width="4"/></symbol>
+    <symbol id="crest-cleric" viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="5"/><path d="M50 8v20M50 72v20M8 50h20M72 50h20M20 20l14 14M66 66l14 14M80 20 66 34M34 66 20 80" fill="none" stroke="currentColor" stroke-width="4"/><path d="M45 35h10v10h10v10H55v10H45V55H35V45h10Z" fill="currentColor"/></symbol>
+    <symbol id="crest-druid" viewBox="0 0 100 100"><path d="M50 86V45M50 54C31 52 20 41 18 23c19-1 31 8 32 25M50 61c18-2 29-12 33-29-18-3-31 6-33 23" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M30 86c6-12 13-18 20-18s14 6 20 18M38 86c2-6 6-10 12-13 6 3 10 7 12 13" fill="none" stroke="currentColor" stroke-width="4"/></symbol>
+    <symbol id="crest-fighter" viewBox="0 0 100 100"><path d="m18 13 21 18-8 8-18-21Zm21 26 43 43M82 13 61 31l8 8 18-21ZM61 39 18 82" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="m15 75 10 10M75 85l10-10" fill="none" stroke="currentColor" stroke-width="8"/></symbol>
+    <symbol id="crest-monk" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="50" cy="50" r="19" fill="none" stroke="currentColor" stroke-width="3"/><path d="M50 9v18M50 73v18M9 50h18M73 50h18M21 21l13 13M66 66l13 13M79 21 66 34M34 66 21 79" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="7" fill="currentColor"/></symbol>
+    <symbol id="crest-paladin" viewBox="0 0 100 100"><path d="M50 9 83 21v26c0 23-14 37-33 45-19-8-33-22-33-45V21Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="M50 24v52M31 43h38" stroke="currentColor" stroke-width="6"/><path d="m50 15 5 8-5 8-5-8Z" fill="currentColor"/></symbol>
+    <symbol id="crest-ranger" viewBox="0 0 100 100"><path d="M25 14c33 18 45 50 30 75M25 14c-7 30 4 59 30 75M22 15l38 73" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="m54 22 26 56M47 31l10-5M68 70l10-5M80 78l-13-3 9-9Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></symbol>
+    <symbol id="crest-rogue" viewBox="0 0 100 100"><path d="M25 13 43 39 30 52 14 27Zm50 0L57 39l13 13 16-25ZM43 39l32 44M57 39 25 83" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="m19 76 13 13M81 76 68 89" stroke="currentColor" stroke-width="7"/></symbol>
+    <symbol id="crest-sorcerer" viewBox="0 0 100 100"><path d="m50 8 25 28-8 44-17 12-17-12-8-44Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="m50 8 9 29-9 55-9-55Zm-25 28 25 1 25-1M33 80l17-43 17 43" fill="none" stroke="currentColor" stroke-width="3"/><path d="m15 20 8 4-8 4-4 8-4-8-8-4 8-4 4-8ZM89 58l5 3-5 3-3 5-3-5-5-3 5-3 3-5Z" fill="currentColor"/></symbol>
+    <symbol id="crest-warlock" viewBox="0 0 100 100"><path d="M8 50c20-30 64-30 84 0-20 30-64 30-84 0Z" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="50" cy="50" r="17" fill="none" stroke="currentColor" stroke-width="5"/><path d="M50 33 61 50 50 67 39 50Z" fill="currentColor"/><path d="M15 20 31 31M85 20 69 31M15 80l16-11M85 80 69 69" stroke="currentColor" stroke-width="3"/></symbol>
+    <symbol id="crest-wizard" viewBox="0 0 100 100"><path d="M12 24c14-6 27-3 38 7v55c-11-10-24-13-38-7Zm76 0c-14-6-27-3-38 7v55c11-10 24-13 38-7Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M50 19v67M23 39c8-2 14 0 20 4M77 39c-8-2-14 0-20 4M22 54c8-2 15 0 21 4M78 54c-8-2-15 0-21 4" fill="none" stroke="currentColor" stroke-width="3"/><path d="m50 5 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
 
 <div id="previewFrame">
 
 <div class="sheet">
 
 <h1><span class="title-main"><span class="title-emblem" aria-hidden="true">⚔</span> D&amp;D 5e</span><span class="title-sub">Character Sheet</span></h1>
+
+<section class="class-fantasy-banner" id="classFantasyBanner" aria-label="Kasztspecifikus heraldikai fejléc">
+  <div class="class-crest-wrap" aria-hidden="true"><svg class="class-crest" viewBox="0 0 100 100"><use id="classCrestUse" href="#crest-adventurer"></use></svg></div>
+  <div class="class-banner-copy"><span class="class-banner-kicker">Kalandori heraldika</span><h2 id="classThemeName">Válassz kasztot</h2><p id="classThemeMotto">A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.</p></div>
+  <div class="class-banner-runes" aria-hidden="true"><i>◆</i><i>✦</i><i>◇</i><i>⌁</i><i>✧</i><i>⌁</i></div>
+</section>
 
 <div class="view-switcher">
     <details id="settingsMenu" class="settings-menu">
@@ -7058,8 +7181,33 @@ function renderClassFeatureField(field,context,state){
     if(field.type==='select')return `<label>${field.label}<select id="${id}" data-class-resource="${key}"><option value="">Válassz…</option>${field.options.map(option=>`<option ${value===option?'selected':''}>${option}</option>`).join('')}</select></label>`;
     return `<label>${field.label}<input id="${id}" data-class-resource="${key}" type="text" value="${String(value||'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}"></label>`;
 }
+const classVisualThemes={
+    Barbarian:{name:'Barbár',crest:'barbarian',motto:'Repedt kő, kovácsolt bronz és a csata parazsa.'},
+    Bard:{name:'Bárd',crest:'bard',motto:'Arany dallamok, bíbor történetek és elegáns indák.'},
+    Cleric:{name:'Pap',crest:'cleric',motto:'Szent geometria és az isteni fény tiszta ragyogása.'},
+    Druid:{name:'Druida',crest:'druid',motto:'Ősi gyökerek, vad levelek és az élő világ ereje.'},
+    Fighter:{name:'Harcos',crest:'fighter',motto:'Szegecselt acél, vörös hadijelek és fegyelmezett erő.'},
+    Monk:{name:'Szerzetes',crest:'monk',motto:'Meditációs körök, bronz egyensúly és összpontosított energia.'},
+    Paladin:{name:'Paladin',crest:'paladin',motto:'Lovagi pajzs, mélykék eskü és arany szentfény.'},
+    Ranger:{name:'Vadász',crest:'ranger',motto:'Bőr, réz és az erdő ösvényeit őrző íj.'},
+    Rogue:{name:'Tolvaj',crest:'rogue',motto:'Ezüst pengék, éles szögek és mozduló árnyékok.'},
+    Sorcerer:{name:'Varázsló',crest:'sorcerer',motto:'Bíbor kristály és a vérből feltörő nyers mágia.'},
+    Warlock:{name:'Boszorkánymester',crest:'warlock',motto:'Okkult rúnák, idegen geometria és a figyelő szem.'},
+    Wizard:{name:'Mágus',crest:'wizard',motto:'Ősi varázskönyv, ezüst csillagok és forgó rúnakörök.'}
+};
+function applyClassVisualTheme(){
+    const sheet=document.querySelector('.sheet'),klass=document.getElementById('characterClass')?.value||'',theme=classVisualThemes[klass];
+    if(!sheet)return;
+    if(klass)sheet.dataset.class=klass;else delete sheet.dataset.class;
+    const use=document.getElementById('classCrestUse'),name=document.getElementById('classThemeName'),motto=document.getElementById('classThemeMotto'),banner=document.getElementById('classFantasyBanner');
+    use?.setAttribute('href','#crest-'+(theme?.crest||'adventurer'));
+    if(name)name.textContent=theme?.name||'Válassz kasztot';
+    if(motto)motto.textContent=theme?.motto||'A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.';
+    if(banner)banner.setAttribute('aria-label',(theme?.name||'Kalandori')+' heraldikai fejléc');
+}
 function renderClassFeatures(){
     const context=classFeatureContext(),card=document.getElementById('classFeaturesCard'),fields=document.getElementById('classFeatureFields');
+    applyClassVisualTheme();
     if(!card||!fields)return;
     const model=classFeatureModels[context.klass];
     card.hidden=!model;
@@ -11461,6 +11609,7 @@ function rangerApplyCompanionDamage(amount){
 }
 setupRangerCompanion();
 setupRangerCombat();
+applyClassVisualTheme();
 </script>
 
 </body>

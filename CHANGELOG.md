@@ -6,6 +6,10 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- Prémium, kasztspecifikus fantasy vizuális rendszer mind a 12 alapkaszthoz: önálló színpaletta, beágyazott SVG-címer, háttérmotívum, panelornamentika és fényhatás.
+- Kompakt heraldikai fejléc kasztnévvel és tematikus mottóval; desktopon részletes, mobilon egyszerűsített elrendezéssel.
+- A tulajdonságmódosítók tematikus fantasy medálokat, a meglévő kaszterőforrások pedig díszített, az aktuális értékhez kapcsolt kijelzőket kaptak.
+- A kaszttémák a sötét és pergamen megjelenéssel egymástól függetlenül működnek, támogatják a csökkentett animációt, és nem igényelnek külső erőforrást.
 - A Háttér választó minden kasztnál és alosztálynál a teljes, 13 elemes PHB 2014 háttérlistát mutatja; a korábbi kasztonkénti ajánlási szűrés megszűnt.
 - A Skills panel csak a kaszt, faj, alosztály és háttér alapján szabályosan választható jártasságokat engedi kijelölni, figyeli a választási kereteket, és letiltja az elérhetetlen vagy automatikusan járó sorokat.
 - Az automatikusan járó skill-jártasságok ugyanazt az arany kiemelést és kitöltött jelölőt kapják, mint a kézzel választott jártasságok, miközben továbbra sem kapcsolhatók ki.

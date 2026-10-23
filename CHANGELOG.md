@@ -32,6 +32,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - A halálmentő sikerek és kudarcok alapértelmezett pipái témába illő, arany csillag- és vörös keresztpecsétekre változtak.
 - A halálmentők külön előugró ablaka megszűnt; Combat módban a kezdeményezés után 0 vagy negatív HP-nál a műveletek helyén jelenik meg a halálmentő felület.
 - A Combat halálmentő felület kockatípusból, darabszámból és módosítóból számolt gyógyítást tud dobni, naplózni és automatikusan átvezetni az aktuális HP-ra.
+- A Combat saját kör főképernyője tömörebb műveletválasztót és egyszerűbb állapotsort kapott; a duplikált következőlépés-gomb csak speciális támadásfolytatásnál jelenik meg.
 
 ### Tervezett
 

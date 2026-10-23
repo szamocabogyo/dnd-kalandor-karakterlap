@@ -10,6 +10,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Kompakt heraldikai fejléc kasztnévvel és tematikus mottóval; desktopon részletes, mobilon egyszerűsített elrendezéssel.
 - A tulajdonságmódosítók tematikus fantasy medálokat, a meglévő kaszterőforrások pedig díszített, az aktuális értékhez kapcsolt kijelzőket kaptak.
 - A kaszttémák a sötét és pergamen megjelenéssel egymástól függetlenül működnek, támogatják a csökkentett animációt, és nem igényelnek külső erőforrást.
+- Pergamen módban mind a 12 kaszt erősebb, külön hangolt tintaszínt kapott; a címer, heraldikai fejléc, panelkeretek, címsávok, sarokdíszek, tulajdonságmedálok és profi skill-sorok jobban őrzik az aktív kaszt vizuális karakterét.
 - A Beállítások, Combat és pihenőgombok, valamint a mobil panelcímek az aktív kaszt színeit követik; a heraldikai fejléc explicit mobilnézetben is kompakt, teljes szélességű és túlcsordulásmentes.
 - Az Elrendezés szerkesztő desktop és keskeny képernyőn egyaránt elérhető; a külön Desktop/Mobile kapcsolók megszűntek, a mobil elrendezés 768 px alatt automatikusan aktiválódik.
 - Mobilnézetben a Tulajdonságok és Harci értékek külső kerete, háttere és sarokornamentikája megegyezik a Fegyverek és a többi kaszttémás panel kialakításával.

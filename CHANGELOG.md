@@ -6,10 +6,9 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
-- A desktop elrendezés stabilabb töréspontokat kapott: a karakteradatok nem szorulnak keskeny mezőkbe, a heraldikai fejléc arányosan zsugorodik, a felső műveleti gombok egy vonalba kerülnek, a közepes desktopméreten pedig a Harci értékek és a Skills panel kiegyensúlyozott kéthasábos sort alkot.
+- A desktop elrendezés ismét fix, háromoszlopos szerkezetet használ, az Elrendezés funkció pedig megszűnt. Mobilon a panelek rögzített sorrendje: Karakter adatok, Hit Points, Inspiráció, Tulajdonságok, Harci értékek, Skills, Fegyverek, Kasztjellemzők, kasztspecifikus panelek, Felszerelés, Pénz, Haladó alapadatok, Életerőkockák, Mentődobások, Egyéb jártasságok.
 - Minden választható faj saját, semleges, árnyékban maradó arcú fantasy portrét kapott a `DnD portrék` mappa aranykeretes képei alapján. A képek optimalizálva és közvetlenül a HTML-be ágyazva működnek; a feltöltött egyéni portré továbbra is elsőbbséget élvez, eltávolításakor pedig automatikusan az aktuális faj alapképe jelenik meg.
 - A Barbár sötét vérvörös, kovácsoltvas és bronz palettát, a Sorcerer pedig ametisztlila és cián kristályfényeket kapott, így mindkettő markánsan elkülönül a többi kaszttémától.
-- A mobilnézet alapértelmezett panelsorrendje most: Karakter adatok, Kasztjellemzők, Hit Points, Tulajdonságok, Skills, majd a további blokkok. A korábban kézzel mentett elrendezés továbbra is elsőbbséget élvez.
 - A fajválasztó Aasimar, Genasi és Tabaxi lehetőségekkel bővült. Az Aasimar és Genasi alfajai is választhatók; a méret-, nyelv- és faji jellemző összefoglalók automatikusak, a Tabaxi pedig automatikusan megkapja az Észlelés és Lopakodás jártasságot.
 - Prémium, kasztspecifikus fantasy vizuális rendszer mind a 12 alapkaszthoz: önálló színpaletta, beágyazott SVG-címer, háttérmotívum, panelornamentika és fényhatás.
 - Kompakt heraldikai fejléc kasztnévvel és tematikus mottóval; desktopon részletes, mobilon egyszerűsített elrendezéssel.

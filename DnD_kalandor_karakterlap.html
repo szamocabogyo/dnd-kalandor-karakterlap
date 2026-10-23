@@ -1437,30 +1437,9 @@ input:focus, textarea:focus, select:focus {
 @media(max-width:480px){h1{font-size:clamp(1.15rem,6vw,1.5rem);letter-spacing:.05em;line-height:1.18;text-wrap:balance}.combat .dnd-mark{font-size:1.2em}}
 
 .combat-death-save-panel .field-label{white-space:nowrap;font-size:clamp(.62rem,3.4vw,.9rem);letter-spacing:0}
-.mobile-layout-handle{display:none;position:absolute;pointer-events:auto;user-select:none;-webkit-user-select:none;z-index:2;top:7px;right:7px;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid var(--accent);border-radius:8px;background:var(--panel-bg,#3a2d20);color:var(--accent);font-size:1.15rem;line-height:1;touch-action:none;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.sheet #mobileLayoutToggle{display:inline-flex;align-items:center;justify-content:center}
 .sheet #portraitSettingsButton{display:inline-flex;align-items:center;justify-content:center}
-.sheet.layout-edit-mode .mobile-layout-handle{display:inline-flex}
-.sheet.layout-edit-mode .center>.combat,.sheet.layout-edit-mode .center>.card,.sheet.layout-edit-mode .right-column>.card,.sheet.layout-edit-mode .extra-sheet-grid>.card{position:relative;padding-top:34px}
-.sheet.layout-edit-mode .mobile-layout-handle:active{cursor:grabbing}
-.sheet .mobile-sort-dragging{opacity:.55;outline:2px dashed var(--accent);outline-offset:2px;z-index:3}
-.sheet.layout-edit-mode .abilities,.sheet.layout-edit-mode .center,.sheet.layout-edit-mode .right-column{position:relative;border:1px dashed rgba(200,169,106,.75);border-radius:10px;padding:38px 8px 8px;background:rgba(200,169,106,.04)}
-.sheet.layout-edit-mode .abilities::before,.sheet.layout-edit-mode .center::before,.sheet.layout-edit-mode .right-column::before{position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
-.sheet.layout-edit-mode .abilities::before{content:'TULAJDONSÁGOK'}
-.sheet.layout-edit-mode .center::before{content:'KÖZÉPSŐ PANELEK'}
-.sheet.layout-edit-mode .right-column::before{content:'JOBB OLDALI PANELEK'}
-.sheet.layout-edit-mode .abilities>.ability{display:none!important}
-.sheet.layout-edit-mode [data-mobile-sortable="true"].card:not(.inspiration-card)>:not(.section-header):not(.attacks-heading):not(h3):not(.mobile-layout-handle){display:none!important}
-.sheet.layout-edit-mode .collapsible>.section-content{max-height:0!important;min-height:0!important;margin:0!important;padding:0!important;opacity:0!important;overflow:hidden!important}
-.sheet.layout-edit-mode .collapsible .toggle-icon{transform:none!important}
-.sheet.layout-edit-mode .attacks-heading .attacks-mark,.sheet.layout-edit-mode .attacks-heading .attacks-rule{display:none!important}
-.sheet.layout-edit-mode .combat{position:relative;display:block;min-height:66px;padding:36px 8px 8px;border:1px dashed rgba(200,169,106,.75);border-radius:10px;background:rgba(200,169,106,.04)}
-.sheet.layout-edit-mode .combat::before{content:'HARCI ÉRTÉKEK';position:absolute;top:10px;left:12px;color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.1em;pointer-events:none}
-.sheet.layout-edit-mode .combat>.card{display:none!important}
 .sheet.mobile-mode{display:flex;flex-direction:column;gap:12px}
 .sheet.mobile-mode .main,.sheet.mobile-mode .center,.sheet.mobile-mode .right-column,.sheet.mobile-mode .extra-sheet-grid{display:contents!important}
-.sheet.mobile-mode.layout-edit-mode .center,.sheet.mobile-mode.layout-edit-mode .right-column{border:0;padding:0;background:transparent}
-.sheet.mobile-mode.layout-edit-mode .center::before,.sheet.mobile-mode.layout-edit-mode .right-column::before{content:none}
 
 .grid-top input:not([type="checkbox"]),
 .grid-top select:not([multiple]){
@@ -1542,54 +1521,6 @@ input:focus, textarea:focus, select:focus {
   .sheet:not(.mobile-mode) .abilities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
-/* Desktop alignment pass: keep every panel and control on a stable shared grid. */
-@media(min-width:769px){
-  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%;gap:10px}
-  .sheet:not(.mobile-mode)>.view-switcher>button,
-  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu,
-  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary{width:100%;min-width:0;min-height:44px}
-  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;text-align:center}
-  .sheet:not(.mobile-mode)>.view-switcher>.settings-menu>.settings-menu-panel{left:0;right:auto;transform:none;max-width:min(360px,calc(100vw - 64px))}
-  .sheet:not(.mobile-mode) .main{align-items:start;width:100%}
-  .sheet:not(.mobile-mode) .abilities,
-  .sheet:not(.mobile-mode) .center,
-  .sheet:not(.mobile-mode) .right-column{width:100%;align-self:start}
-  .sheet:not(.mobile-mode) .grid-top{align-items:end;width:100%;margin-bottom:0}
-  .sheet:not(.mobile-mode) .grid-top>*,
-  .sheet:not(.mobile-mode) .class-choice-grid>*{min-width:0}
-  .sheet:not(.mobile-mode) .grid-top label{display:flex;flex-direction:column;justify-content:flex-end;min-height:61px;margin:0;line-height:1.25}
-  .sheet:not(.mobile-mode) .grid-top input,
-  .sheet:not(.mobile-mode) .grid-top select,
-  .sheet:not(.mobile-mode) .background-picker{width:100%;min-width:0}
-  .sheet:not(.mobile-mode) .character-portrait-card{align-items:center}
-  .sheet:not(.mobile-mode) .character-portrait-card label{min-height:0}
-  .sheet:not(.mobile-mode) .combat{align-items:stretch;width:100%}
-  .sheet:not(.mobile-mode) .combat>.card{width:100%;height:100%;min-width:0;justify-content:space-between}
-  .sheet:not(.mobile-mode) .combat>.card>label{display:flex;align-items:center;justify-content:center;min-height:2.6em;margin-bottom:7px;line-height:1.2;text-align:center}
-  .sheet:not(.mobile-mode) .hp-row>*{min-width:0}
-  .sheet:not(.mobile-mode) .section-header{gap:12px}
-  .sheet:not(.mobile-mode) .section-header h3{min-width:0;overflow-wrap:anywhere}
-  .sheet:not(.mobile-mode) .extra-sheet-grid>.card{width:100%;align-self:start}
-}
-@media(min-width:769px) and (max-width:1100px){
-  .sheet:not(.mobile-mode) .grid-top{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-  .sheet:not(.mobile-mode) .grid-top>.class-choice-card{grid-column:span 2}
-  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterLevel),
-  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterRace){grid-column:span 1}
-  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterAlignment),
-  .sheet:not(.mobile-mode) .grid-top>.card:has(#characterBackground){grid-column:span 2}
-  .sheet:not(.mobile-mode)[data-class] .class-fantasy-banner{grid-template-columns:92px minmax(0,1fr) 112px;gap:14px;min-height:118px;padding:13px 16px}
-  .sheet:not(.mobile-mode)[data-class] .class-crest-wrap{width:84px;height:84px}
-  .sheet:not(.mobile-mode)[data-class] .class-crest{width:54px;height:54px}
-  .sheet:not(.mobile-mode)[data-class] .class-banner-copy h2{font-size:clamp(1.2rem,3vw,1.75rem);letter-spacing:.08em}
-  .sheet:not(.mobile-mode)[data-class] .class-banner-runes{gap:5px}
-}
-@media(min-width:1000px) and (max-width:1279px){
-  .sheet:not(.mobile-mode) .right-column{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-flow:dense;gap:var(--panel-gap)}
-  .sheet:not(.mobile-mode) .right-column>.combat,
-  .sheet:not(.mobile-mode) .right-column>.card{width:100%;align-self:start}
-}
-
 /* Mobile-first sheet polish: use the available width, prevent sideways overflow,
    and keep fields readable without wasting vertical space. */
 body:has(.sheet.mobile-mode){padding:0;overflow-x:hidden}
@@ -1637,7 +1568,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet.mobile-mode .mobile-section-fold-toggle[aria-expanded="true"]>.toggle-icon{transform:rotate(-90deg)}
 .sheet.mobile-mode .mobile-section-fold-toggle[aria-expanded="false"]>.toggle-icon{transform:none}
 .sheet.mobile-mode .mobile-section-fold-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.sheet.mobile-mode .mobile-section-collapsed>.mobile-section-heading~:not(.mobile-layout-handle),.sheet.mobile-mode .mobile-section-collapsed>.attacks-heading~:not(.mobile-layout-handle){display:none!important}
+.sheet.mobile-mode .mobile-section-collapsed>.mobile-section-heading~*,.sheet.mobile-mode .mobile-section-collapsed>.attacks-heading~*{display:none!important}
 .sheet.mobile-mode .mobile-section-foldable.collapsible>.section-header{padding:6px 0;margin-bottom:4px}
 .sheet.mobile-mode .mobile-generated-section-heading,
 .sheet.mobile-mode .collapsible>.section-header,
@@ -1689,7 +1620,6 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet.mobile-mode .combat::before{content:"";position:absolute;inset:4px;border:1px solid rgba(214,181,111,.13);pointer-events:none}
 .sheet.mobile-mode .abilities>.mobile-generated-section-heading,
 .sheet.mobile-mode .combat>.mobile-generated-section-heading{grid-column:1/-1}
-.sheet.mobile-mode.layout-edit-mode [data-mobile-sortable="true"].card>.mobile-generated-section-heading{display:flex!important}
 @media(max-width:380px){
   .sheet.mobile-mode{padding:8px;gap:8px}
   .sheet.mobile-mode .grid-top{gap:6px}
@@ -2265,7 +2195,6 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     <details id="settingsMenu" class="settings-menu">
       <summary>⚙ Beállítások</summary>
       <div class="settings-menu-panel">
-        <button id="mobileLayoutToggle" type="button" aria-pressed="false" title="Karakterlappanelek rendezése">⚙ Elrendezés</button>
         <button id="portraitSettingsButton" type="button">🖼 Portré</button>
         <button id="exportCharacter">💾 Export</button>
         <button id="importCharacter">📂 Import</button>
@@ -10169,138 +10098,42 @@ document
 
 localStorage.removeItem('theme');
 
-// Panel ordering is available in every viewport. It is saved outside character data.
+// A desktop elrendezés fix. Mobilon a panelek egy előre meghatározott, stabil sorrendet követnek.
 (() => {
-    const sheet = document.querySelector('.sheet');
-    const layoutButton = document.getElementById('mobileLayoutToggle');
-    if (!sheet || !layoutButton) return;
-
-    const storageKey = 'dndMobilePanelOrderV1';
-    const panelSelector = [
-        '.character-info',
-        '.main>.abilities',
-        '.main>.center>.combat',
-        '.main>.center>.card',
-        '.main>.right-column>.card',
-        '.extra-sheet-grid>.card'
-    ].join(',');
-    let panels = [];
-    const panelKey = panel => {
-        const parent = panel.parentElement;
-        const group = [...parent.classList].find(name =>
-            ['main', 'abilities', 'center', 'right-column', 'extra-sheet-grid'].includes(name)
-        ) || 'panels';
-        const heading = panel.classList.contains('abilities')
-            ? 'ability-scores'
-            : panel.querySelector('h3')?.textContent?.trim()
-                || panel.querySelector('label')?.textContent?.trim()
-                || [...panel.classList].find(name => name !== 'card')
-                || 'panel';
-        const slug = heading.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '');
-        return `${group}:${slug}`;
+    const sheet=document.querySelector('.sheet');
+    if(!sheet)return;
+    const panelSelector=['.character-info','.main>.abilities','.main>.center>.combat','.main>.right-column>.combat','.main>.center>.card','.main>.right-column>.card','.extra-sheet-grid>.card'].join(',');
+    const panels=[...sheet.querySelectorAll(panelSelector)];
+    const panelRank=panel=>{
+        if(panel.matches('.character-info'))return 0;
+        if(panel.matches('.hp-card'))return 10;
+        if(panel.id==='inspirationCard')return 20;
+        if(panel.matches('.abilities'))return 30;
+        if(panel.matches('.combat'))return 35;
+        if(panel.querySelector('.skills-list'))return 40;
+        if(panel.matches('.attacks'))return 50;
+        if(panel.id==='classFeaturesCard')return 60;
+        if(panel.id==='druidFormCard')return 70;
+        if(panel.id==='rangerCompanionPanel')return 71;
+        if(panel.matches('.spell-card'))return 72;
+        if(panel.querySelector('#equipment'))return 80;
+        if(panel.matches('.money-card'))return 90;
+        if(panel.querySelector('#playerName'))return 100;
+        if(panel.querySelector('#hitDieType'))return 110;
+        if(panel.querySelector('#saveProfSTR'))return 120;
+        if(panel.querySelector('#otherProficiencies'))return 130;
+        return 200+panels.indexOf(panel);
     };
-    let drag = null;
-
-    const registerPanel = panel => {
-        if (panels.includes(panel)) return;
-        panels.push(panel);
-        panel.dataset.mobilePanelId = panelKey(panel);
-        panel.dataset.mobileSortable = 'true';
-        if (panel.querySelector(':scope > .mobile-layout-handle')) return;
-        const handle = document.createElement('button');
-        handle.type = 'button';
-        handle.className = 'mobile-layout-handle';
-        handle.textContent = '↕';
-        handle.setAttribute('aria-label', `${panel.classList.contains('abilities') ? 'Ability mezők' : panel.querySelector('h3')?.textContent?.trim() || panel.getAttribute('aria-label') || 'Panel'} átrendezése`);
-        handle.title = 'Húzd a panel átrendezéséhez';
-        handle.addEventListener('pointerdown', event => {
-            if (!sheet.classList.contains('layout-edit-mode')) return;
-            event.preventDefault();
-            drag = { panel, pointerId: event.pointerId, x: event.clientX, y: event.clientY, started: false };
-        });
-        panel.append(handle);
-    };
-    const registerPanels = () => sheet.querySelectorAll(panelSelector).forEach(registerPanel);
-    registerPanels();
-
-    const orderedPanels = () => [...panels].sort((a, b) => (Number(a.style.order) || 0) - (Number(b.style.order) || 0));
-    const setOrder = list => list.forEach((panel, index) => { panel.style.order = String(index); });
-    const readOrder = () => {
-        try { return JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; }
-        catch { return {}; }
-    };
-    const defaultMobileRank = panel => {
-        if (panel.matches('.character-info')) return 0;
-        if (panel.id === 'classFeaturesCard') return 1;
-        if (panel.matches('.hp-card')) return 2;
-        if (panel.matches('.abilities')) return 3;
-        if (panel.querySelector('.skills-list')) return 4;
-        return 100 + panels.indexOf(panel);
-    };
-    const applySavedOrder = () => {
-        const saved = readOrder();
-        const savedPanels = Array.isArray(saved.panels) ? saved.panels.slice() : [];
-        if (!savedPanels.length) {
-            if (sheet.classList.contains('mobile-mode')) {
-                setOrder([...panels].sort((a, b) => defaultMobileRank(a) - defaultMobileRank(b)));
-            } else {
-                clearVisualOrder();
-            }
-            return;
+    const syncFixedPanelOrder=()=>{
+        if(sheet.classList.contains('mobile-mode')){
+            [...panels].sort((a,b)=>panelRank(a)-panelRank(b)).forEach((panel,index)=>{panel.style.order=String(index);});
+        }else{
+            panels.forEach(panel=>panel.style.removeProperty('order'));
         }
-        const inspiration = document.getElementById('inspirationCard');
-        if(inspiration && !savedPanels.includes(inspiration.dataset.mobilePanelId)){
-            const advancedIndex = savedPanels.indexOf(inspiration.nextElementSibling?.dataset.mobilePanelId);
-            if(advancedIndex >= 0) savedPanels.splice(advancedIndex, 0, inspiration.dataset.mobilePanelId);
-        }
-        const ranks = new Map(savedPanels.map((key, index) => [key, index]));
-        const list = orderedPanels().sort((a, b) =>
-            (ranks.get(a.dataset.mobilePanelId) ?? 1e6) - (ranks.get(b.dataset.mobilePanelId) ?? 1e6)
-        );
-        setOrder(list);
     };
-    const saveOrder = () => {
-        localStorage.setItem(storageKey, JSON.stringify({panels: orderedPanels().map(panel => panel.dataset.mobilePanelId)}));
-    };
-    const clearVisualOrder = () => panels.forEach(panel => panel.style.removeProperty('order'));
-
-    layoutButton.addEventListener('click', () => {
-        const enabled = !sheet.classList.contains('layout-edit-mode');
-        sheet.classList.toggle('layout-edit-mode', enabled);
-        layoutButton.setAttribute('aria-pressed', String(enabled));
-        layoutButton.textContent = enabled ? '✓ Kész' : '⚙ Elrendezés';
-        if (enabled) { registerPanels(); applySavedOrder(); }
-        else saveOrder();
-    });
-    applySavedOrder();
-    window.matchMedia('(max-width: 768px)').addEventListener?.('change', applySavedOrder);
-
-    const finishDrag = () => {
-        if (!drag) return;
-        drag.panel.classList.remove('mobile-sort-dragging');
-        if (drag.started) saveOrder();
-        drag = null;
-    };
-    document.addEventListener('pointermove', event => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
-        if (!drag.started && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 5) return;
-        drag.started = true;
-        drag.panel.classList.add('mobile-sort-dragging');
-        const list = orderedPanels().filter(panel => panel !== drag.panel && !panel.hidden && getComputedStyle(panel).display !== 'none');
-        let insertAt = list.findIndex(panel => {
-            const rect = panel.getBoundingClientRect();
-            return event.clientY < rect.top + rect.height / 2;
-        });
-        if (insertAt < 0) insertAt = list.length;
-        list.splice(insertAt, 0, drag.panel);
-        setOrder(list);
-        if (event.clientY < 70) window.scrollBy(0, -12);
-        else if (event.clientY > window.innerHeight - 70) window.scrollBy(0, 12);
-    });
-    document.addEventListener('pointerup', finishDrag);
-    document.addEventListener('pointercancel', finishDrag);
+    window.matchMedia('(max-width: 768px)').addEventListener?.('change',syncFixedPanelOrder);
+    syncFixedPanelOrder();
 })();
-
 const portraitEditorOverlay = document.getElementById('portraitEditorOverlay');
 const characterResetOverlay = document.getElementById('characterResetOverlay');
 function clearStoredCharacter(){

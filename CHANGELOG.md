@@ -30,6 +30,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - A külön Combat „Áttekintés” lépés megszűnt; az aktuális és korábbi körök eseményei a Műveletek nézet naplójában maradnak elérhetők.
 - A halálmentődobás ablaka üres aktuális HP mezőnél zárva marad, és csak ténylegesen megadott 0 vagy negatív értéknél nyílik meg.
 - A halálmentő sikerek és kudarcok alapértelmezett pipái témába illő, arany csillag- és vörös keresztpecsétekre változtak.
+- A halálmentők külön előugró ablaka megszűnt; Combat módban a kezdeményezés után 0 vagy negatív HP-nál a műveletek helyén jelenik meg a halálmentő felület.
 
 ### Tervezett
 

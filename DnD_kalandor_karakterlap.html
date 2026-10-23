@@ -1425,6 +1425,13 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 .combat-death-save-panel .death-save-grid>div{display:flex;flex-direction:column;min-width:0}
 .combat-death-save-panel .field-label{display:flex;min-height:2.6em;align-items:center;justify-content:center;color:var(--accent);font-family:Georgia,"Times New Roman",serif;font-size:1rem;font-weight:700;line-height:1.2;text-align:center}
 .combat-death-save-panel .death-save-checks{flex:1;justify-content:center;gap:16px;margin-top:10px}
+.combat-death-healing{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:left}
+.combat-death-healing h4{margin:0 0 5px;color:var(--accent);font-family:Georgia,"Times New Roman",serif;font-size:1rem}
+.combat-death-healing>p{margin:0 0 12px;color:var(--muted);font-size:.82rem;line-height:1.4}
+.combat-death-healing-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.combat-death-healing-fields label{display:flex;flex-direction:column;gap:5px;margin:0!important;font-size:.76rem}
+.combat-mode-dialog .combat-death-healing-button{width:100%;margin-top:12px;background:var(--accent);color:var(--bg)}
+.combat-death-healing-result{min-height:1.4em;margin:10px 0 0;color:var(--text);font-size:.86rem;line-height:1.45;text-align:center}
 .death-save-checks .death-save-mark{position:relative;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin:0;padding:0;border:1px solid color-mix(in srgb,var(--accent) 70%,var(--border));border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.08),transparent 45%),var(--bg);color:var(--accent);cursor:pointer;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 2px 7px rgba(0,0,0,.28);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
 .death-save-checks .death-save-mark input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;margin:0;opacity:0;cursor:pointer}
 .death-save-checks .death-save-mark span{font-size:1.05rem;line-height:1;opacity:.22;transform:scale(.72);transition:opacity .16s ease,transform .16s ease,text-shadow .16s ease}
@@ -1436,7 +1443,7 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 .death-save-checks .death-save-failure:hover,.death-save-checks .death-save-failure:has(input:checked){border-color:#d27a68}
 .death-save-checks .death-save-failure:has(input:focus-visible){outline-color:#d27a68}
 .death-save-checks .death-save-failure:has(input:checked){box-shadow:inset 0 0 10px rgba(210,122,104,.24),0 0 10px rgba(210,122,104,.38)}
-@media(max-width:480px){.combat-death-save-panel{padding:16px 12px}.combat-death-save-panel .death-save-grid{gap:10px}.combat-death-save-panel .death-save-checks{gap:10px}}
+@media(max-width:480px){.combat-death-save-panel{padding:16px 12px}.combat-death-save-panel .death-save-grid{gap:10px}.combat-death-save-panel .death-save-checks{gap:10px}.combat-death-healing-fields{grid-template-columns:1fr 1fr}.combat-death-healing-fields label:last-child{grid-column:1/-1}}
 @media(max-width:360px){.combat-death-save-panel .death-save-grid{grid-template-columns:1fr}}
 
 .combat-mode-overlay{position:fixed;inset:0;z-index:100001;display:grid;place-items:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.78)}
@@ -2805,6 +2812,17 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
         <h3 id="combatDeathSaveTitle">Halálmentő dobások</h3>
         <p>Az aktuális HP 0 vagy kevesebb. Jelöld a halálmentődobás eredményét.</p>
         <div id="combatDeathSaveSlot"></div>
+        <div class="combat-death-healing" aria-labelledby="combatDeathHealingTitle">
+          <h4 id="combatDeathHealingTitle">Gyógyulás</h4>
+          <p>Használd, ha egy társ vagy más hatás gyógyítja a karaktert.</p>
+          <div class="combat-death-healing-fields">
+            <label>Kocka<select id="combatDeathHealingDie"><option value="4">d4</option><option value="6">d6</option><option value="8" selected>d8</option><option value="10">d10</option><option value="12">d12</option></select></label>
+            <label>Darab<input id="combatDeathHealingCount" type="number" min="1" max="20" step="1" value="1" inputmode="numeric"></label>
+            <label>Módosító<input id="combatDeathHealingModifier" type="number" step="1" value="0" inputmode="numeric"></label>
+          </div>
+          <button id="combatDeathHealingRoll" class="combat-death-healing-button" type="button">🎲 Gyógyítás dobása</button>
+          <p id="combatDeathHealingResult" class="combat-death-healing-result" role="status" aria-live="polite"></p>
+        </div>
       </section>
       <div id="combatRoundActions" hidden>
         <div class="combat-turn-tracker">
@@ -6046,6 +6064,35 @@ function showCombatGuideActions(){
     returnToCombatGuide(combatGuideState.panel==='reaction'?'reaction':'attack');
 }
 
+function performCombatDeathSaveHealing(){
+    const result=document.getElementById('combatDeathHealingResult');
+    const hpField=document.getElementById('currentHp');
+    const currentRaw=hpField?.value.trim()||'';
+    const current=currentRaw===''?NaN:Number(currentRaw);
+    if(!Number.isFinite(current)||current>0){result.textContent='A gyógyítási felület csak 0 vagy negatív HP-nál használható.';return;}
+    const sides=Number(document.getElementById('combatDeathHealingDie').value);
+    const count=Number(document.getElementById('combatDeathHealingCount').value);
+    const modifier=Number(document.getElementById('combatDeathHealingModifier').value);
+    if(![4,6,8,10,12].includes(sides)||!Number.isInteger(count)||count<1||count>20||!Number.isInteger(modifier)){
+        result.textContent='Adj meg 1–20 egész számú kockát és egész módosítót.';return;
+    }
+    const rolls=Array.from({length:count},()=>Math.floor(Math.random()*sides)+1);
+    const rolledTotal=rolls.reduce((sum,value)=>sum+value,0);
+    const healing=Math.max(0,rolledTotal+modifier);
+    const maxRaw=document.getElementById('maxHp')?.value.trim()||'';
+    const maximum=maxRaw===''?NaN:Number(maxRaw);
+    const next=Number.isFinite(maximum)&&maximum>0?Math.min(maximum,current+healing):current+healing;
+    const modifierText=modifier===0?'':modifier>0?` + ${modifier}`:` − ${Math.abs(modifier)}`;
+    const rollText=`${count}d${sides} [${rolls.join(', ')}]${modifierText} = ${healing}`;
+    result.textContent=`${rollText}; HP: ${current} → ${next}`;
+    appendCombatGuideEvent({kind:'event',category:'healing',choice:'external-healing',label:'Gyógyulás',detail:`${rollText}; HP: ${current} → ${next}`,total:healing});
+    hpField.value=String(next);
+    if(next>0)document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{field.checked=false;});
+    hpField.dispatchEvent(new Event('input',{bubbles:true}));
+    hpField.dispatchEvent(new Event('change',{bubbles:true}));
+    saveCharacter();
+}
+
 function chooseCombatGuideRoll(category='action',spellKey='',intent=null){
     if(!hasCombatRoundInitiative()&&category!=='reaction')return;
     const nextIntent={...(intent||{choice:spellKey?'spell:'+spellKey:category==='action'?combatWildShapeDefaultChoice():'attack'}),category};
@@ -6147,7 +6194,10 @@ function renderCombatGuide(){
     const deathSaveSlot=document.getElementById('combatDeathSaveSlot');
     deathSavePanel.hidden=!deathSaveRequired;
     if(deathSaveRequired&&deathSaveGrid&&deathSaveSlot)deathSaveSlot.appendChild(deathSaveGrid);
-    else if(deathSaveGrid&&deathSaveHome&&deathSaveGrid.parentElement===deathSaveSlot)deathSaveHome.after(deathSaveGrid);
+    else{
+        if(deathSaveGrid&&deathSaveHome&&deathSaveGrid.parentElement===deathSaveSlot)deathSaveHome.after(deathSaveGrid);
+        document.getElementById('combatDeathHealingResult').textContent='';
+    }
     document.getElementById('combatRoundActions').hidden=deathSaveRequired||damage||(own&&!ready);
     document.getElementById('combatGuideDashboard').hidden=!own||stage!=='choose';
     document.getElementById('combatGuideEventPanel').hidden=damage||stage!=='event';
@@ -6251,6 +6301,7 @@ function setupCombatGuide(){
     document.querySelectorAll('[data-combat-guide-other]').forEach(button=>button.addEventListener('click',()=>chooseCombatGuideEvent(button.dataset.combatGuideOther)));
     document.getElementById('combatGuideRecordEvent').addEventListener('click',recordCombatGuideManualEvent);
     document.getElementById('combatGuideReviewButton').addEventListener('click',confirmCombatRoundEnd);
+    document.getElementById('combatDeathHealingRoll').addEventListener('click',performCombatDeathSaveHealing);
     document.getElementById('combatTurnConfirmCancel').addEventListener('click',closeCombatRoundConfirmation);
     document.getElementById('combatTurnConfirmAccept').addEventListener('click',()=>{closeCombatRoundConfirmation(false);advanceCombatRound();});
     document.getElementById('combatTurnConfirmOverlay').addEventListener('keydown',event=>{if(event.key==='Escape')closeCombatRoundConfirmation();});

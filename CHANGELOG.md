@@ -73,6 +73,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Módosítva
 
+- A közeli kasztpaletták erősebben elkülönülnek: Tolvaj indigó–ezüst, Boszorkánymester smaragd–ibolya, Sorcerer rubinvörös–borostyán, Druida élő mohazöld, Ranger olíva–réz megjelenést kapott, hozzájuk igazított fejlécmotívumokkal és fényekkel.
 - A pergamen mód, annak beállításgombja, mentett állapota és teljes stílusrétege megszűnt; a karakterlap egységesen a kasztspecifikus sötét fantasy témát használja.
 - Egységes panelmegjelenés mobil- és asztali nézetben.
 - Automatikus AC-, kezdeményezés-, mentődobás- és varázslási számítások.

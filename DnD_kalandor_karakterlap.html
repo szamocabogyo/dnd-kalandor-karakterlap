@@ -1501,8 +1501,8 @@ input:focus, textarea:focus, select:focus {
   .sheet:not(.mobile-mode) .right-column>*,
   .sheet:not(.mobile-mode) .extra-sheet-grid>*{min-width:0;max-width:100%}
   .sheet:not(.mobile-mode) .card{overflow-wrap:anywhere}
-  .sheet:not(.mobile-mode) .attacks{max-width:100%;overflow-x:auto}
-  .sheet:not(.mobile-mode) .attacks table{min-width:520px;table-layout:fixed}
+  .sheet:not(.mobile-mode) .attacks{width:100%;min-width:0;max-width:100%;height:auto;max-height:none;overflow:visible}
+  .sheet:not(.mobile-mode) .attacks table{width:100%;min-width:0;max-width:100%;table-layout:auto}
   .sheet:not(.mobile-mode) .attacks th:last-child,
   .sheet:not(.mobile-mode) .attacks td:last-child{width:46px}
   .sheet:not(.mobile-mode) .right-column>.combat{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -1554,8 +1554,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet.mobile-mode .spell-card .extra-field-grid>.spell-slots-field{padding:8px}
 .sheet.mobile-mode .spell-slots-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .sheet.mobile-mode .spell-entry-row{gap:8px;padding:9px 9px 50px}
-.sheet.mobile-mode .attacks{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.sheet.mobile-mode .attacks table{min-width:430px}
+.sheet.mobile-mode .attacks{width:100%;min-width:0;max-width:100%;height:auto;max-height:none;overflow:visible}
+.sheet.mobile-mode .attacks table{width:100%;min-width:0;max-width:100%}
 .sheet.mobile-mode .skill-row{grid-template-columns:18px minmax(0,1fr) auto;gap:7px}
 .sheet.mobile-mode .druid-beast-abilities{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .sheet.mobile-mode .section-header{min-height:42px;cursor:pointer;touch-action:manipulation}

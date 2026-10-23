@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Fegyverek panel most belső görgetősáv nélkül, a tartalmához igazodó magassággal jelenik meg desktopon és keskeny képernyőn is.
+
 - A desktop elrendezés ismét fix, háromoszlopos szerkezetet használ, az Elrendezés funkció pedig megszűnt. Mobilon a panelek rögzített sorrendje: Karakter adatok, Hit Points, Inspiráció, Tulajdonságok, Harci értékek, Skills, Fegyverek, Kasztjellemzők, kasztspecifikus panelek, Felszerelés, Pénz, Haladó alapadatok, Életerőkockák, Mentődobások, Egyéb jártasságok.
 - Minden választható faj saját, semleges, árnyékban maradó arcú fantasy portrét kapott a `DnD portrék` mappa aranykeretes képei alapján. A képek optimalizálva és közvetlenül a HTML-be ágyazva működnek; a feltöltött egyéni portré továbbra is elsőbbséget élvez, eltávolításakor pedig automatikusan az aktuális faj alapképe jelenik meg.
 - A Barbár sötét vérvörös, kovácsoltvas és bronz palettát, a Sorcerer pedig ametisztlila és cián kristályfényeket kapott, így mindkettő markánsan elkülönül a többi kaszttémától.

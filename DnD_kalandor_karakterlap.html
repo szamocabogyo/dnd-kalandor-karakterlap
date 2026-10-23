@@ -474,6 +474,9 @@ body.parchment-theme .hp-card{
         0 0 6px rgba(200,169,106,.8),
         0 0 12px rgba(200,169,106,.5);
 }
+.skill-row.skill-unavailable{opacity:.48;cursor:not-allowed;filter:saturate(.45)}
+.skill-row.skill-unavailable:hover{background:rgba(0,0,0,.13)}
+.skill-choice-status{margin:0 0 9px;padding:8px 10px;border:1px solid rgba(214,181,111,.28);border-radius:3px;background:rgba(0,0,0,.13);color:var(--accent);font-size:.78rem;line-height:1.4}
 
 .skill-name{
     padding-left:6px;
@@ -2556,6 +2559,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     </div>
 
     <div class="section-content">
+        <p id="skillChoiceStatus" class="skill-choice-status" aria-live="polite"></p>
         <div class="skills-list">
 
 <div class="skill-row" data-ability="DEX"><span class="skill-dot"></span><span class="skill-name">Acrobatics</span><span class="skill-value">+0</span></div>
@@ -8552,6 +8556,83 @@ function characterSkillBaseName(skill){
     return base;
 }
 
+const allCharacterSkills=['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival'];
+const classSkillChoices2014={
+    Barbarian:{count:2,skills:['Animal Handling','Athletics','Intimidation','Nature','Perception','Survival']},
+    Bard:{count:3,skills:allCharacterSkills},
+    Cleric:{count:2,skills:['History','Insight','Medicine','Persuasion','Religion']},
+    Druid:{count:2,skills:['Arcana','Animal Handling','Insight','Medicine','Nature','Perception','Religion','Survival']},
+    Fighter:{count:2,skills:['Acrobatics','Animal Handling','Athletics','History','Insight','Intimidation','Perception','Survival']},
+    Monk:{count:2,skills:['Acrobatics','Athletics','History','Insight','Religion','Stealth']},
+    Paladin:{count:2,skills:['Athletics','Insight','Intimidation','Medicine','Persuasion','Religion']},
+    Ranger:{count:3,skills:['Animal Handling','Athletics','Insight','Investigation','Nature','Perception','Stealth','Survival']},
+    Rogue:{count:4,skills:['Acrobatics','Athletics','Deception','Insight','Intimidation','Investigation','Perception','Performance','Persuasion','Sleight of Hand','Stealth']},
+    Sorcerer:{count:2,skills:['Arcana','Deception','Insight','Intimidation','Persuasion','Religion']},
+    Warlock:{count:2,skills:['Arcana','Deception','History','Intimidation','Investigation','Nature','Religion']},
+    Wizard:{count:2,skills:['Arcana','History','Insight','Investigation','Medicine','Religion']}
+};
+function characterFixedSkillProficiencies(){
+    const fixed=new Set(),background=(backgroundRules2014||{})[document.getElementById('characterBackground')?.value.trim()||''];
+    if(background)background.skills.split(', ').forEach(skill=>fixed.add(skill));
+    const race=document.getElementById('characterRace')?.value||'';
+    if(race==='Elf')fixed.add('Perception');
+    if(race==='Half-Orc')fixed.add('Intimidation');
+    clericKnowledgeExpertiseSkills().forEach(skill=>fixed.add(skill));
+    return fixed;
+}
+function characterSkillChoiceSources(){
+    const {klass,level,subclass}=classFeatureContext(),sources=[];
+    const classChoice=classSkillChoices2014[klass];
+    if(classChoice)sources.push({label:klass,count:classChoice.count,skills:new Set(classChoice.skills)});
+    if(document.getElementById('characterRace')?.value==='Half-Elf')sources.push({label:'Half-Elf',count:2,skills:new Set(allCharacterSkills)});
+    if(klass==='Bard'&&level>=3&&subclass.includes('lore'))sources.push({label:'College of Lore',count:3,skills:new Set(allCharacterSkills)});
+    if(klass==='Cleric'&&level>=1&&subclass.includes('nature'))sources.push({label:'Acolyte of Nature',count:1,skills:new Set(['Animal Handling','Nature','Survival'])});
+    return sources;
+}
+function canAllocateSkillChoices(names,sources){
+    const requested=[...new Set(names)];
+    if(!requested.length)return true;
+    const eligible=requested.map(name=>sources.map((source,index)=>source.skills.has(name)?index:-1).filter(index=>index>=0));
+    if(eligible.some(indices=>!indices.length))return false;
+    const order=requested.map((_,index)=>index).sort((a,b)=>eligible[a].length-eligible[b].length),used=Array(sources.length).fill(0);
+    const assign=position=>{
+        if(position===order.length)return true;
+        for(const sourceIndex of eligible[order[position]])if(used[sourceIndex]<sources[sourceIndex].count){used[sourceIndex]++;if(assign(position+1))return true;used[sourceIndex]--;}
+        return false;
+    };
+    return assign(0);
+}
+function clearManualSkill(skill,index){
+    skill.classList.remove('manual-proficient');
+    localStorage.setItem(`skill_${index}`,'false');localStorage.setItem(`skill_manual_${index}`,'false');
+}
+function applySkillSelectionRules(){
+    const rows=[...document.querySelectorAll('.skill-row')],fixed=characterFixedSkillProficiencies(),sources=characterSkillChoiceSources();
+    if(!sources.length&&!fixed.size&&!document.getElementById('characterClass')?.value){
+        rows.forEach(row=>{row.dataset.skillSelectable='false';row.classList.add('skill-unavailable');row.setAttribute('aria-disabled','true');row.tabIndex=-1;});
+        const status=document.getElementById('skillChoiceStatus');if(status)status.textContent='A választható jártasságokhoz előbb add meg a kasztot, fajt és hátteret.';
+        return;
+    }
+    const accepted=[];
+    rows.forEach((row,index)=>{
+        const name=characterSkillBaseName(row);
+        if(!row.classList.contains('manual-proficient'))return;
+        if(fixed.has(name)||!canAllocateSkillChoices([...accepted,name],sources))clearManualSkill(row,index);
+        else accepted.push(name);
+    });
+    rows.forEach((row,index)=>{
+        const name=characterSkillBaseName(row),manual=row.classList.contains('manual-proficient'),automatic=fixed.has(name);
+        const available=manual||(!automatic&&canAllocateSkillChoices([...accepted,name],sources));
+        row.classList.toggle('proficient',manual||automatic);
+        row.classList.toggle('skill-unavailable',!available);
+        row.dataset.skillSelectable=String(available);
+        row.setAttribute('aria-disabled',String(!available));row.setAttribute('role','checkbox');row.setAttribute('aria-checked',String(manual||automatic));row.tabIndex=available?0:-1;
+        row.title=automatic?'Ez a jártasság automatikusan jár a fajból, háttérből vagy alosztályból.':available?(manual?'Kattints a választás visszavonásához.':'A szabályok szerint választható jártasság.'):'A jelenlegi kaszt, faj, alosztály és háttér alapján nem választható, vagy elfogyott a választási keret.';
+    });
+    const status=document.getElementById('skillChoiceStatus'),maximum=sources.reduce((sum,source)=>sum+source.count,0);
+    if(status)status.textContent=sources.length?`Választható jártasságok: ${accepted.length} / ${maximum}. Automatikusan jár: ${fixed.size}.`:'Ehhez a karakterhez nincs kézzel választható skill-jártasság.';
+}
+
 function updateRacialPerceptionProficiency(){
     const skill=[...document.querySelectorAll('.skill-row')].find(row=>characterSkillBaseName(row)==='Perception');
     if(!skill)return;
@@ -8744,7 +8825,7 @@ function updateDerivedFields(){
 function updateSkills() {
 
     updateProficiencyBonusFromLevel();
-    updateRacialPerceptionProficiency();
+    applySkillSelectionRules();
     const proficiency =
         parseInt(
             document.getElementById('proficiencyBonus').value
@@ -8781,6 +8862,7 @@ document
 .forEach((skill,index) => {
 
     skill.addEventListener('click', () => {
+        if(skill.dataset.skillSelectable!=='true')return;
         const manuallyProficient=!skill.classList.contains('manual-proficient');
         skill.classList.toggle('manual-proficient',manuallyProficient);
         skill.classList.toggle('proficient',manuallyProficient||skill.classList.contains('background-proficient'));
@@ -8795,6 +8877,7 @@ document
 	saveCharacter();
 
     });
+    skill.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&skill.dataset.skillSelectable==='true'){event.preventDefault();skill.click();}});
 
 });
 
@@ -9447,7 +9530,7 @@ const characterSubclasses2014={
   Warlock:['The Archfey','The Fiend','The Great Old One'],
   Wizard:['School of Abjuration','School of Conjuration','School of Divination','School of Enchantment','School of Evocation','School of Illusion','School of Necromancy','School of Transmutation']
 };
-const backgroundRules2014={
+var backgroundRules2014={
   Acolyte:{skills:'Insight, Religion',extras:'2 választható nyelv',feature:'Shelter of the Faithful — a hited közösségétől szállást és segítséget kérhetsz.'},
   Charlatan:{skills:'Deception, Sleight of Hand',extras:'Disguise kit, forgery kit',feature:'False Identity — kialakítottál egy hamis személyazonosságot.'},
   Criminal:{skills:'Deception, Stealth',extras:'1 gaming set, thieves’ tools',feature:'Criminal Contact — kapcsolatod van a bűnözői hálózatban.'},

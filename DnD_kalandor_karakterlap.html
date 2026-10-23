@@ -9520,25 +9520,10 @@ function consolidateLegacyFreeText(){
   if(migrated.length)other.value=[other.value.trim(),...migrated].filter(Boolean).join('\n\n');
   autoResizeTextarea(other);
 }
-const classBackgroundSuggestions2014={
-  Barbarian:['Outlander','Folk Hero','Soldier'],
-  Bard:['Entertainer','Charlatan','Noble','Guild Artisan'],
-  Cleric:['Acolyte','Hermit','Sage','Noble'],
-  Druid:['Hermit','Outlander','Folk Hero','Acolyte'],
-  Fighter:['Soldier','Folk Hero','Noble','Sailor','Criminal'],
-  Monk:['Hermit','Acolyte','Outlander','Urchin'],
-  Paladin:['Acolyte','Noble','Soldier','Folk Hero'],
-  Ranger:['Outlander','Folk Hero','Sailor','Hermit'],
-  Rogue:['Criminal','Charlatan','Urchin','Entertainer'],
-  Sorcerer:['Charlatan','Hermit','Noble','Sage'],
-  Warlock:['Charlatan','Criminal','Acolyte','Sage'],
-  Wizard:['Sage','Guild Artisan','Acolyte','Hermit']
-};
 function updateBackgroundOptions(){
   const list=document.getElementById('characterBackgroundOptions');
   if(!list)return;
-  const klass=document.getElementById('characterClass')?.value||'';
-  const backgrounds=classBackgroundSuggestions2014[klass]||Object.keys(backgroundRules2014);
+  const backgrounds=Object.keys(backgroundRules2014).sort((a,b)=>a.localeCompare(b,'en'));
   list.replaceChildren(...backgrounds.map(background=>{
     const option=document.createElement('button');
     option.type='button'; option.setAttribute('role','option'); option.dataset.background=background; option.textContent=background;
@@ -9578,7 +9563,7 @@ function filterBackgroundOptions(showAll=false){
   if(!list||!field)return; const query=showAll?'':field.value.trim().toLocaleLowerCase(); let visible=0;
   list.querySelectorAll('[data-background]').forEach(option=>{const match=option.dataset.background.toLocaleLowerCase().includes(query);option.hidden=!match;if(match)visible++;});
   list.querySelector('.background-options-empty')?.remove();
-  if(!visible){const empty=document.createElement('div');empty.className='background-options-empty';empty.textContent='Nincs ilyen ajánlott háttér. Egyéni értéket is megadhatsz.';list.appendChild(empty);}
+  if(!visible){const empty=document.createElement('div');empty.className='background-options-empty';empty.textContent='Nincs ilyen háttér a listában. Egyéni értéket is megadhatsz.';list.appendChild(empty);}
 }
 function updateBackgroundRulesNote(){
   const field=document.getElementById('characterBackground');

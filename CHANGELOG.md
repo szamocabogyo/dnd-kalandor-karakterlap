@@ -6,6 +6,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Háttér választó minden kasztnál és alosztálynál a teljes, 13 elemes PHB 2014 háttérlistát mutatja; a korábbi kasztonkénti ajánlási szűrés megszűnt.
 - A betöltött 2014-es varázslatok sebzésmezőt kaptak: 92 sebző varázslatnál automatikus alapérték és szintfüggő skálázás jelenik meg, az egyedi varázslatok értéke kézzel is szerkeszthető.
 - A Combat varázslatválasztó megjeleníti a sebzésképletet, és a sebző varázslatok használata után felajánlja a kockánkénti sebzésdobást.
 - Combat módban a varázslás dobása után külön „Sikeres találat” és „Sikertelen találat” döntés jelenik meg; sebzésdobásra kizárólag sikeres, sebző varázslat lép tovább.

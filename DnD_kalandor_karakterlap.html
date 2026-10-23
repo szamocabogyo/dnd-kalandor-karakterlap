@@ -1392,6 +1392,16 @@ input:focus, textarea:focus, select:focus {
 .combat-mode-overlay.mobile-combat-preview{position:fixed;inset:auto;display:grid;place-items:stretch;padding:0;overflow:hidden}
 .combat-mode-overlay.mobile-combat-preview .combat-mode-dialog{width:100%;max-width:none;height:100%;max-height:none;margin:0;padding:14px;border:0;border-radius:0;box-shadow:none;text-align:left;overscroll-behavior:contain}
 .combat-mode-overlay.mobile-combat-preview .combat-mode-dialog h2{text-align:center;margin-bottom:12px}
+.notes-dialog{display:flex;flex-direction:column;width:min(460px,calc(100vw - 32px));height:min(680px,calc(100vh - 32px));max-height:calc(100vh - 32px);padding:0;text-align:left;overflow:hidden}
+.notes-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary) 16%,var(--card)),var(--card))}
+.notes-header h2{margin:0;font-size:1.2rem}.notes-close{flex:0 0 38px;width:38px;min-height:38px!important;padding:0!important;font-size:1.35rem;line-height:1}
+.notes-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--bg)}
+.notes-toolbar button{flex:0 0 auto;min-width:38px;min-height:36px;padding:6px 10px;font-size:.86rem}.notes-toolbar button[data-notes-command="bold"]{font-weight:800}.notes-toolbar button[data-notes-command="italic"]{font-style:italic}.notes-toolbar button[data-notes-command="underline"]{text-decoration:underline}
+.notes-editor{flex:1;min-height:0;padding:18px;overflow:auto;background:linear-gradient(145deg,color-mix(in srgb,var(--class-primary) 5%,var(--card)),var(--card));color:var(--text);font-size:1rem;line-height:1.6;outline:none;overflow-wrap:anywhere}
+.notes-editor:empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}.notes-editor:focus{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.notes-editor h2,.notes-editor h3{color:var(--accent);text-align:left}.notes-editor blockquote{margin:1em 0;padding:.25em 0 .25em 1em;border-left:3px solid var(--accent);color:var(--muted)}
+.notes-status{min-height:1.35em;margin:0;padding:7px 14px calc(7px + env(safe-area-inset-bottom));border-top:1px solid var(--border);color:var(--muted);font-size:.76rem;text-align:right}
+@media(max-width:768px){.notes-overlay{place-items:stretch;padding:0;overflow:hidden}.notes-overlay .notes-dialog{width:100%;max-width:none;height:100vh;height:100dvh;max-height:none;border:0;border-radius:0;box-shadow:none}.notes-header{padding:calc(12px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left))}.notes-toolbar{padding:8px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left))}.notes-editor{padding:16px max(14px,env(safe-area-inset-right)) 16px max(14px,env(safe-area-inset-left))}}
 .portrait-editor-overlay{position:fixed;inset:0;z-index:100002;display:grid;place-items:center;padding:16px;box-sizing:border-box;background:rgba(0,0,0,.76)}
 .portrait-editor-overlay[hidden]{display:none!important}
 .portrait-editor-dialog{width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;padding:22px;background:var(--card);color:var(--text);border:2px solid var(--accent);text-align:center;box-shadow:0 18px 70px rgba(0,0,0,.65)}
@@ -2196,6 +2206,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       <summary>⚙ Beállítások</summary>
       <div class="settings-menu-panel">
         <button id="portraitSettingsButton" type="button">🖼 Portré</button>
+        <button id="notesSettingsButton" type="button">📝 Jegyzetek</button>
         <button id="exportCharacter">💾 Export</button>
         <button id="importCharacter">📂 Import</button>
         <button id="clearCharacter" type="button">♲ Karakterlap ürítése</button>
@@ -2959,6 +2970,16 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       </div>
     </div>
   </div>
+</div>
+<div id="notesOverlay" class="combat-mode-overlay notes-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="notesTitle">
+  <section class="combat-mode-dialog notes-dialog">
+    <header class="notes-header"><h2 id="notesTitle">📝 Jegyzetek</h2><button id="notesCloseButton" class="notes-close" type="button" aria-label="Jegyzetek bezárása">×</button></header>
+    <div id="notesToolbar" class="notes-toolbar" role="toolbar" aria-label="Jegyzet formázása">
+      <button type="button" data-notes-command="bold" title="Félkövér" aria-label="Félkövér">B</button><button type="button" data-notes-command="italic" title="Dőlt" aria-label="Dőlt">I</button><button type="button" data-notes-command="underline" title="Aláhúzott" aria-label="Aláhúzott">U</button><button type="button" data-notes-block="h3" title="Címsor">Cím</button><button type="button" data-notes-block="p" title="Bekezdés">¶</button><button type="button" data-notes-command="insertUnorderedList" title="Felsorolás">• Lista</button><button type="button" data-notes-command="insertOrderedList" title="Számozott lista">1. Lista</button><button type="button" data-notes-command="removeFormat" title="Formázás törlése">Törlés</button>
+    </div>
+    <div id="notesEditor" class="notes-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Karakterjegyzetek" data-placeholder="Írj ide jegyzeteket a kalandról, küldetésekről, szereplőkről vagy a játék eseményeiről…"></div>
+    <textarea id="characterNotesData" hidden aria-hidden="true"></textarea><p id="notesStatus" class="notes-status" aria-live="polite">A jegyzet automatikusan mentődik.</p>
+  </section>
 </div>
 <div id="portraitEditorOverlay" class="portrait-editor-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="portraitEditorTitle">
   <div class="portrait-editor-dialog">
@@ -10081,6 +10102,8 @@ document
             autoResizeTextarea(textarea);
         });
 
+        syncNotesEditorFromField();
+
         saveCharacter();
 
     };
@@ -10136,6 +10159,17 @@ localStorage.removeItem('theme');
 })();
 const portraitEditorOverlay = document.getElementById('portraitEditorOverlay');
 const characterResetOverlay = document.getElementById('characterResetOverlay');
+const notesOverlay=document.getElementById('notesOverlay'),notesEditor=document.getElementById('notesEditor'),characterNotesData=document.getElementById('characterNotesData');
+let notesSaveTimer=0;
+function sanitizeNotesHtml(value){const template=document.createElement('template');template.innerHTML=String(value||'');const allowed=new Set(['P','DIV','BR','B','STRONG','I','EM','U','H2','H3','UL','OL','LI','BLOCKQUOTE']);const clean=node=>{[...node.childNodes].forEach(child=>{if(child.nodeType===Node.ELEMENT_NODE){if(!allowed.has(child.tagName)){child.replaceWith(...child.childNodes);return;}[...child.attributes].forEach(attribute=>child.removeAttribute(attribute.name));clean(child);}else if(child.nodeType!==Node.TEXT_NODE)child.remove();});};clean(template.content);return template.innerHTML;}
+function syncNotesEditorFromField(){if(notesEditor&&characterNotesData)notesEditor.innerHTML=sanitizeNotesHtml(characterNotesData.value);}
+function saveNotes(){if(!notesEditor||!characterNotesData)return;characterNotesData.value=notesEditor.innerHTML;saveCharacter();const status=document.getElementById('notesStatus');if(status){status.textContent='Mentve.';clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(()=>{status.textContent='A jegyzet automatikusan mentődik.';},1200);}}
+function openNotes(){syncNotesEditorFromField();notesOverlay.hidden=false;document.body.style.overflow='hidden';requestAnimationFrame(()=>notesEditor?.focus());}
+function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById('notesSettingsButton')?.focus();}
+document.getElementById('notesSettingsButton')?.addEventListener('click',openNotes);document.getElementById('notesCloseButton')?.addEventListener('click',closeNotes);notesOverlay?.addEventListener('click',event=>{if(event.target===notesOverlay)closeNotes();});
+notesEditor?.addEventListener('input',()=>{characterNotesData.value=notesEditor.innerHTML;clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(saveNotes,350);});notesEditor?.addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData?.getData('text/plain')||'');});
+document.getElementById('notesToolbar')?.addEventListener('mousedown',event=>event.preventDefault());document.getElementById('notesToolbar')?.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;notesEditor?.focus();if(button.dataset.notesBlock)document.execCommand('formatBlock',false,button.dataset.notesBlock);else document.execCommand(button.dataset.notesCommand,false,null);saveNotes();});
+syncNotesEditorFromField();
 function clearStoredCharacter(){
     localStorage.removeItem('dndCharacter');
     Object.keys(localStorage).filter(key=>/^skill_(?:manual_)?\d+$/.test(key)).forEach(key=>localStorage.removeItem(key));
@@ -10164,6 +10198,7 @@ document.getElementById('settingsMenu')?.addEventListener('click', event => {
     if(event.target.closest('button')) event.currentTarget.open = false;
 });
 document.addEventListener('keydown', event => {
+    if(event.key === 'Escape' && notesOverlay && !notesOverlay.hidden){closeNotes();return;}
     if(event.key === 'Escape' && portraitEditorOverlay && !portraitEditorOverlay.hidden) portraitEditorOverlay.hidden = true;
     if(event.key === 'Escape' && characterResetOverlay && !characterResetOverlay.hidden) characterResetOverlay.hidden = true;
 });

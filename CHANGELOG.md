@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Beállítások menü új Jegyzetek nézetet kapott formázható szöveggel, automatikus karaktermentéssel, Export/Import támogatással, Combat méretű desktop ablakkal és teljes képernyős mobilnézettel.
+
 - A Fegyverek panel most belső görgetősáv nélkül, a tartalmához igazodó magassággal jelenik meg desktopon és keskeny képernyőn is.
 
 - A desktop elrendezés ismét fix, háromoszlopos szerkezetet használ, az Elrendezés funkció pedig megszűnt. Mobilon a panelek rögzített sorrendje: Karakter adatok, Hit Points, Inspiráció, Tulajdonságok, Harci értékek, Skills, Fegyverek, Kasztjellemzők, kasztspecifikus panelek, Felszerelés, Pénz, Haladó alapadatok, Életerőkockák, Mentődobások, Egyéb jártasságok.

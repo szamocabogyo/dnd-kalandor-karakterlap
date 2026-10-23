@@ -9664,7 +9664,8 @@ function closeDeathSaveOverlay(){
 }
 
 function syncDeathSaveOverlay(){
-    const hp = Number(currentHpField?.value);
+    const rawHp = currentHpField?.value.trim() || '';
+    const hp = rawHp === '' ? NaN : Number(rawHp);
     if(Number.isFinite(hp) && hp <= 0){
         openDeathSaveOverlay();
     } else if(deathSaveOverlay && !deathSaveOverlay.hidden){

@@ -6,6 +6,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Barbár sötét vérvörös, kovácsoltvas és bronz palettát, a Sorcerer pedig ametisztlila és cián kristályfényeket kapott, így mindkettő markánsan elkülönül a többi kaszttémától.
 - A mobilnézet alapértelmezett panelsorrendje most: Karakter adatok, Kasztjellemzők, Hit Points, Tulajdonságok, Skills, majd a további blokkok. A korábban kézzel mentett elrendezés továbbra is elsőbbséget élvez.
 - A fajválasztó Aasimar, Genasi és Tabaxi lehetőségekkel bővült. Az Aasimar és Genasi alfajai is választhatók; a méret-, nyelv- és faji jellemző összefoglalók automatikusak, a Tabaxi pedig automatikusan megkapja az Észlelés és Lopakodás jártasságot.
 - Prémium, kasztspecifikus fantasy vizuális rendszer mind a 12 alapkaszthoz: önálló színpaletta, beágyazott SVG-címer, háttérmotívum, panelornamentika és fényhatás.

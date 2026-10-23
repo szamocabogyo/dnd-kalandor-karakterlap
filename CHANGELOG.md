@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Jegyzetek felsorolásai megfelelő belső behúzást és tördelést kaptak, így a listajelek keskeny képernyőn is a szerkesztőn belül maradnak.
+
 - A Beállítások menü új Jegyzetek nézetet kapott formázható szöveggel, automatikus karaktermentéssel, Export/Import támogatással, Combat méretű desktop ablakkal és teljes képernyős mobilnézettel.
 
 - A Fegyverek panel most belső görgetősáv nélkül, a tartalmához igazodó magassággal jelenik meg desktopon és keskeny képernyőn is.

@@ -10141,9 +10141,25 @@ localStorage.removeItem('theme');
         try { return JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; }
         catch { return {}; }
     };
+    const defaultMobileRank = panel => {
+        if (panel.matches('.character-info')) return 0;
+        if (panel.id === 'classFeaturesCard') return 1;
+        if (panel.matches('.hp-card')) return 2;
+        if (panel.matches('.abilities')) return 3;
+        if (panel.querySelector('.skills-list')) return 4;
+        return 100 + panels.indexOf(panel);
+    };
     const applySavedOrder = () => {
         const saved = readOrder();
         const savedPanels = Array.isArray(saved.panels) ? saved.panels.slice() : [];
+        if (!savedPanels.length) {
+            if (sheet.classList.contains('mobile-mode')) {
+                setOrder([...panels].sort((a, b) => defaultMobileRank(a) - defaultMobileRank(b)));
+            } else {
+                clearVisualOrder();
+            }
+            return;
+        }
         const inspiration = document.getElementById('inspirationCard');
         if(inspiration && !savedPanels.includes(inspiration.dataset.mobilePanelId)){
             const advancedIndex = savedPanels.indexOf(inspiration.nextElementSibling?.dataset.mobilePanelId);
@@ -10169,6 +10185,7 @@ localStorage.removeItem('theme');
         else saveOrder();
     });
     applySavedOrder();
+    window.matchMedia('(max-width: 768px)').addEventListener?.('change', applySavedOrder);
 
     const finishDrag = () => {
         if (!drag) return;

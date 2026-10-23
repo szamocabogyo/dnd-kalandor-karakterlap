@@ -24,6 +24,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Bárd PHB 2014 kasztképességek, automatikus Expertise, Song of Rest, Countercharm, Magical Secrets és College of Lore/Valor jellemzők.
 - A Combat mód kezeli a Bardic Inspiration, Combat Inspiration, Cutting Words, Countercharm és Superior Inspiration erőforrásait.
 - Tolvaj (Rogue) PHB 2014 kasztképességek, automatikus Expertise, Sneak Attack, Cunning Action és a Thief, Assassin, valamint Arcane Trickster alosztályok jellemzői.
+- A Tolvaj heraldikai fejléc sértetlen, belső geometrikus sarokdíszeket kapott; a Bárd és Tolvaj Expertise mezői kizárólag a Skills panelen már profi képességeket kínálják, kizárják a duplikációt, és az Expertise kiemelése azonnal megjelenik a skill soron.
 - A Combat mód kezeli a Fast Hands, Uncanny Dodge, Evasion, Assassinate, Versatile Trickster, Thief’s Reflexes és Stroke of Luck használatát.
 - Cleric PHB 2014 kasztképességek, automatikus varázslási keret, Turn/Destroy Undead, Divine Intervention és mind a hét PHB domain jellemzői.
 - A Combat mód külön kezeli a domainenkénti Channel Divinity lehetőségeket, reakciókat, bónuszakciókat és használatszámlálókat.

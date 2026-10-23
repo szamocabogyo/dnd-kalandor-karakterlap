@@ -953,6 +953,8 @@ input:focus, textarea:focus, select:focus {
     background: rgba(181,139,73,.13);
     border-color: rgba(214,181,111,.42);
 }
+.skill-row.expertise-proficient{border-color:var(--class-primary,var(--accent));box-shadow:inset 0 0 14px var(--class-glow,rgba(214,181,111,.18))}
+.skill-row.expertise-proficient .skill-dot{position:relative;transform:rotate(45deg);border-radius:2px}
 .skill-dot {
     border-color: #c7b18c;
 }
@@ -1327,6 +1329,8 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 .class-feature-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .class-feature-fields>.wide{grid-column:1/-1}
 .class-feature-fields label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.class-feature-fields label.expertise-unavailable{opacity:.68}
+.class-feature-fields label.expertise-unavailable::after{content:"Előbb válassz profi képességet a Skills panelen.";color:var(--muted);font-size:.72rem;line-height:1.35;text-transform:none}
 .class-feature-resource .resource-value{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
 .class-feature-resource output{font-weight:700;color:var(--accent);white-space:nowrap}
 .class-feature-note{grid-column:1/-1;margin:0;color:var(--muted);font-size:.84em;line-height:1.45}
@@ -2261,7 +2265,7 @@ body.parchment-theme .sheet[data-class]{--accent:color-mix(in srgb,var(--class-p
 .sheet[data-class="Monk"] .class-fantasy-banner::after{background:repeating-radial-gradient(circle at 88% 50%,transparent 0 17px,rgba(87,204,194,.16) 18px 19px,transparent 20px 31px)}
 .sheet[data-class="Paladin"] .class-fantasy-banner{background-image:repeating-conic-gradient(from 0deg at 88% 50%,rgba(245,210,95,.19) 0 2deg,transparent 2deg 12deg),linear-gradient(110deg,#273248,#15191f)}
 .sheet[data-class="Ranger"] .class-fantasy-banner::after{background:repeating-linear-gradient(55deg,transparent 0 30px,rgba(135,166,80,.12) 31px 32px,transparent 33px 60px)}
-.sheet[data-class="Rogue"] .class-fantasy-banner{clip-path:polygon(0 0,96% 0,100% 18%,100% 100%,4% 100%,0 82%);background-image:linear-gradient(125deg,transparent 0 70%,rgba(158,107,199,.13) 70.2% 71%,transparent 71.2%),linear-gradient(110deg,#251d2c,#0f0d11)}
+.sheet[data-class="Rogue"] .class-fantasy-banner{clip-path:none;border-radius:2px 12px 2px 12px;background-image:linear-gradient(135deg,var(--class-primary) 0 2px,transparent 2px) top left/23px 23px no-repeat,linear-gradient(225deg,var(--class-primary) 0 2px,transparent 2px) top right/23px 23px no-repeat,linear-gradient(45deg,var(--class-primary) 0 2px,transparent 2px) bottom left/23px 23px no-repeat,linear-gradient(315deg,var(--class-primary) 0 2px,transparent 2px) bottom right/23px 23px no-repeat,linear-gradient(125deg,transparent 0 70%,rgba(158,107,199,.13) 70.2% 71%,transparent 71.2%),linear-gradient(110deg,#251d2c,#0f0d11)}
 .sheet[data-class="Sorcerer"] .class-fantasy-banner::after{background:conic-gradient(from 15deg at 88% 50%,transparent,rgba(232,57,102,.25),transparent 13%,rgba(232,57,102,.16),transparent 27%)}
 .sheet[data-class="Warlock"] .class-fantasy-banner::after{background:repeating-conic-gradient(from 9deg at 88% 50%,transparent 0 18deg,rgba(120,196,133,.13) 19deg 20deg,transparent 21deg 36deg)}
 .sheet[data-class="Wizard"] .class-fantasy-banner::after{background:radial-gradient(circle at 88% 50%,transparent 0 23px,rgba(103,167,238,.18) 24px 25px,transparent 26px 42px,rgba(103,167,238,.13) 43px 44px,transparent 45px),repeating-conic-gradient(from 0deg at 88% 50%,transparent 0 14deg,rgba(103,167,238,.18) 15deg 16deg,transparent 17deg 30deg)}
@@ -7244,6 +7248,7 @@ function renderClassFeatures(){
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
+    syncExpertiseSkillOptions();
     refreshSpellCatalog();
     renderRangerCompanion();
     refreshConsolidatedCharacterText();
@@ -8710,6 +8715,29 @@ function rogueExpertiseSkills(){
     if(classFeatureContext().klass!=='Rogue')return new Set();
     return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_rogueExpertise'+index)?.value).filter(Boolean));
 }
+function expertiseSkillSelects(){
+    return [...document.querySelectorAll('#classFeatureFields select[data-class-resource]')].filter(select=>/^(?:bard|rogue)Expertise\d+$/.test(select.dataset.classResource||''));
+}
+function syncExpertiseSkillOptions(){
+    const selects=expertiseSkillSelects();
+    if(!selects.length)return;
+    const proficient=new Set([...document.querySelectorAll('.skill-row.proficient')].map(characterSkillBaseName).filter(Boolean));
+    const accepted=new Set();
+    selects.forEach(select=>{
+        const value=select.value;
+        if(!value||!proficient.has(value)||accepted.has(value))select.value='';
+        else accepted.add(value);
+    });
+    selects.forEach(select=>{
+        const value=select.value;
+        const usedElsewhere=new Set(selects.filter(other=>other!==select).map(other=>other.value).filter(Boolean));
+        const available=allCharacterSkills.filter(name=>proficient.has(name)&&(name===value||!usedElsewhere.has(name)));
+        select.replaceChildren(new Option('Válassz…',''),...available.map(name=>new Option(name,name,false,name===value)));
+        select.value=available.includes(value)?value:'';
+        select.disabled=available.length===0;
+        select.closest('label')?.classList.toggle('expertise-unavailable',available.length===0);
+    });
+}
 function clericKnowledgeExpertiseSkills(){
     const c=classFeatureContext();
     if(c.klass!=='Cleric'||!c.subclass.includes('knowledge'))return new Set();
@@ -8995,6 +9023,7 @@ function updateSkills() {
 
     updateProficiencyBonusFromLevel();
     applySkillSelectionRules();
+    syncExpertiseSkillOptions();
     const proficiency =
         parseInt(
             document.getElementById('proficiencyBonus').value
@@ -9017,7 +9046,9 @@ function updateSkills() {
         const knowledgeExpertise=clericKnowledgeExpertiseSkills().has(skillName);
         const proficient=skill.classList.contains('proficient')||knowledgeExpertise;
         value += abilityCheckTrainingBonus(ability,proficient);
-        if(proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName)))value+=proficiency;
+        const hasExpertise=proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName));
+        skill.classList.toggle('expertise-proficient',hasExpertise||knowledgeExpertise);
+        if(hasExpertise)value+=proficiency;
         if(knowledgeExpertise)value+=proficiency;
 
         skill.querySelector('.skill-value')

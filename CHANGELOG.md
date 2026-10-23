@@ -29,6 +29,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - A kör befejezésének megerősítése a Combat mód megjelenéséhez igazodó, reszponzív párbeszédablakot kapott.
 - A külön Combat „Áttekintés” lépés megszűnt; az aktuális és korábbi körök eseményei a Műveletek nézet naplójában maradnak elérhetők.
 - A halálmentődobás ablaka üres aktuális HP mezőnél zárva marad, és csak ténylegesen megadott 0 vagy negatív értéknél nyílik meg.
+- A halálmentő sikerek és kudarcok alapértelmezett pipái témába illő, arany csillag- és vörös keresztpecsétekre változtak.
 
 ### Tervezett
 

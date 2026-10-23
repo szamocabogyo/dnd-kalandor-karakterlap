@@ -1427,6 +1427,17 @@ body.parchment-theme .skill-row.proficient .skill-dot {
 .death-save-dialog .field-label{display:block;color:var(--accent);font-weight:bold;text-align:center}
 .death-save-dialog .death-save-checks{justify-content:center;gap:16px;margin-top:12px}
 .death-save-dialog input[type=checkbox]{width:28px;height:28px;min-width:28px;min-height:28px;padding:0;accent-color:var(--accent);cursor:pointer}
+.death-save-checks .death-save-mark{position:relative;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin:0;padding:0;border:1px solid color-mix(in srgb,var(--accent) 70%,var(--border));border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.08),transparent 45%),var(--bg);color:var(--accent);cursor:pointer;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 2px 7px rgba(0,0,0,.28);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.death-save-checks .death-save-mark input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;margin:0;opacity:0;cursor:pointer}
+.death-save-checks .death-save-mark span{font-size:1.05rem;line-height:1;opacity:.22;transform:scale(.72);transition:opacity .16s ease,transform .16s ease,text-shadow .16s ease}
+.death-save-checks .death-save-mark:hover{transform:translateY(-1px);border-color:var(--accent)}
+.death-save-checks .death-save-mark:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.death-save-checks .death-save-mark:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 10px color-mix(in srgb,var(--accent) 24%,transparent),0 0 10px color-mix(in srgb,var(--accent) 38%,transparent)}
+.death-save-checks .death-save-mark:has(input:checked) span{opacity:1;transform:scale(1);text-shadow:0 0 8px currentColor}
+.death-save-checks .death-save-failure{color:#d27a68;border-color:color-mix(in srgb,#d27a68 68%,var(--border))}
+.death-save-checks .death-save-failure:hover,.death-save-checks .death-save-failure:has(input:checked){border-color:#d27a68}
+.death-save-checks .death-save-failure:has(input:focus-visible){outline-color:#d27a68}
+.death-save-checks .death-save-failure:has(input:checked){box-shadow:inset 0 0 10px rgba(210,122,104,.24),0 0 10px rgba(210,122,104,.38)}
 .death-save-done:hover{filter:brightness(1.2)}
 .death-save-done{min-height:42px;padding:8px 22px;border:1px solid var(--accent);background:var(--card);color:var(--text);font-weight:bold;cursor:pointer}
 @media(max-width:480px){.death-save-dialog{width:calc(100vw - 24px);max-height:calc(100vh - 24px);padding:22px 14px}.death-save-dialog .death-save-grid{gap:10px}.death-save-dialog .death-save-checks{gap:10px}}
@@ -2650,8 +2661,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     <p id="hitDiceAvailability" class="hit-dice-availability" role="status"></p>
 <div id="deathSaveHome" aria-hidden="true"></div>
     <div class="death-save-grid" style="margin-top:14px">
-      <div><span class="field-label">Halálmentő sikerek</span><div class="death-save-checks"><label><input id="deathSuccess1" type="checkbox" aria-label="Első siker"></label><label><input id="deathSuccess2" type="checkbox" aria-label="Második siker"></label><label><input id="deathSuccess3" type="checkbox" aria-label="Harmadik siker"></label></div></div>
-      <div><span class="field-label">Halálmentő kudarcok</span><div class="death-save-checks"><label><input id="deathFailure1" type="checkbox" aria-label="Első kudarc"></label><label><input id="deathFailure2" type="checkbox" aria-label="Második kudarc"></label><label><input id="deathFailure3" type="checkbox" aria-label="Harmadik kudarc"></label></div></div>
+      <div><span class="field-label">Halálmentő sikerek</span><div class="death-save-checks"><label class="death-save-mark death-save-success"><input id="deathSuccess1" type="checkbox" aria-label="Első siker"><span aria-hidden="true">✦</span></label><label class="death-save-mark death-save-success"><input id="deathSuccess2" type="checkbox" aria-label="Második siker"><span aria-hidden="true">✦</span></label><label class="death-save-mark death-save-success"><input id="deathSuccess3" type="checkbox" aria-label="Harmadik siker"><span aria-hidden="true">✦</span></label></div></div>
+      <div><span class="field-label">Halálmentő kudarcok</span><div class="death-save-checks"><label class="death-save-mark death-save-failure"><input id="deathFailure1" type="checkbox" aria-label="Első kudarc"><span aria-hidden="true">✕</span></label><label class="death-save-mark death-save-failure"><input id="deathFailure2" type="checkbox" aria-label="Második kudarc"><span aria-hidden="true">✕</span></label><label class="death-save-mark death-save-failure"><input id="deathFailure3" type="checkbox" aria-label="Harmadik kudarc"><span aria-hidden="true">✕</span></label></div></div>
     </div>
   </div>
   <div class="card extra-card money-card">

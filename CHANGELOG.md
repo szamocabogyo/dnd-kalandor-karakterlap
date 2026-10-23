@@ -73,6 +73,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Módosítva
 
+- A pergamen mód, annak beállításgombja, mentett állapota és teljes stílusrétege megszűnt; a karakterlap egységesen a kasztspecifikus sötét fantasy témát használja.
 - Egységes panelmegjelenés mobil- és asztali nézetben.
 - Automatikus AC-, kezdeményezés-, mentődobás- és varázslási számítások.
 - A szabad szöveges adatok két fő mezőbe rendezve: **Felszerelés**, illetve **Egyéb jártasságok és nyelvek**.

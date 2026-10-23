@@ -476,6 +476,8 @@ body.parchment-theme .hp-card{
 }
 .skill-row.skill-unavailable{opacity:.48;cursor:not-allowed;filter:saturate(.45)}
 .skill-row.skill-unavailable:hover{background:rgba(0,0,0,.13)}
+.skill-row.skill-unavailable.skill-automatic{opacity:1;filter:none;cursor:default;background:rgba(181,139,73,.13);border-color:rgba(214,181,111,.42)}
+.skill-row.skill-unavailable.skill-automatic:hover{background:rgba(181,139,73,.13)}
 .skill-choice-status{margin:0 0 9px;padding:8px 10px;border:1px solid rgba(214,181,111,.28);border-radius:3px;background:rgba(0,0,0,.13);color:var(--accent);font-size:.78rem;line-height:1.4}
 
 .skill-name{
@@ -8624,6 +8626,7 @@ function applySkillSelectionRules(){
         const name=characterSkillBaseName(row),manual=row.classList.contains('manual-proficient'),automatic=fixed.has(name);
         const available=manual||(!automatic&&canAllocateSkillChoices([...accepted,name],sources));
         row.classList.toggle('proficient',manual||automatic);
+        row.classList.toggle('skill-automatic',automatic);
         row.classList.toggle('skill-unavailable',!available);
         row.dataset.skillSelectable=String(available);
         row.setAttribute('aria-disabled',String(!available));row.setAttribute('role','checkbox');row.setAttribute('aria-checked',String(manual||automatic));row.tabIndex=available?0:-1;

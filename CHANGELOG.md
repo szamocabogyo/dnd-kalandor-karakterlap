@@ -8,6 +8,7 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 - A Háttér választó minden kasztnál és alosztálynál a teljes, 13 elemes PHB 2014 háttérlistát mutatja; a korábbi kasztonkénti ajánlási szűrés megszűnt.
 - A Skills panel csak a kaszt, faj, alosztály és háttér alapján szabályosan választható jártasságokat engedi kijelölni, figyeli a választási kereteket, és letiltja az elérhetetlen vagy automatikusan járó sorokat.
+- Az automatikusan járó skill-jártasságok ugyanazt az arany kiemelést és kitöltött jelölőt kapják, mint a kézzel választott jártasságok, miközben továbbra sem kapcsolhatók ki.
 - A betöltött 2014-es varázslatok sebzésmezőt kaptak: 92 sebző varázslatnál automatikus alapérték és szintfüggő skálázás jelenik meg, az egyedi varázslatok értéke kézzel is szerkeszthető.
 - A Combat varázslatválasztó megjeleníti a sebzésképletet, és a sebző varázslatok használata után felajánlja a kockánkénti sebzésdobást.
 - Combat módban a varázslás dobása után külön „Sikeres találat” és „Sikertelen találat” döntés jelenik meg; sebzésdobásra kizárólag sikeres, sebző varázslat lép tovább.

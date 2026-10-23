@@ -2465,14 +2465,17 @@ body.parchment-theme .sheet[data-class] .skill-row.proficient{border-color:color
 
 		    <option value="">Válassz fajt...</option>
 
+		    <option>Aasimar</option>
 		    <option>Dragonborn</option>
 		    <option>Dwarf</option>
 		    <option>Elf</option>
+		    <option>Genasi</option>
 		    <option>Gnome</option>
 		    <option>Half-Elf</option>
 		    <option>Half-Orc</option>
 		    <option>Halfling</option>
 		    <option>Human</option>
+		    <option>Tabaxi</option>
 		    <option>Tiefling</option>
 
 		</select>
@@ -4088,7 +4091,7 @@ function setupSpellCatalogRow(row){
 }
 function spellCatalogPopulateSubrace(value){
     const select=document.getElementById('characterSubrace');if(!select)return;
-    const race=document.getElementById('characterRace')?.value,values={Elf:['High Elf','Wood Elf','Drow'],Gnome:['Forest Gnome','Rock Gnome'],Dwarf:['Hill Dwarf','Mountain Dwarf'],Halfling:['Lightfoot','Stout']}[race]||[];
+    const race=document.getElementById('characterRace')?.value,values={Aasimar:['Protector Aasimar','Scourge Aasimar','Fallen Aasimar'],Elf:['High Elf','Wood Elf','Drow'],Genasi:['Air Genasi','Earth Genasi','Fire Genasi','Water Genasi'],Gnome:['Forest Gnome','Rock Gnome'],Dwarf:['Hill Dwarf','Mountain Dwarf'],Halfling:['Lightfoot','Stout']}[race]||[];
     const previous=value??select.value;
     select.replaceChildren(new Option('Válassz alfajt…',''),...values.map(name=>new Option(name,name)));
     select.value=values.includes(previous)?previous:'';select.closest('.spell-catalog-subrace').hidden=!values.length;
@@ -8793,6 +8796,7 @@ function characterFixedSkillProficiencies(){
     const race=document.getElementById('characterRace')?.value||'';
     if(race==='Elf')fixed.add('Perception');
     if(race==='Half-Orc')fixed.add('Intimidation');
+    if(race==='Tabaxi'){fixed.add('Perception');fixed.add('Stealth');}
     clericKnowledgeExpertiseSkills().forEach(skill=>fixed.add(skill));
     return fixed;
 }
@@ -8884,7 +8888,7 @@ function writeAdvancedBaseDefault(id,value){
 
 function updateAdvancedBaseDefaults(){
     const race=document.getElementById('characterRace')?.value||'';
-    const sizes={Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tiefling:'Közepes'};
+    const sizes={Aasimar:'Közepes',Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Genasi:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tabaxi:'Közepes',Tiefling:'Közepes'};
     writeAdvancedBaseDefault('characterSize',sizes[race]||'');
     writeAdvancedBaseDefault('initiativeBonus',abilityCheckTrainingBonus('DEX'));
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10);
@@ -8973,7 +8977,8 @@ function automaticSpellcastingAbility(){
     if(klass==='Rogue'&&subclass.includes('arcane trickster'))return 'INT';
     if(klass==='Barbarian'&&subclass.includes('totem warrior'))return 'WIS';
     if(klass==='Monk'&&(subclass.includes('way of shadow')||subclass.includes('four elements')))return 'WIS';
-    if(race==='tiefling'||subrace==='tiefling'||subrace==='drow'||subrace==='dark elf')return 'CHA';
+    if(race==='aasimar'||race==='tiefling'||subrace==='tiefling'||subrace==='drow'||subrace==='dark elf')return 'CHA';
+    if(race==='genasi')return 'CON';
     if(subrace==='high elf'||subrace==='forest gnome')return 'INT';
     return '';
 }
@@ -9768,14 +9773,17 @@ var backgroundRules2014={
 var backgroundGeneratedEquipment='';
 var backgroundGeneratedFeature='';
 const raceReference2014={
+  Aasimar:{languages:'Közös, Égi',features:'Sötétlátás, égi ellenállás, gyógyító kéz, fényhozó; az alfaj égi átalakulást ad'},
   Dragonborn:{languages:'Közös, Sárkány',features:'Sárkányős, leheletfegyver, sebzésellenállás'},
   Dwarf:{languages:'Közös, Törpe',features:'Sötétlátás, törpe ellenállás, törpe harci képzettség, szerszámjártasság, kőismeret'},
   Elf:{languages:'Közös, Tünde',features:'Sötétlátás, éles érzékek, tündér származás, révület'},
+  Genasi:{languages:'Közös, Ősnyelv',features:'Elemi örökség; az alfaj levegő-, föld-, tűz- vagy vízjellemzőket és faji mágiát ad'},
   Gnome:{languages:'Közös, Gnóm',features:'Sötétlátás, gnóm ravaszság'},
   'Half-Elf':{languages:'Közös, Tünde és egy választott nyelv',features:'Sötétlátás, tündér származás, sokoldalú képzettség'},
   'Half-Orc':{languages:'Közös, Ork',features:'Sötétlátás, fenyegető fellépés, rendíthetetlen kitartás, vad támadások'},
   Halfling:{languages:'Közös, Félszerzet',features:'Szerencsés, bátor, félszerzet fürgeség'},
   Human:{languages:'Közös és egy választott nyelv',features:'Sokoldalú emberi örökség'},
+  Tabaxi:{languages:'Közös és egy választott nyelv',features:'Sötétlátás, macskafürgeség, macskakarmok, jártasság Észlelésben és Lopakodásban'},
   Tiefling:{languages:'Közös, Pokoli',features:'Sötétlátás, pokoli ellenállás, pokoli örökség'}
 };
 const classProficiencyReference={

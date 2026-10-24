@@ -1299,6 +1299,8 @@ input:focus, textarea:focus, select:focus {
 .combat-death-healing-result{min-height:1.4em;margin:10px 0 0;color:var(--text);font-size:.86rem;line-height:1.45;text-align:center}
 .combat-death-outcome-overlay{position:fixed;inset:0;z-index:100004;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.82)}.combat-death-outcome-overlay[hidden]{display:none!important}
 .combat-death-outcome-dialog{width:min(360px,calc(100vw - 36px));padding:28px 22px;border:2px solid #b65d50;background:linear-gradient(145deg,#281513,var(--card));box-shadow:0 18px 70px rgba(0,0,0,.72),0 0 32px rgba(182,93,80,.24);text-align:center}.combat-death-outcome-dialog h3{margin:0 0 10px;color:#e19383;font-size:clamp(1.65rem,8vw,2.35rem);letter-spacing:.08em}.combat-death-outcome-dialog p{margin:0 0 20px;line-height:1.5}.combat-death-outcome-dialog button{border-color:#b65d50}
+.death-save-notes{margin-top:14px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.death-save-notes summary{display:flex;align-items:center;justify-content:space-between;min-height:42px;color:var(--accent);font-weight:700;cursor:pointer;list-style:none}.death-save-notes summary::-webkit-details-marker{display:none}.death-save-note-field{display:flex;flex-direction:column;gap:6px;padding:0 0 12px;color:var(--accent);font-size:.82rem;font-weight:700;text-align:left}.death-save-note-field textarea{width:100%;min-height:110px;box-sizing:border-box;resize:vertical;background:var(--card);color:var(--text);border:1px solid var(--border);padding:10px;font:inherit;font-weight:400;line-height:1.45}
+.combat-death-outcome-dialog .death-save-note-field{padding:0;margin:16px 0;text-align:left}.combat-death-outcome-dialog .death-save-note-field textarea{min-height:130px}.combat-death-outcome-dialog #combatDeathSaveNoteSlot:empty{display:none}
 .death-save-checks .death-save-mark{position:relative;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;margin:0;padding:0;border:1px solid color-mix(in srgb,var(--accent) 70%,var(--border));border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.08),transparent 45%),var(--bg);color:var(--accent);cursor:pointer;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),0 2px 7px rgba(0,0,0,.28);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}
 .death-save-checks .death-save-mark input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;margin:0;opacity:0;cursor:pointer}
 .death-save-checks .death-save-mark span{font-size:1.05rem;line-height:1;opacity:.22;transform:scale(.72);transition:opacity .16s ease,transform .16s ease,text-shadow .16s ease}
@@ -2653,6 +2655,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       <div><span class="field-label">Halálmentő sikerek</span><div class="death-save-checks"><label class="death-save-mark death-save-success"><input id="deathSuccess1" type="checkbox" aria-label="Első siker"><span aria-hidden="true">✦</span></label><label class="death-save-mark death-save-success"><input id="deathSuccess2" type="checkbox" aria-label="Második siker"><span aria-hidden="true">✦</span></label><label class="death-save-mark death-save-success"><input id="deathSuccess3" type="checkbox" aria-label="Harmadik siker"><span aria-hidden="true">✦</span></label></div></div>
       <div><span class="field-label">Halálmentő kudarcok</span><div class="death-save-checks"><label class="death-save-mark death-save-failure"><input id="deathFailure1" type="checkbox" aria-label="Első kudarc"><span aria-hidden="true">✕</span></label><label class="death-save-mark death-save-failure"><input id="deathFailure2" type="checkbox" aria-label="Második kudarc"><span aria-hidden="true">✕</span></label><label class="death-save-mark death-save-failure"><input id="deathFailure3" type="checkbox" aria-label="Harmadik kudarc"><span aria-hidden="true">✕</span></label></div></div>
     </div>
+    <details id="deathSaveNotesDisclosure" class="death-save-notes"><summary>Mesélő utasításai</summary><div id="deathSaveNoteHome" aria-hidden="true"></div><label id="deathSaveNoteField" class="death-save-note-field">Jegyzet<textarea id="deathSaveDmNote" placeholder="Írd ide a mesélő utasításait…"></textarea></label></details>
   </div>
   <div class="card extra-card money-card">
     <h3><span class="dnd-mark" aria-hidden="true">◉</span> Pénz</h3>
@@ -2817,7 +2820,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
           <p id="combatDeathHealingResult" class="combat-death-healing-result" role="status" aria-live="polite"></p>
         </div>
       </section>
-      <div id="combatDeathOutcomeOverlay" class="combat-death-outcome-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="combatDeathOutcomeTitle"><div class="combat-death-outcome-dialog"><h3 id="combatDeathOutcomeTitle">☠ Meghaltál</h3><p>Három sikertelen halálmentődobást jelöltél.</p><button id="combatDeathOutcomeClose" type="button">Bezárás</button></div></div>
+      <div id="combatDeathOutcomeOverlay" class="combat-death-outcome-overlay" hidden role="alertdialog" aria-modal="true" aria-labelledby="combatDeathOutcomeTitle"><div class="combat-death-outcome-dialog"><h3 id="combatDeathOutcomeTitle">☠ Meghaltál</h3><p>Három sikertelen halálmentődobást jelöltél.</p><div id="combatDeathSaveNoteSlot"></div><button id="combatDeathOutcomeClose" type="button">Jegyzet mentése és bezárás</button></div></div>
       <div id="combatRoundActions" hidden>
         <div class="combat-turn-tracker">
           <section id="combatGuideDashboard">
@@ -6121,10 +6124,13 @@ function applyManualCombatDeathSaveHealing(){
 }
 function syncDeathSaveMarks(){document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{const mark=field.closest('.death-save-mark');mark?.classList.toggle('is-checked',field.checked);mark?.setAttribute('aria-pressed',String(field.checked));});}
 function clearCompletedDeathSavesForNextRound(){const successes=[1,2,3].map(index=>document.getElementById(`deathSuccess${index}`)),failures=[1,2,3].map(index=>document.getElementById(`deathFailure${index}`));if(!successes.every(field=>field?.checked)&&!failures.every(field=>field?.checked))return;[...successes,...failures].forEach(field=>{if(field)field.checked=false;});syncDeathSaveMarks();}
+function showDeathSaveOutcomeNote(){const field=document.getElementById('deathSaveNoteField'),slot=document.getElementById('combatDeathSaveNoteSlot');if(field&&slot)slot.appendChild(field);}
+function restoreDeathSaveOutcomeNote(){const field=document.getElementById('deathSaveNoteField'),home=document.getElementById('deathSaveNoteHome'),disclosure=document.getElementById('deathSaveNotesDisclosure'),moved=Boolean(field&&home&&disclosure&&field.parentElement!==disclosure);if(moved){home.after(field);disclosure.open=true;saveCharacter();}}
+function closeDeathSaveOutcome(){document.getElementById('combatDeathOutcomeOverlay').hidden=true;restoreDeathSaveOutcomeNote();}
 function updateDeathSaveOutcome(){
     syncDeathSaveMarks();
     const success=[1,2,3].every(index=>document.getElementById(`deathSuccess${index}`)?.checked),failure=[1,2,3].every(index=>document.getElementById(`deathFailure${index}`)?.checked);
-    if(failure){const overlay=document.getElementById('combatDeathOutcomeOverlay');overlay.hidden=false;requestAnimationFrame(()=>document.getElementById('combatDeathOutcomeClose')?.focus());saveCharacter();return;}
+    if(failure){const overlay=document.getElementById('combatDeathOutcomeOverlay');showDeathSaveOutcomeNote();overlay.hidden=false;requestAnimationFrame(()=>document.getElementById('deathSaveDmNote')?.focus());saveCharacter();return;}
     if(success){const hp=document.getElementById('currentHp'),value=Number(hp?.value);if(Number.isFinite(value)&&value<0){hp.value='0';hp.dispatchEvent(new Event('input',{bubbles:true}));hp.dispatchEvent(new Event('change',{bubbles:true}));appendCombatGuideEvent({kind:'event',category:'death-save',label:'Stabilizálódás',detail:'Három sikeres halálmentődobás: az aktuális HP 0.'});renderCombatGuide();}}saveCharacter();
 }
 
@@ -6341,7 +6347,7 @@ function setupCombatGuide(){
     document.getElementById('combatDeathHealingApply').addEventListener('click',applyManualCombatDeathSaveHealing);
     document.getElementById('combatDeathHealingManual').addEventListener('keydown',event=>{if(event.key==='Enter')applyManualCombatDeathSaveHealing();});
     document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>field.addEventListener('change',updateDeathSaveOutcome));
-    document.getElementById('combatDeathOutcomeClose').addEventListener('click',()=>{document.getElementById('combatDeathOutcomeOverlay').hidden=true;});
+    document.getElementById('combatDeathOutcomeClose').addEventListener('click',closeDeathSaveOutcome);
     document.getElementById('combatTurnConfirmCancel').addEventListener('click',closeCombatRoundConfirmation);
     document.getElementById('combatTurnConfirmAccept').addEventListener('click',()=>{closeCombatRoundConfirmation(false);advanceCombatRound();});
     document.getElementById('combatTurnConfirmOverlay').addEventListener('keydown',event=>{if(event.key==='Escape')closeCombatRoundConfirmation();});
@@ -7393,6 +7399,7 @@ function openCombatMode(){
 
 function closeCombatMode(){
     document.getElementById('combatTurnConfirmOverlay').hidden=true;
+    document.getElementById('combatDeathOutcomeOverlay').hidden=true;restoreDeathSaveOutcomeNote();
     const deathSaveGrid=document.querySelector('.death-save-grid'),deathSaveHome=document.getElementById('deathSaveHome');
     if(deathSaveGrid&&deathSaveHome)deathSaveHome.after(deathSaveGrid);
     combatModeOverlay.hidden=true;druidSheetWildShapeRequest=null;refreshDruidWildShapeStateControl();

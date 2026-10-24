@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- Ha valamelyik halálmentő eredményből összegyűlik mindhárom jelölés, az eredmény az aktuális körben még látható marad, a következő kör kezdetén pedig a siker- és kudarcjelölők automatikusan törlődnek.
+
 - A halálmentőjelölők látható állapota most körváltáskor, Combat újranyitásakor, karakterbetöltéskor és importáláskor is a mentett értékekből áll helyre, így a korábbi sikerek és kudarcok a harmadik jelölésig megmaradnak.
 
 - A halálmentő Combat nézet már csak negatív HP-nál aktiválódik; kézi gyógyítási értéket is elfogad, három siker esetén 0 HP-ra stabilizál, három kudarc esetén pedig „Meghaltál” jelzést jelenít meg.

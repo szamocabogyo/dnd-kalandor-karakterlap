@@ -6120,6 +6120,7 @@ function applyManualCombatDeathSaveHealing(){
     const field=document.getElementById('combatDeathHealingManual'),value=Number(field.value),result=document.getElementById('combatDeathHealingResult');if(!Number.isInteger(value)||value<1){result.textContent='Adj meg legalább 1 pontnyi, egész gyógyulási értéket.';return;}applyCombatDeathSaveHealing(value,`Kézi gyógyítás: ${value}`);field.value='';
 }
 function syncDeathSaveMarks(){document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{const mark=field.closest('.death-save-mark');mark?.classList.toggle('is-checked',field.checked);mark?.setAttribute('aria-pressed',String(field.checked));});}
+function clearCompletedDeathSavesForNextRound(){const successes=[1,2,3].map(index=>document.getElementById(`deathSuccess${index}`)),failures=[1,2,3].map(index=>document.getElementById(`deathFailure${index}`));if(!successes.every(field=>field?.checked)&&!failures.every(field=>field?.checked))return;[...successes,...failures].forEach(field=>{if(field)field.checked=false;});syncDeathSaveMarks();}
 function updateDeathSaveOutcome(){
     syncDeathSaveMarks();
     const success=[1,2,3].every(index=>document.getElementById(`deathSuccess${index}`)?.checked),failure=[1,2,3].every(index=>document.getElementById(`deathFailure${index}`)?.checked);
@@ -7614,6 +7615,7 @@ function advanceCombatRound(){
     history.push({round,events,note,log:readCombatCurrentLog(),initiative:Number(document.getElementById('combatRoundInitiativeValue').value)});
     document.getElementById('combatRoundHistory').value=JSON.stringify(history);
     document.getElementById('combatRoundNumber').value=String(round+1);
+    clearCompletedDeathSavesForNextRound();
     const rulesSpeed=combatRulesSpeed();
     combatRulesWrite(CombatTurnRules.fresh(round+1,rulesSpeed.speed,rulesSpeed.unit));
     document.getElementById('combatCurrentRoundLog').value='[]';

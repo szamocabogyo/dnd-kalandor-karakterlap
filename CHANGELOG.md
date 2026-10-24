@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A halálmentő Combat nézet már csak negatív HP-nál aktiválódik; kézi gyógyítási értéket is elfogad, három siker esetén 0 HP-ra stabilizál, három kudarc esetén pedig „Meghaltál” jelzést jelenít meg.
+
 - A Jegyzetek Cím gombja kapcsolóként működik: második kattintásra visszaállítja a címsort normál bekezdéssé.
 
 - A Jegyzetek felsorolásai megfelelő belső behúzást és tördelést kaptak, így a listajelek keskeny képernyőn is a szerkesztőn belül maradnak.

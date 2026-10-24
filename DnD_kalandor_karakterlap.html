@@ -1304,12 +1304,12 @@ input:focus, textarea:focus, select:focus {
 .death-save-checks .death-save-mark span{font-size:1.05rem;line-height:1;opacity:.22;transform:scale(.72);transition:opacity .16s ease,transform .16s ease,text-shadow .16s ease}
 .death-save-checks .death-save-mark:hover{transform:translateY(-1px);border-color:var(--accent)}
 .death-save-checks .death-save-mark:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
-.death-save-checks .death-save-mark:has(input:checked){border-color:var(--accent);box-shadow:inset 0 0 10px color-mix(in srgb,var(--accent) 24%,transparent),0 0 10px color-mix(in srgb,var(--accent) 38%,transparent)}
-.death-save-checks .death-save-mark:has(input:checked) span{opacity:1;transform:scale(1);text-shadow:0 0 8px currentColor}
+.death-save-checks .death-save-mark:has(input:checked),.death-save-checks .death-save-mark.is-checked{border-color:var(--accent);box-shadow:inset 0 0 10px color-mix(in srgb,var(--accent) 24%,transparent),0 0 10px color-mix(in srgb,var(--accent) 38%,transparent)}
+.death-save-checks .death-save-mark:has(input:checked) span,.death-save-checks .death-save-mark.is-checked span{opacity:1;transform:scale(1);text-shadow:0 0 8px currentColor}
 .death-save-checks .death-save-failure{color:#d27a68;border-color:color-mix(in srgb,#d27a68 68%,var(--border))}
-.death-save-checks .death-save-failure:hover,.death-save-checks .death-save-failure:has(input:checked){border-color:#d27a68}
+.death-save-checks .death-save-failure:hover,.death-save-checks .death-save-failure:has(input:checked),.death-save-checks .death-save-failure.is-checked{border-color:#d27a68}
 .death-save-checks .death-save-failure:has(input:focus-visible){outline-color:#d27a68}
-.death-save-checks .death-save-failure:has(input:checked){box-shadow:inset 0 0 10px rgba(210,122,104,.24),0 0 10px rgba(210,122,104,.38)}
+.death-save-checks .death-save-failure:has(input:checked),.death-save-checks .death-save-failure.is-checked{box-shadow:inset 0 0 10px rgba(210,122,104,.24),0 0 10px rgba(210,122,104,.38)}
 @media(max-width:480px){.combat-death-save-panel{padding:16px 12px}.combat-death-save-panel .death-save-grid{gap:10px}.combat-death-save-panel .death-save-checks{gap:10px}.combat-death-healing-fields{grid-template-columns:1fr 1fr}.combat-death-healing-fields label:last-child{grid-column:1/-1}.combat-death-healing-manual{grid-template-columns:1fr}.combat-death-healing-manual button{width:100%}}
 @media(max-width:360px){.combat-death-save-panel .death-save-grid{grid-template-columns:1fr}}
 
@@ -6098,7 +6098,7 @@ function applyCombatDeathSaveHealing(healing,detail){
     if(!Number.isFinite(current)||current>=0){result.textContent='A gyógyítási felület csak negatív HP-nál használható.';return;}
     const maxRaw=document.getElementById('maxHp')?.value.trim()||'',maximum=maxRaw===''?NaN:Number(maxRaw),next=Number.isFinite(maximum)&&maximum>0?Math.min(maximum,current+healing):current+healing;
     result.textContent=`${detail}; HP: ${current} → ${next}`;appendCombatGuideEvent({kind:'event',category:'healing',choice:'external-healing',label:'Gyógyulás',detail:`${detail}; HP: ${current} → ${next}`,total:healing});hpField.value=String(next);
-    if(next>=0)document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{field.checked=false;});
+    if(next>=0)document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{field.checked=false;});syncDeathSaveMarks();
     hpField.dispatchEvent(new Event('input',{bubbles:true}));hpField.dispatchEvent(new Event('change',{bubbles:true}));saveCharacter();renderCombatGuide();
 }
 function performCombatDeathSaveHealing(){
@@ -6119,7 +6119,9 @@ function performCombatDeathSaveHealing(){
 function applyManualCombatDeathSaveHealing(){
     const field=document.getElementById('combatDeathHealingManual'),value=Number(field.value),result=document.getElementById('combatDeathHealingResult');if(!Number.isInteger(value)||value<1){result.textContent='Adj meg legalább 1 pontnyi, egész gyógyulási értéket.';return;}applyCombatDeathSaveHealing(value,`Kézi gyógyítás: ${value}`);field.value='';
 }
+function syncDeathSaveMarks(){document.querySelectorAll('#deathSuccess1,#deathSuccess2,#deathSuccess3,#deathFailure1,#deathFailure2,#deathFailure3').forEach(field=>{const mark=field.closest('.death-save-mark');mark?.classList.toggle('is-checked',field.checked);mark?.setAttribute('aria-pressed',String(field.checked));});}
 function updateDeathSaveOutcome(){
+    syncDeathSaveMarks();
     const success=[1,2,3].every(index=>document.getElementById(`deathSuccess${index}`)?.checked),failure=[1,2,3].every(index=>document.getElementById(`deathFailure${index}`)?.checked);
     if(failure){const overlay=document.getElementById('combatDeathOutcomeOverlay');overlay.hidden=false;requestAnimationFrame(()=>document.getElementById('combatDeathOutcomeClose')?.focus());saveCharacter();return;}
     if(success){const hp=document.getElementById('currentHp'),value=Number(hp?.value);if(Number.isFinite(value)&&value<0){hp.value='0';hp.dispatchEvent(new Event('input',{bubbles:true}));hp.dispatchEvent(new Event('change',{bubbles:true}));appendCombatGuideEvent({kind:'event',category:'death-save',label:'Stabilizálódás',detail:'Három sikeres halálmentődobás: az aktuális HP 0.'});renderCombatGuide();}}saveCharacter();
@@ -6230,6 +6232,7 @@ function renderCombatGuide(){
         if(deathSaveGrid&&deathSaveHome&&deathSaveGrid.parentElement===deathSaveSlot)deathSaveHome.after(deathSaveGrid);
         document.getElementById('combatDeathHealingResult').textContent='';
     }
+    syncDeathSaveMarks();
     document.getElementById('combatRoundActions').hidden=deathSaveRequired||damage||(own&&!ready);
     document.getElementById('combatGuideDashboard').hidden=!own||stage!=='choose';
     document.getElementById('combatGuideEventPanel').hidden=damage||stage!=='event';
@@ -9915,6 +9918,7 @@ setupAdvancedBaseData();
 setupMoneyInventory();
 setupGemInventory();
 loadCharacter();
+syncDeathSaveMarks();
 updateRollInspirationControls(true);
 consolidateLegacyFreeText();
 updateBackgroundOptions();
@@ -10104,6 +10108,7 @@ document
         updateBackgroundRulesNote();
 
         updateModifiers();
+        syncDeathSaveMarks();
         updateSkills();
         updateRollInspirationControls(true);
         spellCatalogState.grantsReady=true;

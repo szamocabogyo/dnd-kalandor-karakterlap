@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A Beállítások menü Magyar/English nyelvválasztót kapott. Az angol nézet központi fordítási rétegen keresztül kezeli a statikus és dinamikusan létrejövő felületi szövegeket, D&D 5e terminológiával, miközben a karakteradatok és mezőértékek változatlanok maradnak.
+
 - A Haladó alapadatok blokk új Kaland mezőt kapott az aktuálisan játszott kaland címéhez; az érték automatikusan mentődik, exportálható és importálható.
 
 - A „Meghaltál” képernyőn külön jegyzetmező jelenik meg a mesélő utasításaihoz; ugyanaz a mentett jegyzet a Halálmentő dobások blokk lenyitható „Mesélő utasításai” részében is elérhető, és az Export/Import része.

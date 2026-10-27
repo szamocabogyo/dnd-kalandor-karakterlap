@@ -2292,6 +2292,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 		    <option>Dragonborn</option>
 		    <option>Dwarf</option>
 		    <option>Elf</option>
+		    <option>Faun</option>
 		    <option>Genasi</option>
 		    <option>Gnome</option>
 		    <option>Half-Elf</option>
@@ -4913,7 +4914,7 @@ function combatRulesSpeed(){
     const manual=parse(document.querySelector('[data-character-speed]')?.value);
     if(manual)return {...manual,fallback:false,source:'manual'};
     const race=document.getElementById('characterRace')?.value||'';
-    const base=/dwarf|halfling|gnome/i.test(race)?25:30,c=classFeatureContext();
+    const base=/faun/i.test(race)?35:/dwarf|halfling|gnome/i.test(race)?25:30,c=classFeatureContext();
     const monkBonus=c.klass==='Monk'&&c.level>=2&&(document.getElementById('armorType')?.value||'unarmored')==='unarmored'&&(Number(document.getElementById('shieldAC')?.value)||0)===0?(c.level>=18?30:c.level>=14?25:c.level>=10?20:c.level>=6?15:10):0;
     return {speed:base+monkBonus,unit:'ft',fallback:true,source:monkBonus?'race+monk':'race'};
 }
@@ -8651,6 +8652,7 @@ function characterFixedSkillProficiencies(){
     if(background)background.skills.split(', ').forEach(skill=>fixed.add(skill));
     const race=document.getElementById('characterRace')?.value||'';
     if(race==='Elf')fixed.add('Perception');
+    if(race==='Faun'){fixed.add('Performance');fixed.add('Persuasion');}
     if(race==='Half-Orc')fixed.add('Intimidation');
     if(race==='Tabaxi'){fixed.add('Perception');fixed.add('Stealth');}
     clericKnowledgeExpertiseSkills().forEach(skill=>fixed.add(skill));
@@ -8744,7 +8746,7 @@ function writeAdvancedBaseDefault(id,value){
 
 function updateAdvancedBaseDefaults(){
     const race=document.getElementById('characterRace')?.value||'';
-    const sizes={Aasimar:'Közepes',Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Genasi:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tabaxi:'Közepes',Tiefling:'Közepes'};
+    const sizes={Aasimar:'Közepes',Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Faun:'Közepes',Genasi:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tabaxi:'Közepes',Tiefling:'Közepes'};
     writeAdvancedBaseDefault('characterSize',sizes[race]||'');
     writeAdvancedBaseDefault('initiativeBonus',abilityCheckTrainingBonus('DEX'));
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10);
@@ -9219,6 +9221,7 @@ const racePortraitImageMap={Aasimar:'aasimar',Dragonborn:'dragonborn',Dwarf:'dwa
 const racePortraitDetails = {
     Aasimar:{accent:'#e5d58a',back:'#273449',mark:'halo'}, Dragonborn:{accent:'#b87652',back:'#34282a',mark:'dragon'},
     Dwarf:{accent:'#b88a54',back:'#302a27',mark:'beard'}, Elf:{accent:'#79a88e',back:'#24332e',mark:'elf'},
+    Faun:{accent:'#c09562',back:'#302a24',mark:'faun'},
     Genasi:{accent:'#62b8bd',back:'#20343b',mark:'elemental'}, Gnome:{accent:'#9d86bd',back:'#302a3b',mark:'gnome'},
     'Half-Elf':{accent:'#8cad91',back:'#29332f',mark:'half-elf'}, 'Half-Orc':{accent:'#7f9b63',back:'#293027',mark:'orc'},
     Halfling:{accent:'#bc9567',back:'#352d27',mark:'halfling'}, Human:{accent:'#9aa6b2',back:'#292f36',mark:'human'},
@@ -9235,6 +9238,7 @@ function racePortraitDataUrl(){
         dragon:'<path d="M112 131 67 72l59 31M208 131l45-59-59 31" fill="#121317" stroke="url(#accent)" stroke-width="8"/><path d="m122 198-27 22 31 4m72-26 27 22-31 4" fill="none" stroke="url(#accent)" stroke-width="7"/>',
         beard:'<path d="m113 205 18 102 29 38 29-38 18-102-24 31-23-19-23 19Z" fill="#171719" stroke="url(#accent)" stroke-width="7"/><path d="m130 250 30 70 30-70" fill="none" stroke="#8b704e" stroke-width="5" opacity=".7"/>',
         elf:'<path d="m119 146-72-28 67 65m87-37 72-28-67 65" fill="#17191d" stroke="url(#accent)" stroke-width="7"/>',
+        faun:'<path d="M116 132C72 105 77 58 54 35c4 48 17 89 61 119m90-22c44-27 39-74 62-97-4 48-17 89-61 119" fill="#17191d" stroke="url(#accent)" stroke-width="8"/><path d="m105 139-39-27 44 62m100-35 39-27-44 62" fill="#17191d" stroke="url(#accent)" stroke-width="6"/>',
         elemental:'<path d="M108 123C63 93 83 43 50 25c14 47-27 63 13 116m149-18c45-30 25-80 58-98-14 47 27 63-13 116" fill="none" stroke="url(#accent)" stroke-width="9" opacity=".82"/><path d="M87 77c19-21 8-43 22-60m124 60c-19-21-8-43-22-60" fill="none" stroke="#d8ffff" stroke-width="4" opacity=".55"/>',
         gnome:'<path d="M91 147 51 127l62 54m116-34 40-20-62 54" fill="#17191d" stroke="url(#accent)" stroke-width="6"/><path d="M109 104 160 35l51 69" fill="#1d1a29" stroke="url(#accent)" stroke-width="7"/>',
         'half-elf':'<path d="m116 151-50-19 47 43m91-24 50-19-47 43" fill="#17191d" stroke="url(#accent)" stroke-width="6"/>',
@@ -9672,6 +9676,7 @@ const raceReference2014={
   Dragonborn:{languages:'Közös, Sárkány',features:'Sárkányős, leheletfegyver, sebzésellenállás'},
   Dwarf:{languages:'Közös, Törpe',features:'Sötétlátás, törpe ellenállás, törpe harci képzettség, szerszámjártasság, kőismeret'},
   Elf:{languages:'Közös, Tünde',features:'Sötétlátás, éles érzékek, tündér származás, révület'},
+  Faun:{languages:'Közös, Szilván',features:'Tündér lénytípus, 35 ft. járássebesség, kosroham, mágikus ellenállás, vidám ugrások, jártasság Performance és Persuasion készségekben, valamint egy választott hangszerben'},
   Genasi:{languages:'Közös, Ősnyelv',features:'Elemi örökség; az alfaj levegő-, föld-, tűz- vagy vízjellemzőket és faji mágiát ad'},
   Gnome:{languages:'Közös, Gnóm',features:'Sötétlátás, gnóm ravaszság'},
   'Half-Elf':{languages:'Közös, Tünde és egy választott nyelv',features:'Sötétlátás, tündér származás, sokoldalú képzettség'},

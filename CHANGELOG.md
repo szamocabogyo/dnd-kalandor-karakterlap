@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- A választható fajok közé bekerült a Faun közepes mérettel, 35 ft. alapsebességgel, Közös és Szilván nyelvvel, automatikus Performance és Persuasion jártassággal, faji jellemzőkkel és semleges árnyékportréval.
+
 - A nyelvválasztó legördülő mező helyett egyetlen váltógombként jelenik meg: mindig a másik elérhető nyelvet mutatja (Magyar nézetben English, angol nézetben Magyar).
 
 - A Beállítások menü Magyar/English nyelvválasztót kapott. Az angol nézet központi fordítási rétegen keresztül kezeli a statikus és dinamikusan létrejövő felületi szövegeket, D&D 5e terminológiával, miközben a karakteradatok és mezőértékek változatlanok maradnak.

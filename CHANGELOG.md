@@ -6,6 +6,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ### Hozzáadva
 
+- Amíg nincs faj kiválasztva, a karakterportré helyén a megadott „Válassz fajt” árnyékalak jelenik meg; a kép optimalizálva és közvetlenül a HTML-be ágyazva működik.
+
 - A választható fajok közé bekerült a Faun közepes mérettel, 35 ft. alapsebességgel, Közös és Szilván nyelvvel, automatikus Performance és Persuasion jártassággal, faji jellemzőkkel és a megadott, beágyazott Faun-portréval.
 
 - A nyelvválasztó legördülő mező helyett egyetlen váltógombként jelenik meg: mindig a másik elérhető nyelvet mutatja (Magyar nézetben English, angol nézetben Magyar).

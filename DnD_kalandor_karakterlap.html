@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>D&D 5e – Kalandor karakterlap</title>
+<script>
+// GitHub Pages uses a short cache lifetime. On web hosting, request a unique
+// document URL once, then restore the clean, shareable address in the bar.
+(()=>{
+    if(!/^https?:$/.test(location.protocol))return;
+    const url=new URL(location.href);
+    if(!url.searchParams.has('_fresh')){
+        url.searchParams.set('_fresh',Date.now().toString(36));
+        location.replace(url.href);
+        return;
+    }
+    url.searchParams.delete('_fresh');
+    url.searchParams.delete('v');
+    history.replaceState(null,'',url.pathname+(url.searchParams.size?'?'+url.searchParams:'')+url.hash);
+})();
+</script>
 
 
 <style>

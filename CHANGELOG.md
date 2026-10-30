@@ -4,6 +4,14 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 
 ## [Kiadatlan]
 
+- A szerzetes Harcművészet szabálya most a Combat módban is választhatóan DEX-et használ, és csak megfelelő támadást jelöl a bónuszakciós pusztakezes csapás feltételeként.
+- A többféleképpen használható fegyvereknél (például a bot egy- vagy kétkezes használatánál) a Combat mód külön sebzésértéket enged választani.
+- A Deflect Missiles reakció a Combat módban automatikusan kidobja és naplózza a sebzéscsökkentést.
+- Nem druida karakter betöltése után a Druida állati alak panel ismét biztosan rejtve marad.
+- Ha a fegyverlistában már szerepel pusztakezes támadás, a Combat mód nem hoz létre belőle második példányt; a meglévő sort kezeli a Harcművészet kapcsolóval.
+- Természetes 20-as fegyveres találatnál a Combat mód a kockák, módosítók és kiválasztott sebzésbónuszok összeadása után a teljes sebzést megduplázza, és ezt a harci naplóban is jelzi.
+- Megkezdődött a Combat audit fejlesztési sorrendje: a Barbarian Reckless Attack valódi előnydobást kapott; a Divination Wizard Portent értékei kiválaszthatók és felhasználáskor elfogynak; az Assassin előnye és meglepett célpont elleni automatikus kritikusa, valamint az Arcane Trickster Magical Ambush mentőhátránya bekerült a dobási folyamatba.
+
 ### Hozzáadva
 
 - A Gnome, Halfling, Genasi és Half-Orc fajok alapértelmezett portréja a megadott képekre frissült; az Ork kép a Half-Orc választáshoz tartozik. A képek optimalizálva és közvetlenül a HTML-be ágyazva működnek.
@@ -117,3 +125,8 @@ A projekt a [Semantic Versioning](https://semver.org/) verziózást követi. A d
 - Mobil és asztali elrendezési elcsúszások.
 - Dinamikusan megjelenő kasztpanelek rendezhetősége.
 
+- Combat fejlesztési sorrend 2. lépés: automatikus Arcane Ward életciklus, Ranger Tireless és Nature’s Veil, valamint Sorcerer Draconic Bloodline és Wild Magic harci képességek.
+- Combat fejlesztési sorrend 3. lépés: Deflect Missiles sebzéscsökkentés és Ki-alapú visszadobás, Tempest Cleric Destructive Wrath maximális sebzése, valamint Valor Bard Combat Inspiration sebzés- és AC-felhasználása.
+- Combat fejlesztési sorrend 4. lépés: Aasimar Healing Hands és égi átalakulás, Tabaxi Feline Agility, Genasi faji varázslatok, Dragonborn sárkányős, valamint a Gnome, Elf és Dwarf helyzeti faji előnyei és automatikus sebzésellenállások.
+- Combat fejlesztési sorrend 5. lépés: Totem Warrior harci hatások, Arcane Trickster Spell Thief, részletes Battle Master manőverhatások, Evocation Wizard Sculpt Spells és Potent Cantrip, valamint a körönként korlátozott Necromancy Wizard Grim Harvest.
+- Hibajavítás: az Aasimar átalakulás tíz kör után és a harc lezárásakor megszűnik; a Grim Harvest körönként csak egyszer használható; a Riposte és Sweeping Attack többé nem számít hibásan normál Battle Master sebzésbónusznak; a hiányzó Shape Water bekerült az offline varázslatkatalógusba.

@@ -2008,6 +2008,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet .inspiration-row:has(#inspiration:checked){background:color-mix(in srgb,var(--accent) 16%,var(--bg));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 28%,transparent)}
 .sheet .inspiration-die{grid-column:3;grid-row:1/3;margin:0;font-size:.68rem;color:var(--accent)}
 .sheet .inspiration-die select{display:block;width:100%;min-height:38px;height:38px;margin-top:4px;padding-top:5px;padding-bottom:5px}
+.sheet .combat-inspiration-source{grid-column:2/4;display:flex;align-items:center;gap:7px;margin:3px 0 0;font-size:.72rem;color:var(--text)}
+.sheet .combat-inspiration-source input{width:17px!important;height:17px!important;min-height:17px!important}
 @media(max-width:600px){.sheet .inspiration-row{grid-template-columns:24px minmax(0,1fr)}.sheet .inspiration-die{grid-column:2;grid-row:3}}
 .sheet.mobile-mode .inspiration-row{grid-template-columns:24px minmax(0,1fr);gap:4px 10px;padding:12px}
 .sheet.mobile-mode .inspiration-row input[type="checkbox"]{grid-column:1;grid-row:1/3}
@@ -2504,7 +2506,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 </div>
 
 <div class="card inspiration-card" id="inspirationCard" role="group" aria-label="Inspiráció">
-  <div class="inspiration-row"><input id="inspiration" type="checkbox" aria-label="Inspiráció aktív"><label class="inspiration-label" for="inspiration"><span aria-hidden="true">✦</span> Inspiráció</label><span class="inspiration-state" aria-live="polite">Nincs aktív inspiráció</span><label class="inspiration-die">Kockaérték<select id="inspirationDie"><option value="">Válassz…</option><option value="d4">d4</option><option value="d6">d6</option><option value="d8">d8</option><option value="d10">d10</option><option value="d12">d12</option><option value="d20">d20</option></select></label></div>
+  <div class="inspiration-row"><input id="inspiration" type="checkbox" aria-label="Inspiráció aktív"><label class="inspiration-label" for="inspiration"><span aria-hidden="true">✦</span> Inspiráció</label><span class="inspiration-state" aria-live="polite">Nincs aktív inspiráció</span><label class="inspiration-die">Kockaérték<select id="inspirationDie"><option value="">Válassz…</option><option value="d4">d4</option><option value="d6">d6</option><option value="d8">d8</option><option value="d10">d10</option><option value="d12">d12</option><option value="d20">d20</option></select></label><label class="combat-inspiration-source"><input id="inspirationCombat" type="checkbox"> Combat Inspiration (College of Valor)</label></div>
 </div>
 
         <div class="card attacks">
@@ -2923,7 +2925,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       <input id="incomingDamage" type="number" inputmode="numeric" min="1" step="1" placeholder="Sebzés értéke">
       <label id="combatRangerDamageTargetWrap" hidden>Sebzés célpontja<select id="combatRangerDamageTarget"><option value="character">Karakter</option><option value="companion">Állati társ</option></select></label>
       <label for="incomingDamageType">Sebzés típusa</label>
-      <select id="incomingDamageType"><option value="">Nem megadott</option><option value="bludgeoning">Zúzó</option><option value="piercing">Szúró</option><option value="slashing">Vágó</option><option value="other">Egyéb</option></select>
+      <select id="incomingDamageType"><option value="">Nem megadott</option><option value="acid">Sav</option><option value="bludgeoning">Zúzó</option><option value="cold">Hideg</option><option value="fire">Tűz</option><option value="force">Erő</option><option value="lightning">Villám</option><option value="necrotic">Nekrotikus</option><option value="piercing">Szúró</option><option value="poison">Méreg</option><option value="psychic">Pszichikus</option><option value="radiant">Sugárzó</option><option value="slashing">Vágó</option><option value="thunder">Mennydörgés</option><option value="other">Egyéb</option></select>
+      <div id="combatInspirationAcWrap" hidden><label class="combat-rules-check"><input id="combatInspirationAc" type="checkbox"><span>Combat Inspiration felhasználása az AC növelésére</span></label><label>Támadó teljes találati eredménye<input id="combatIncomingAttackTotal" type="number" min="1" step="1" inputmode="numeric"></label><label>Inspirációs kocka eredménye<input id="combatInspirationAcRoll" type="number" min="1" step="1" inputmode="numeric"></label></div>
       <p class="combat-mode-result">Jóváhagyáskor az ideiglenes HP fogy először, a fennmaradó sebzés az aktuális HP-ból vonódik le.</p>
       <p id="incomingDamageResult" class="combat-mode-result" aria-live="polite"></p>
       <div class="combat-mode-actions"><button id="applyIncomingDamage" class="combat-damage-apply" type="button">Sebzés jóváhagyása</button></div>
@@ -2948,6 +2951,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
   <div id="combatRangerTargets" hidden><label>Célpontok száma<input id="combatRangerTargetCount" type="number" min="1" max="100" step="1" value="1"></label><label>Most támadott célpont sorszáma<input id="combatRangerTargetIndex" type="number" min="1" max="100" step="1" value="1"></label></div>
   <label id="combatRangerPrimeval" hidden>Elköltött varázsrekesz<select id="combatRangerPrimevalSlot"></select></label>
   <label id="combatRulesFeatureDieWrap" hidden>Second Wind d10 (üresen automatikus)<input id="combatRulesFeatureDie" type="number" min="1" max="10" step="1" inputmode="numeric"></label>
+  <div id="combatRulesDeflectWrap" hidden><label>Beérkező lövedéksebzés<input id="combatRulesDeflectDamage" type="number" min="1" step="1" inputmode="numeric"></label><label class="combat-rules-check"><input id="combatRulesDeflectReturn" type="checkbox"><span>Ha 0-ra csökken, 1 Kiért visszadobom</span></label></div>
   <label id="combatRulesFrenzyWrap" class="combat-rules-check" hidden><input id="combatRulesFrenzy" type="checkbox"><span>Frenzyt indítok. A bónusztámadás a következő fordulótól használható; a harag végén 1 kimerültségi szint jár.</span></label>
   <label id="combatRulesStepWindWrap" hidden>A szél lépése<select id="combatRulesStepWind"><option value="dash">Dash – további mozgás</option><option value="disengage">Disengage – kiválás</option></select></label>
   <div id="combatRulesOffhandWrap" hidden><label>A másodlagos fegyver sebzésében szereplő tulajdonság<select id="combatRulesOffhandAbility"><option value="STR">Erő (STR)</option><option value="DEX">Ügyesség (DEX)</option></select></label><small>A pozitív tulajdonságmódosító levonódik a fegyver sebzésképletéből; a mágikus bónusz megmarad.</small><label id="combatRulesTwoWeaponStyleWrap" class="combat-rules-check" hidden><input id="combatRulesTwoWeaponStyle" type="checkbox"><span>A Two-Weapon Fighting harci stílust választottam, ezért hozzáadom a pozitív módosítót is.</span></label></div>
@@ -2956,6 +2960,11 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 <input id="combatRoundHistory" type="hidden" value="[]">
 <input id="combatDragonBreathUsed" type="hidden" value="false">
 <input id="combatTieflingRebukeUsed" type="hidden" value="false">
+<input id="combatAasimarHealingUsed" type="hidden" value="false">
+<input id="combatAasimarTransformationUsed" type="hidden" value="false">
+<input id="combatAasimarTransformationActive" type="hidden" value="false">
+<input id="combatAasimarTransformationRound" type="hidden" value="">
+<input id="combatTabaxiAgilityUsed" type="hidden" value="false">
 <input id="combatHalfOrcEnduranceUsed" type="hidden" value="false">
       <input id="combatCurrentRoundLog" type="hidden" value="[]">
       <input id="combatRoundInitiativeValue" type="hidden" value="">
@@ -3060,6 +3069,7 @@ function spellCatalogRuleOptions(context, catalog) {
     const result = [];
     const seen = new Set();
     const spells = Array.isArray(catalog) ? catalog : [];
+    if(!spells.some(spell=>norm(spell.name)==='shape water'))spells.push({id:'shape-water',name:'Shape Water',level:0,school:'transmutation',classes:['Druid','Sorcerer','Wizard'],castingTime:'1 action',range:'30 feet',components:'S',duration:'Instantaneous or 1 hour',ritual:false,concentration:false,source:"Xanathar's Guide to Everything",resolution:'utility'});
     const byName = new Map(spells.map(spell => [norm(spell.name), spell]));
     spells.forEach(spell => {
         (Array.isArray(spell.aliases) ? spell.aliases : []).forEach(alias => {
@@ -3321,6 +3331,14 @@ function spellCatalogRuleOptions(context, catalog) {
         if (level >= 3) named('Faerie Fire','race:drow','Drow Magic','CHA',{sourceKind:'race',usage:'long-1',alwaysKnown:true,resource:{kind:'racial',key:'drow-faerie-fire',cost:1}});
         if (level >= 5) named('Darkness','race:drow','Drow Magic','CHA',{sourceKind:'race',usage:'long-1',alwaysKnown:true,resource:{kind:'racial',key:'drow-darkness',cost:1}});
     }
+    if(race==='aasimar')named('Light','race:aasimar','Aasimar – Light Bearer','CHA',{sourceKind:'race',usage:'free',alwaysKnown:true});
+    const genasiSpells={
+        'air genasi':[['Levitate',1]],
+        'earth genasi':[['Pass without Trace',1]],
+        'fire genasi':[['Produce Flame',0],['Burning Hands',1]],
+        'water genasi':[['Shape Water',0],['Create or Destroy Water',1]]
+    }[subrace]||[];
+    genasiSpells.forEach(([name,limited])=>named(name,'race:'+subrace.replace(/ /g,'-'),document.getElementById('characterSubrace')?.value||'Genasi','CON',{sourceKind:'race',usage:limited?'long-1':'free',alwaysKnown:true,resource:limited?{kind:'racial',key:'genasi:'+subrace+':'+norm(name),cost:1}:undefined}));
     if (klass === 'Barbarian' && sub === 'path of the totem warrior' && level >= 3) {
         ['Speak with Animals','Beast Sense'].forEach(name => named(name,'ritual:totem-spirit-seeker','Totem Warrior – Spirit Seeker','WIS',{sourceKind:'ritual',usage:'free',ritualOnly:true,alwaysKnown:true}));
         if (level >= 10) named('Commune with Nature','ritual:totem-spirit-walker','Totem Warrior – Spirit Walker','WIS',{sourceKind:'ritual',usage:'free',ritualOnly:true,alwaysKnown:true});
@@ -3929,7 +3947,7 @@ function setupSpellCatalogRow(row){
 }
 function spellCatalogPopulateSubrace(value){
     const select=document.getElementById('characterSubrace');if(!select)return;
-    const race=document.getElementById('characterRace')?.value,values={Aasimar:['Protector Aasimar','Scourge Aasimar','Fallen Aasimar'],Elf:['High Elf','Wood Elf','Drow'],Genasi:['Air Genasi','Earth Genasi','Fire Genasi','Water Genasi'],Gnome:['Forest Gnome','Rock Gnome'],Dwarf:['Hill Dwarf','Mountain Dwarf'],Halfling:['Lightfoot','Stout']}[race]||[];
+    const race=document.getElementById('characterRace')?.value,values={Aasimar:['Protector Aasimar','Scourge Aasimar','Fallen Aasimar'],Dragonborn:['Black Dragonborn','Blue Dragonborn','Brass Dragonborn','Bronze Dragonborn','Copper Dragonborn','Gold Dragonborn','Green Dragonborn','Red Dragonborn','Silver Dragonborn','White Dragonborn'],Elf:['High Elf','Wood Elf','Drow'],Genasi:['Air Genasi','Earth Genasi','Fire Genasi','Water Genasi'],Gnome:['Forest Gnome','Rock Gnome'],Dwarf:['Hill Dwarf','Mountain Dwarf'],Halfling:['Lightfoot','Stout']}[race]||[];
     const previous=value??select.value;
     select.replaceChildren(new Option('Válassz alfajt…',''),...values.map(name=>new Option(name,name)));
     select.value=values.includes(previous)?previous:'';select.closest('.spell-catalog-subrace').hidden=!values.length;
@@ -4037,6 +4055,9 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         inspiration: { category: 'bonus', resource: 'bardicInspiration', klass: 'Bard', level: 1 },
         'cutting-words': { category: 'reaction', resource: 'bardicInspiration', klass: 'Bard', level: 3, subclass: 'lore', trigger: true },
         'stroke-of-luck': { category: 'trigger', resource: 'strokeOfLuck', klass: 'Rogue', level: 20, trigger: true },
+        'spell-thief': { category: 'reaction', resource: 'spellThief', klass: 'Rogue', level: 17, subclass: 'arcane trickster', trigger: true },
+        'aasimar-healing-hands': { category: 'action', resource: 'aasimarHealing' },
+        'aasimar-revelation': { category: 'action', resource: 'aasimarTransformation' },
         'wild-shape': { category: 'action', resource: 'wildShapeUses', klass: 'Druid', level: 2 },
         'moon-wild-shape': { category: 'bonus', resource: 'wildShapeUses', klass: 'Druid', level: 2, subclass: 'moon' },
         'channel-divinity': { category: 'action', resource: 'channelDivinity', klass: 'Cleric', level: 2 },
@@ -4054,6 +4075,8 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'warding-flare': { category: 'reaction', resource: 'wardingFlare', klass: 'Cleric', level: 1, subclass: 'light', trigger: true },
         'wrath-storm': { category: 'reaction', resource: 'wrathStorm', klass: 'Cleric', level: 1, subclass: 'tempest', trigger: true },
         'second-wind': { category: 'bonus', resource: 'secondWind', klass: 'Fighter', level: 1 },
+        'ranger-tireless': { category: 'action', resource: 'tirelessUses', klass: 'Ranger', level: 10 },
+        'ranger-natures-veil': { category: 'bonus', resource: 'naturesVeilUses', klass: 'Ranger', level: 14 },
         indomitable: { category: 'trigger', resource: 'indomitable', klass: 'Fighter', level: 9, trigger: true },
         'patient-defense': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
         'step-wind': { category: 'bonus', resource: 'kiPoints', klass: 'Monk', level: 2 },
@@ -4824,6 +4847,37 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     if ((context.resources.sorceryPoints||0)+slotLevel>context.level) fail('A Varázserő-pontok nem haladhatják meg a Sorcerer szintedet.');
                     resource('spellSlot'+slotLevel,1);spend('bonus');return;
                 }
+                if(choice==='wild-magic-surge'){
+                    requireClass('Sorcerer',1,'wild magic');if(category!=='trigger')fail('A Wild Magic Surge kiváltott esemény.');return;
+                }
+                if(choice==='bend-luck'){
+                    requireClass('Sorcerer',6,'wild magic');if(category!=='reaction')fail('A Bend Luck reakció.');resource('sorceryPoints',2);spend('reaction');return;
+                }
+                if(choice==='dragon-wings'){
+                    requireClass('Sorcerer',14,'draconic bloodline');if(category!=='bonus')fail('A Dragon Wings bónuszakció.');spend('bonus');return;
+                }
+                if(choice==='draconic-presence'){
+                    requireClass('Sorcerer',18,'draconic bloodline');if(category!=='action')fail('A Draconic Presence akció.');resource('draconicPresence',1);resource('sorceryPoints',5);spend('action');return;
+                }
+                if(choice==='tabaxi-agility'){
+                    if(normalized(context.race)!=='tabaxi'||category!=='trigger')fail('A Feline Agility csak Tabaxi karakternek elérhető.');
+                    if(context.resources.tabaxiAgility<1)fail('A Feline Agility újratöltéséhez egy körben 0 mozgást kell megtenned.');
+                    state.move.limit=Math.max(state.move.limit,state.move.speed*2);state.flags.tabaxiAgility=true;resource('tabaxiAgility',1);return;
+                }
+                if(choice==='tabaxi-agility-reset'){
+                    if(normalized(context.race)!=='tabaxi'||category!=='trigger')fail('A Feline Agility újratöltése csak Tabaxi karakternek elérhető.');
+                    if(state.move.spent>0)fail('A visszatöltéshez ebben a körben 0 mozgást kell megtenned.');state.flags.tabaxiAgilityReset=true;return;
+                }
+                if(['gnome-cunning','fey-ancestry','dwarven-resilience'].includes(choice)){if(category!=='trigger')fail('Ez helyzeti faji emlékeztető.');return;}
+                if(choice==='totem-eagle-dash'){
+                    requireClass('Barbarian',3,'totem warrior');if(category!=='bonus'||!truth(context.raging)||normalized(context.totemSpirit)!=='eagle')fail('Az Eagle Totem Dash csak harag közben használható.');requireBonus();spend('bonus');addDash();return;
+                }
+                if(choice==='totem-wolf-prone'){
+                    requireClass('Barbarian',14,'totem warrior');if(category!=='bonus'||!truth(context.raging)||normalized(context.totemicAttunement)!=='wolf')fail('A Wolf Totemic Attunement csak harag közben használható.');requireBonus();spend('bonus');return;
+                }
+                if(choice==='totem-bear-guardian'){
+                    requireClass('Barbarian',14,'totem warrior');if(category!=='reaction'||!truth(context.raging)||normalized(context.totemicAttunement)!=='bear')fail('A Bear Totemic Attunement csak harag közben használható.');requireTrigger();spend('reaction');return;
+                }
                 const feature = RESOURCE_EVENTS[choice];
                 if (feature) {
                     if (category !== feature.category) fail('A képesség nem ebből a műveleti keretből használható.');
@@ -4848,6 +4902,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                     if (['action', 'bonus', 'reaction'].includes(category)) spend(category);
                     if (choice === 'hellish-rebuke' && !truth(intent.otherTurn)) state.spells.otherSpell = true;
                     if (choice === 'rage') state.flags.rageStarted = true;
+                    if (choice === 'ranger-natures-veil') state.flags.naturesVeilActive = true;
                     if (choice === 'step-wind' && intent.mode === 'dash') addDash();
                     return;
                 }
@@ -4958,6 +5013,9 @@ function combatRulesContext(){
     resources.dragonBreath=document.getElementById('characterRace')?.value==='Dragonborn'&&document.getElementById('combatDragonBreathUsed').value!=='true'?1:0;
     resources.hellishRebuke=document.getElementById('characterRace')?.value==='Tiefling'&&c.level>=3&&document.getElementById('combatTieflingRebukeUsed').value!=='true'?1:0;
     resources.relentlessEndurance=document.getElementById('characterRace')?.value==='Half-Orc'&&document.getElementById('combatHalfOrcEnduranceUsed').value!=='true'?1:0;
+    resources.aasimarHealing=document.getElementById('characterRace')?.value==='Aasimar'&&document.getElementById('combatAasimarHealingUsed').value!=='true'?1:0;
+    resources.aasimarTransformation=document.getElementById('characterRace')?.value==='Aasimar'&&document.getElementById('combatAasimarTransformationUsed').value!=='true'?1:0;
+    resources.tabaxiAgility=document.getElementById('characterRace')?.value==='Tabaxi'&&document.getElementById('combatTabaxiAgilityUsed').value!=='true'?1:0;
     let attacksPerAction=1;
     if(c.klass==='Fighter'&&c.level>=5)attacksPerAction=c.level>=20?4:c.level>=11?3:2;
     else if(['Barbarian','Monk','Paladin','Ranger'].includes(c.klass)&&c.level>=5)attacksPerAction=2;
@@ -4998,7 +5056,7 @@ function combatRulesContext(){
         }
     }
     for(let level=1;level<=9;level++)resources['spellSlot'+level]=parseSpellSlotValue(document.getElementById('spellSlots'+level))?.current||0;
-    return {...c,rangerRulesYear:c.klass==='Ranger'?2024:undefined,companion:rangerCompanionRules(),hunterMultiattack:'',hunterSuperiorDefense:'',hunterPrey:document.getElementById('classFeature_hunterPrey')?.value||'',resources,attacksPerAction,wildShape:combatWildShapeRules(),canCast:characterCanCastSpells()&&!spellcastingBlocked,spellcastingBlocked,allowBonus,raging,frenzyReady,movementSpeeds,movementSpeedSource:wildShapeActive?'wild-shape':speed.source};
+    return {...c,race:document.getElementById('characterRace')?.value||'',totemSpirit:document.getElementById('classFeature_totemSpirit')?.value||'',totemicAttunement:document.getElementById('classFeature_totemicAttunement')?.value||'',rangerRulesYear:c.klass==='Ranger'?2024:undefined,companion:rangerCompanionRules(),hunterMultiattack:'',hunterSuperiorDefense:'',hunterPrey:document.getElementById('classFeature_hunterPrey')?.value||'',resources,attacksPerAction,wildShape:combatWildShapeRules(),canCast:characterCanCastSpells()&&!spellcastingBlocked,spellcastingBlocked,allowBonus,raging,frenzyReady,movementSpeeds,movementSpeedSource:wildShapeActive?'wild-shape':speed.source};
 }
 
 function combatRulesSpell(row){
@@ -5022,7 +5080,9 @@ function combatRulesIntent(kind,category,choice,preview=false){
             else if(known.includes(selected))intent.metamagic=selected;
         }
     }
-    intent.monkQualified=classFeatureContext().klass==='Monk'&&kind==='attack'&&category==='action';
+    intent.monkQualified=classFeatureContext().klass==='Monk'&&kind==='attack'&&category==='action'&&(
+        combatAttackSelect.value==='__unarmed__'||Boolean(document.getElementById('combatMonkMartialArts')?.checked)
+    );
     intent.weaponKey=combatAttackSelect.value;
     intent.distance=preview?0.5:Number(document.getElementById('combatRulesDistance').value);
     intent.difficult=Boolean(document.getElementById('combatRulesDifficult').checked);
@@ -5214,14 +5274,31 @@ function combatRulesRecordEvent(){
         chooseCombatGuideRoll(category,kind==='spell'?option.value.slice(6):'',intent);
         return;
     }
-    let die=null;
+    let die=null,deflect=null;
     if(option.value==='second-wind'){
         const text=document.getElementById('combatRulesFeatureDie').value;
         die=text===''?rollDie(10):Number(text);
         if(!Number.isInteger(die)||die<1||die>10){status.textContent='A Second Wind d10 eredménye 1 és 10 közé essen.';return;}
     }
+    if(option.value==='deflect-missiles'){
+        const incoming=Number(document.getElementById('combatRulesDeflectDamage').value),context=classFeatureContext(),rolled=rollDie(10),reduction=rolled+context.dexMod+context.level,returns=Boolean(document.getElementById('combatRulesDeflectReturn').checked);
+        if(!Number.isInteger(incoming)||incoming<1){status.textContent='Add meg a beérkező lövedéksebzést pozitív egész számként.';return;}
+        if(returns&&reduction<incoming){status.textContent='A lövedék csak akkor dobható vissza, ha a csökkentés 0-ra mérsékli a sebzést.';return;}
+        const ki=document.getElementById('classFeature_kiPoints');if(returns&&(!ki||Number(ki.value)<1)){status.textContent='Nincs elegendő Ki-pont a lövedék visszadobásához.';return;}
+        deflect={incoming,rolled,reduction,remaining:Math.max(0,incoming-reduction),returns,ki};
+    }
     if(!combatRulesCommit(plan,intent)){status.textContent='A műveletkeret megváltozott. Válaszd ki újra a műveletet.';return;}
     let detail=document.getElementById('combatGuideEventNote').value.trim();
+    if(option.value==='deflect-missiles'){
+        const context=classFeatureContext();
+        detail=`Deflect Missiles: ${deflect.incoming} beérkező sebzés; d10 (${deflect.rolled}) ${context.dexMod>=0?'+':'−'} ${Math.abs(context.dexMod)} + ${context.level} = ${deflect.reduction} csökkentés; ${deflect.remaining} sebzés marad.`;
+        if(deflect.returns){
+            deflect.ki.value=String(Number(deflect.ki.value)-1);deflect.ki.dispatchEvent(new Event('input',{bubbles:true}));
+            const sides=context.level>=17?10:context.level>=11?8:context.level>=5?6:4,attackDie=rollDie(20),attackBonus=context.proficiency+context.dexMod,damageDie=rollDie(sides),damage=Math.max(0,damageDie+context.dexMod);
+            detail+=` A lövedéket 1 Kiért visszadobtad: d20 (${attackDie}) ${attackBonus>=0?'+':'−'} ${Math.abs(attackBonus)} = ${attackDie+attackBonus} támadás; találatkor d${sides} (${damageDie}) ${context.dexMod>=0?'+':'−'} ${Math.abs(context.dexMod)} = ${damage} sebzés.`;
+        }
+        detail+=' '+document.getElementById('combatGuideEventNote').value.trim();
+    }
     if(category==='movement')detail=(option.value==='stand'?'Felállás: ':intent.distance+' '+plan.state.move.unit+' megtéve; ')+plan.cost.movement+' '+plan.state.move.unit+' mozgás felhasználva.'+(detail?' '+detail:'');
     if(option.value==='primeval-awareness')detail='Ősi érzék: '+intent.slotLevel+' perc; 1 mérföld, kedvelt terepen 6 mérföld. '+intent.slotLevel+'. szintű rekesz elköltve. '+detail;
     if(option.value==='rage'){
@@ -5246,6 +5323,41 @@ function combatRulesRecordEvent(){
         const hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value),heal=die+classFeatureContext().level;
         hp.value=String(Math.min(max||Infinity,Number(hp.value)+heal));detail='Gyógyulás: d10 ('+die+') + '+classFeatureContext().level+' = '+heal+' HP. '+detail;
     }
+    if(option.value==='ranger-tireless'){
+        const context=classFeatureContext(),die=rollDie(8),gain=Math.max(1,die+context.wisMod),field=document.getElementById('tempHp'),current=Number(field?.value)||0;
+        if(field){field.value=String(Math.max(current,gain));field.dispatchEvent(new Event('input',{bubbles:true}));}
+        detail=`Tireless: d8 (${die}) ${context.wisMod>=0?'+':'−'} ${Math.abs(context.wisMod)} = ${gain} ideiglenes HP; az aktuális érték ${Math.max(current,gain)}. ${detail}`;
+    }
+    if(option.value==='ranger-natures-veil')detail='Nature’s Veil: a következő saját köröd kezdetéig mágikusan láthatatlan vagy. '+detail;
+    if(option.value==='wild-magic-surge'){
+        const first=rollDie(100),controlled=classFeatureContext().level>=14,second=controlled?rollDie(100):null;
+        const tides=document.getElementById('classFeature_tidesOfChaos');if(tides){tides.value='1';tides.dispatchEvent(new Event('input',{bubbles:true}));}
+        detail=controlled?`Controlled Chaos: d100 eredmények ${first} és ${second}; válaszd ki az egyiket. ${detail}`:`Wild Magic Surge: d100 eredmény ${first}. ${detail}`;
+    }
+    if(option.value==='bend-luck'){const die=rollDie(4);detail=`Bend Luck: d4 (${die}); add hozzá vagy vond le a kiváltó dobásból. 2 Varázserő-pont elköltve. ${detail}`;}
+    if(option.value==='dragon-wings'){
+        const field=document.getElementById('classFeature_dragonWingsActive');if(field){field.checked=!field.checked;field.dispatchEvent(new Event('change',{bubbles:true}));}
+        detail=(field?.checked?'Dragon Wings: a szárnyak aktívak; a jelenlegi sebességeddel megegyező repülési sebességet kapsz.':'Dragon Wings: a szárnyakat visszahúztad.')+' '+detail;
+    }
+    if(option.value==='draconic-presence')detail='Draconic Presence: 60 ft-os bájoló vagy ijesztő aura legfeljebb 1 percig, koncentrációval; 5 Varázserő-pont elköltve. '+detail;
+    if(option.value==='aasimar-healing-hands'){
+        const hp=document.getElementById('currentHp'),heal=classFeatureContext().level,max=Number(document.getElementById('maxHp').value)||Infinity;
+        hp.value=String(Math.min(max,Number(hp.value)+heal));hp.dispatchEvent(new Event('input',{bubbles:true}));detail=`Healing Hands: ${heal} HP gyógyulás; hosszú pihenőnként egyszer. ${detail}`;
+    }
+    if(option.value==='aasimar-revelation'){
+        document.getElementById('combatAasimarTransformationActive').value='true';
+        document.getElementById('combatAasimarTransformationRound').value=String(currentCombatRound());
+        const subrace=document.getElementById('characterSubrace')?.value||'Aasimar';detail=`${subrace}: az égi átalakulás 1 percig aktív; körönként egyszer egy találat vagy sebző varázslat +${classFeatureContext().level} sebzést okozhat. ${detail}`;
+    }
+    if(option.value==='tabaxi-agility'){document.getElementById('combatTabaxiAgilityUsed').value='true';detail='Feline Agility: a sebességed erre a körre megduplázódott. '+detail;}
+    if(option.value==='tabaxi-agility-reset'){document.getElementById('combatTabaxiAgilityUsed').value='false';detail='Feline Agility visszatöltve, mert ebben a körben nem mozogtál. '+detail;}
+    if(option.value==='gnome-cunning')detail='Gnome Cunning: előny az INT, WIS és CHA mentődobásokon mágia ellen. '+detail;
+    if(option.value==='fey-ancestry')detail='Fey Ancestry: előny a charmed állapot elleni mentődobáson; mágia nem altathat el. '+detail;
+    if(option.value==='dwarven-resilience')detail='Dwarven Resilience: előny a méreg elleni mentődobáson és ellenállás a méregsebzéssel szemben. '+detail;
+    if(option.value==='spell-thief')detail=`Spell Thief: a varázsló mentőt dob a varázslási tulajdonságával a te varázslatmentő DC-d (${8+classFeatureContext().proficiency+classFeatureContext().intMod}) ellen. Sikertelenségnél a varázslat rád gyakorolt hatása megszűnik; 1–4. szintű, általad használható varázslatot 8 órára ellophatsz. ${detail}`;
+    if(option.value==='totem-eagle-dash')detail='Eagle Totem: Dash bónuszakcióval; a harag alatt ellened végzett lehetőségi támadások hátránnyal történnek. '+detail;
+    if(option.value==='totem-wolf-prone')detail='Wolf Totemic Attunement: egy 5 ft-on belüli Large vagy kisebb lény STR mentőt dob; sikertelenségnél prone. '+detail;
+    if(option.value==='totem-bear-guardian')detail='Bear Totemic Attunement: az 5 ft-on belüli ellenség hátránnyal támad más célpontot, amíg lát vagy hall téged. '+detail;
     if(option.value==='champion-survivor'){
         const hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value),heal=5+classFeatureContext().conMod;
         hp.value=String(Math.min(max||Infinity,Number(hp.value)+heal));detail='Survivor: '+heal+' HP visszanyerve a saját kör elején. '+detail;
@@ -5387,7 +5499,7 @@ function combatRulesRecordEvent(){
     if(option.value==='evasion')detail='Evasion: sikeres Ügyességmentőn 0 sebzés, sikertelen mentőn fél sebzés. '+detail;
     if(option.value==='thiefs-reflexes')detail='Thief’s Reflexes: a második forduló elkezdődött; az akció, bónuszakció, reakció, mozgás és a fordulónkénti Sneak Attack újra elérhető. Meglepetés esetén ezt ne használd. '+detail;
     if(option.value==='stroke-of-luck')detail='Stroke of Luck: a hatótávon belüli elhibázott támadás találattá, vagy a sikertelen tulajdonságpróba d20-a 20-ra válik. '+detail;
-    const racialFlags={'dragon-breath':'combatDragonBreathUsed','hellish-rebuke':'combatTieflingRebukeUsed','relentless-endurance':'combatHalfOrcEnduranceUsed'};
+    const racialFlags={'dragon-breath':'combatDragonBreathUsed','hellish-rebuke':'combatTieflingRebukeUsed','relentless-endurance':'combatHalfOrcEnduranceUsed','aasimar-healing-hands':'combatAasimarHealingUsed','aasimar-revelation':'combatAasimarTransformationUsed'};
     if(racialFlags[option.value])document.getElementById(racialFlags[option.value]).value='true';
     if(option.value==='relentless-endurance')document.getElementById('currentHp').value='1';
     markCombatGuideCategory(category,option.value);
@@ -5460,6 +5572,7 @@ function combatRulesRender(){
     document.getElementById('combatRulesDistanceWrap').hidden=selected==='stand';
     document.getElementById('combatRulesAmountWrap').hidden=choice!=='lay-on-hands';
     document.getElementById('combatRulesFeatureDieWrap').hidden=choice!=='second-wind';
+    document.getElementById('combatRulesDeflectWrap').hidden=choice!=='deflect-missiles';
     document.getElementById('combatRulesFrenzyWrap').hidden=!(choice==='rage'&&context.subclass.includes('berserker')&&context.level>=3);
     document.getElementById('combatRulesStepWindWrap').hidden=choice!=='step-wind';
     document.getElementById('combatRulesOffhandWrap').hidden=!['two-weapon','nick'].includes(choice);
@@ -5563,7 +5676,8 @@ function combatRulesResetConditions(){
     ['combatRulesDifficult','combatRangerMagicalTerrain','combatRulesFrenzy','combatRulesTwoWeaponStyle'].forEach(id=>document.getElementById(id).checked=false);
     document.getElementById('combatRulesOtherTurn').checked=true;
     document.getElementById('combatRangerTargetCount').value='1';document.getElementById('combatRangerTargetIndex').value='1';
-    ['combatRulesDistance','combatRulesAmount','combatRulesFeatureDie'].forEach(id=>document.getElementById(id).value='');
+    ['combatRulesDistance','combatRulesAmount','combatRulesFeatureDie','combatRulesDeflectDamage'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('combatRulesDeflectReturn').checked=false;
 }
 
 function combatRulesUnarmed(){
@@ -5763,6 +5877,10 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         profile.label='Stand Against the Tide';profile.known=true;
     }else if(choice==='deflect-missiles'&&className==='Monk'&&level>=3){
         profile.label='Deflect Missiles';profile.known=true;
+    }else if(choice==='spell-thief'&&className==='Rogue'&&level>=17&&context.subclass.includes('arcane trickster')){
+        profile.label='Spell Thief';profile.known=true;profile.maximum=1;profile.remaining=whole(document.getElementById('classFeature_spellThief')?.value);profile.period='long';profile.periodLabel='Hosszú pihenőnként';profile.resetLabel='Hosszú pihenő után';profile.resourceText='Használat: '+profile.remaining+' / 1';if(profile.remaining===0)sourceReason='A Spell Thief használata elfogyott.';
+    }else if(choice==='totem-bear-guardian'&&className==='Barbarian'&&level>=14&&context.subclass.includes('totem warrior')){
+        profile.label='Bear Totemic Attunement';profile.known=true;
     }else if(choice==='slow-fall'&&className==='Monk'&&level>=4){
         profile.label='Slow Fall';profile.known=true;
     }else if(choice==='opportunist'&&className==='Monk'&&level>=17&&context.subclass.includes('way of shadow')){
@@ -5981,6 +6099,14 @@ const combatGuideCategories={
 };
 
 function currentCombatRound(){return Math.max(1,Number.parseInt(document.getElementById('combatRoundNumber')?.value,10)||1);}
+function combatAasimarTransformationActive(){
+    const active=document.getElementById('combatAasimarTransformationActive'),started=Number.parseInt(document.getElementById('combatAasimarTransformationRound')?.value,10);
+    if(active?.value!=='true')return false;
+    if(!Number.isFinite(started)||currentCombatRound()-started<10)return true;
+    active.value='false';
+    document.getElementById('combatAasimarTransformationRound').value='';
+    return false;
+}
 
 function readCombatCurrentLog(){
     try{
@@ -6698,6 +6824,10 @@ const classFeatureModels={
         {type:'output',key:'rageDamage',label:'Harag sebzésbónusza',value:c=>c.level>=16?'+4':c.level>=9?'+3':'+2'},
         {type:'toggle',key:'rageActive',label:'Harag aktív',rest:'both'},
         {type:'toggle',key:'frenzyActive',label:'Frenzy aktív (harag végén 1 kimerültség)',rest:'both',minLevel:3,when:c=>c.subclass.includes('berserker')}
+        ,{type:'select',key:'totemSpirit',label:'Totem Spirit',minLevel:3,when:c=>c.subclass.includes('totem warrior'),options:['Bear','Eagle','Wolf']}
+        ,{type:'select',key:'totemAspect',label:'Aspect of the Beast',minLevel:6,when:c=>c.subclass.includes('totem warrior'),options:['Bear','Eagle','Wolf']}
+        ,{type:'select',key:'totemicAttunement',label:'Totemic Attunement',minLevel:14,when:c=>c.subclass.includes('totem warrior'),options:['Bear','Eagle','Wolf']}
+        ,{type:'output',key:'totemCombatRules',label:'Totem Warrior – harci hatások',wide:true,minLevel:3,when:c=>c.subclass.includes('totem warrior'),value:()=> 'Bear: haragban minden sebzés ellenállt a psychic kivételével. Eagle: haragban bónuszakciós Dash és lehetőségi támadások hátránnyal. Wolf: haragban a szövetségesek előnnyel támadják az 5 ft-on belüli ellenségeidet.'}
     ]},
     Bard:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Bárdi inspiráció hosszú pihenőre, 5. szinttől rövid pihenőre is visszatöltődik; a Combat mód automatikusan kezeli a felhasználásokat.',fields:[
         {type:'output',key:'bardSpellcasting',label:'Varázslás',wide:true,value:c=>'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'. A rituálék csak ismert, rituálé címkéjű bárdvarázslatokból végezhetők.'},
@@ -6941,6 +7071,16 @@ const classFeatureModels={
     ]},
     Sorcerer:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Varázserő-pontok hosszú pihenőre töltődnek vissza; a Flexible Casting és a kiválasztott Metamagic lehetőségek a Combat módban is használhatók.',fields:[
         {type:'output',key:'sorcererSpellcasting',label:'Varázslás',wide:true,value:c=>'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'.'},
+        {type:'output',key:'draconicResilience',label:'Draconic Resilience',wide:true,when:c=>c.subclass.includes('draconic bloodline'),value:c=>'Páncél nélkül az AC 13 + DEX; a maximum HP minden Sorcerer szint után 1-gyel nő.'},
+        {type:'select',key:'draconicAncestry',label:'Sárkányős – sebzéstípus',when:c=>c.subclass.includes('draconic bloodline'),options:['Acid','Cold','Fire','Lightning','Poison']},
+        {type:'output',key:'elementalAffinity',label:'Elemental Affinity',wide:true,minLevel:6,when:c=>c.subclass.includes('draconic bloodline'),value:c=>'A sárkányős sebzéstípusát okozó varázslat egy sebzésdobásához +CHA ('+(c.chaMod>=0?'+':'')+c.chaMod+'). 1 Varázserő-pontért 1 órás ellenállás kérhető.'},
+        {type:'toggle',key:'dragonWingsActive',label:'Dragon Wings aktív',minLevel:14,when:c=>c.subclass.includes('draconic bloodline')},
+        {type:'counter',key:'draconicPresence',label:'Draconic Presence – megmaradt használat',max:()=>1,rest:'long',minLevel:18,when:c=>c.subclass.includes('draconic bloodline')},
+        {type:'counter',key:'tidesOfChaos',label:'Tides of Chaos – megmaradt használat',max:()=>1,rest:'long',when:c=>c.subclass.includes('wild magic')},
+        {type:'output',key:'wildMagicSurge',label:'Wild Magic Surge',wide:true,when:c=>c.subclass.includes('wild magic'),value:()=> 'A mesélő által kiváltott vadmágia-hullámhoz a Combat mód d100 eredményt rögzít.'},
+        {type:'output',key:'bendLuck',label:'Bend Luck',wide:true,minLevel:6,when:c=>c.subclass.includes('wild magic'),value:()=> 'Reakció és 2 Varázserő-pont: 1d4 hozzáadása vagy levonása egy látott lény dobásából.'},
+        {type:'output',key:'controlledChaos',label:'Controlled Chaos',wide:true,minLevel:14,when:c=>c.subclass.includes('wild magic'),value:()=> 'Wild Magic Surge esetén kétszer dobsz a táblán, és az egyik eredményt választod.'},
+        {type:'output',key:'spellBombardment',label:'Spell Bombardment',wide:true,minLevel:18,when:c=>c.subclass.includes('wild magic'),value:()=> 'Körönként egyszer egy varázssebzés-kockán dobott maximum esetén dobd újra azt a kockát, és add hozzá az eredményt.'},
         {type:'counter',key:'sorceryPoints',label:'Varázserő-pontok',max:c=>c.level>=2?c.level:0,rest:'long',minLevel:2},
         {type:'output',key:'fontOfMagic',label:'Font of Magic / Flexible Casting',minLevel:2,wide:true,value:()=> 'Bónuszakcióval varázsrekeszt alakíthatsz ponttá, vagy pontokból legfeljebb 5. szintű rekeszt hozhatsz létre. Költség: 1/2/3/4/5. szintű rekesz = 2/3/5/6/7 pont.'},
         {type:'select',key:'metamagic1',label:'Metamagic 1',minLevel:3,options:['Careful Spell','Distant Spell','Empowered Spell','Extended Spell','Heightened Spell','Quickened Spell','Subtle Spell','Twinned Spell']},
@@ -7198,7 +7338,8 @@ function restoreSpellResources(restType){
     if(restType==='short'){
         const breath=document.getElementById('combatDragonBreathUsed');if(breath)breath.value='false';
     } else {
-        ['combatDragonBreathUsed','combatTieflingRebukeUsed','combatHalfOrcEnduranceUsed'].forEach(id=>{const field=document.getElementById(id);if(field)field.value='false';});
+        ['combatDragonBreathUsed','combatTieflingRebukeUsed','combatHalfOrcEnduranceUsed','combatAasimarHealingUsed','combatAasimarTransformationUsed','combatAasimarTransformationActive','combatTabaxiAgilityUsed'].forEach(id=>{const field=document.getElementById(id);if(field)field.value='false';});
+        const aasimarRound=document.getElementById('combatAasimarTransformationRound');if(aasimarRound)aasimarRound.value='';
     }
     spellCatalogRestoreLedger(restType);
     spellCatalogRefreshRows();
@@ -7241,7 +7382,12 @@ function refreshCombatAttackOptions(){
         if(profiles.some(profile=>profile.key===previous))combatAttackSelect.value=previous;
         if(!profiles.length)combatAttackSelect.add(new Option('Nincs elérhető társtámadás',''));
     }
-    if(!activeForm&&!petMode&&combatRulesUnarmed()){combatAttackSelect.appendChild(new Option('Pusztakezes csapás','__unarmed__'));if(previous==='__unarmed__')combatAttackSelect.value=previous;}
+    const unarmedRow=rows.find(row=>{
+        const name=(row.querySelector('input')?.value||'').trim().toLocaleLowerCase();
+        return /^(pusztakezes(?: csapás| támadás)?|unarmed(?: strike| attack)?)$/.test(name);
+    });
+    if(previous==='__unarmed__'&&unarmedRow)combatAttackSelect.value=unarmedRow.dataset.attackRowKey;
+    if(!activeForm&&!petMode&&combatRulesUnarmed()&&!unarmedRow){combatAttackSelect.appendChild(new Option('Pusztakezes csapás','__unarmed__'));if(previous==='__unarmed__')combatAttackSelect.value=previous;}
     const spellPrevious = combatSpellSelect.value;
     combatSpellSelect.replaceChildren();
     const spellRows = [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')]
@@ -7379,6 +7525,8 @@ function finishCombatEncounter(){
     document.getElementById('combatGuideEventStatus').textContent='';
     combatRulesResetConditions();
     document.getElementById('combatEncounterNoticeDismissed').value='false';
+    document.getElementById('combatAasimarTransformationActive').value='false';
+    document.getElementById('combatAasimarTransformationRound').value='';
     ended.value='true';
     prepareCombatGuideRound();
     renderCombatRoundTracker();
@@ -7442,6 +7590,11 @@ function renderCombatTurnChoices(){
     if(characterCanCastSpells())addCombatSpellChoices(action,/akció/i);
     if(klass==='Barbarian'&&level>=1&&((Number(document.getElementById('classFeature_rageUses')?.value)||0)>0||level>=20)&&!document.getElementById('classFeature_rageActive')?.checked)bonus.push(['rage','Harag (Rage)']);
     if(klass==='Barbarian'&&level>=3&&subclass.includes('berserker')&&document.getElementById('classFeature_rageActive')?.checked)bonus.push(['frenzy','Frenzy támadás (harag közben)']);
+    if(klass==='Barbarian'&&subclass.includes('totem warrior')&&document.getElementById('classFeature_rageActive')?.checked){
+        if(document.getElementById('classFeature_totemSpirit')?.value==='Eagle')bonus.push(['totem-eagle-dash','Eagle Totem – Dash bónuszakció']);
+        if(level>=14&&document.getElementById('classFeature_totemicAttunement')?.value==='Wolf')bonus.push(['totem-wolf-prone','Wolf Totem – nagy vagy kisebb célpont fellökése']);
+        if(level>=14&&document.getElementById('classFeature_totemicAttunement')?.value==='Bear')reaction.push(['totem-bear-guardian','Bear Totem – hátrány a szövetséges elleni támadásra']);
+    }
     if(klass==='Bard'&&(Number(document.getElementById('classFeature_bardicInspiration')?.value)||0)>0)bonus.push(['inspiration','Bárdi inspiráció'+(subclass.includes('valor')&&level>=3?' / Combat Inspiration':'')]);
     if(klass==='Bard'&&level>=6)action.push(['countercharm','Countercharm']);
     if(klass==='Bard'&&level>=3&&subclass.includes('lore')&&(Number(document.getElementById('classFeature_bardicInspiration')?.value)||0)>0)reaction.push(['cutting-words','Cutting Words']);
@@ -7461,7 +7614,6 @@ function renderCombatTurnChoices(){
             if(subclass.includes('life'))action.push(['preserve-life','Channel Divinity: Preserve Life']);
             if(subclass.includes('light'))action.push(['radiance-dawn','Channel Divinity: Radiance of the Dawn']);
             if(subclass.includes('nature'))action.push(['charm-nature','Channel Divinity: Charm Animals and Plants']);
-            if(subclass.includes('tempest'))trigger.push(['destructive-wrath','Channel Divinity: Destructive Wrath – maximális sebzés']);
             if(subclass.includes('trickery')){action.push(['invoke-duplicity','Channel Divinity: Invoke Duplicity']);if(level>=6)action.push(['cloak-shadows','Channel Divinity: Cloak of Shadows']);}
             if(subclass.includes('war domain')){trigger.push(['guided-strike','Channel Divinity: Guided Strike (+10)']);if(level>=6)reaction.push(['war-gods-blessing','Channel Divinity: War God’s Blessing (+10)']);}
         }
@@ -7540,6 +7692,7 @@ function renderCombatTurnChoices(){
     if(klass==='Rogue'&&level>=5)reaction.push(['uncanny-dodge','Uncanny Dodge']);
     if(klass==='Rogue'&&level>=7)trigger.push(['evasion','Evasion – Ügyességmentő sebzésének módosítása']);
     if(klass==='Rogue'&&level>=17&&subclass.includes('thief')&&currentCombatRound()===1&&!combatRulesRead()?.used?.thiefsReflexes)trigger.push(['thiefs-reflexes','Thief’s Reflexes – második forduló (kezdeményezés −10)']);
+    if(klass==='Rogue'&&level>=17&&subclass.includes('arcane trickster')&&(Number(document.getElementById('classFeature_spellThief')?.value)||0)>0)reaction.push(['spell-thief','Spell Thief – varázslat negálása és ellopása']);
     if(klass==='Rogue'&&level>=20&&(Number(document.getElementById('classFeature_strokeOfLuck')?.value)||0)>0)trigger.push(['stroke-of-luck','Stroke of Luck – hibából siker']);
     if(klass==='Sorcerer'&&level>=2){
         const points=Number(sorcererPointsField()?.value)||0;
@@ -7556,8 +7709,18 @@ function renderCombatTurnChoices(){
             });
         }
     }
+    if(klass==='Sorcerer'&&subclass.includes('wild magic')){
+        trigger.push(['wild-magic-surge','Wild Magic Surge – d100 eredmény']);
+        if(level>=6&&(Number(document.getElementById('classFeature_sorceryPoints')?.value)||0)>=2)reaction.push(['bend-luck','Bend Luck (2 Varázserő-pont; ±1d4)']);
+    }
+    if(klass==='Sorcerer'&&subclass.includes('draconic bloodline')){
+        if(level>=14)bonus.push(['dragon-wings',document.getElementById('classFeature_dragonWingsActive')?.checked?'Dragon Wings – szárnyak visszahúzása':'Dragon Wings – szárnyak létrehozása']);
+        if(level>=18&&(Number(document.getElementById('classFeature_draconicPresence')?.value)||0)>0&&(Number(document.getElementById('classFeature_sorceryPoints')?.value)||0)>=5)action.push(['draconic-presence','Draconic Presence (5 Varázserő-pont)']);
+    }
     if(klass==='Monk'&&level>=3)reaction.push(['deflect-missiles','Deflect Missiles']);
     if(klass==='Ranger'&&subclass.includes('hunter')&&level>=3){const prey=document.getElementById('classFeature_hunterPrey')?.value;if(prey==='Giant Killer')reaction.push(['giant-killer','Giant Killer (reakciótámadás)']);if(prey==='Horde Breaker')action.push(['horde-breaker','Horde Breaker (második célpont elleni támadás)']);}
+    if(klass==='Ranger'&&level>=10&&(Number(document.getElementById('classFeature_tirelessUses')?.value)||0)>0)action.push(['ranger-tireless','Tireless – ideiglenes HP']);
+    if(klass==='Ranger'&&level>=14&&(Number(document.getElementById('classFeature_naturesVeilUses')?.value)||0)>0)bonus.push(['ranger-natures-veil','Nature’s Veil – láthatatlanság']);
     const activeForm=activeCombatWildShape(),multiattack=activeForm?wildShapeMultiattackPlan(activeForm):null;
     if(multiattack)action.unshift(['wild-multiattack',multiattack.label]);
     if(!activeForm)bonus.push(['two-weapon','Kétfegyveres harc (könnyű közelharci fegyverek)']);
@@ -7568,6 +7731,15 @@ function renderCombatTurnChoices(){
     if(klass==='Druid'&&document.getElementById('combatWildShapeActive').value==='true')bonus.push(['revert-shape','Vad Alak megszüntetése']);
     const speeds=`${document.getElementById('druidBeastSpeed')?.value||''} ${document.getElementById('druidBeastOtherSpeeds')?.value||''}`.toLocaleLowerCase();
     if(race==='Dragonborn'&&document.getElementById('combatDragonBreathUsed')?.value!=='true')action.push(['dragon-breath','Sárkányvérű lehelete (rövid pihenőnként egyszer)']);
+    if(race==='Aasimar'&&document.getElementById('combatAasimarHealingUsed')?.value!=='true')action.push(['aasimar-healing-hands','Healing Hands – gyógyítás']);
+    if(race==='Aasimar'&&level>=3&&document.getElementById('combatAasimarTransformationUsed')?.value!=='true')action.push(['aasimar-revelation',(document.getElementById('characterSubrace')?.value||'Aasimar')+' – égi átalakulás']);
+    if(race==='Tabaxi'){
+        if(document.getElementById('combatTabaxiAgilityUsed')?.value!=='true')trigger.push(['tabaxi-agility','Feline Agility – sebesség megduplázása']);
+        else trigger.push(['tabaxi-agility-reset','Feline Agility visszatöltése – ebben a körben nem mozgok']);
+    }
+    if(race==='Gnome')trigger.push(['gnome-cunning','Gnome Cunning – előny mentális mágiamentőn']);
+    if(['Elf','Half-Elf'].includes(race))trigger.push(['fey-ancestry','Fey Ancestry – előny bájolás ellen']);
+    if(race==='Dwarf')trigger.push(['dwarven-resilience','Dwarven Resilience – előny és ellenállás méreg ellen']);
     if(race==='Tiefling'&&level>=3&&document.getElementById('combatTieflingRebukeUsed')?.value!=='true')reaction.push(['hellish-rebuke','Pokolbéli visszacsapás (Hellish Rebuke; hosszú pihenőnként egyszer)']);
     if(race==='Half-Orc'&&document.getElementById('combatHalfOrcEnduranceUsed')?.value!=='true')trigger.push(['relentless-endurance','Rendíthetetlen kitartás (0 HP helyett 1 HP; hosszú pihenőnként egyszer)']);
     if(race==='Halfling')trigger.push(['lucky','Szerencsés (Lucky): 1-es d20 újradobása']);
@@ -7640,6 +7812,7 @@ function advanceCombatRound(){
 function setCombatPanel(panel){
     if(panel==='damage'){
         combatGuideState.panel='damage';
+        updateCombatInspirationAcControls();
         renderCombatGuide();scrollCombatGuideToTop();
         document.getElementById('incomingDamage')?.focus({preventScroll:true});
         return;
@@ -7654,16 +7827,35 @@ function setCombatPanel(panel){
     renderCombatGuide();scrollCombatGuideToTop();
 }
 
+function updateCombatInspirationAcControls(){
+    const wrap=document.getElementById('combatInspirationAcWrap'),available=Boolean(document.getElementById('inspiration')?.checked&&document.getElementById('inspirationCombat')?.checked);
+    if(!wrap)return;wrap.hidden=!available;
+    if(!available){document.getElementById('combatInspirationAc').checked=false;document.getElementById('combatIncomingAttackTotal').value='';document.getElementById('combatInspirationAcRoll').value='';}
+}
+
 function applyIncomingDamage(){
     const damageField = document.getElementById('incomingDamage');
     const enteredDamage = Number(damageField.value);
     const damageType = document.getElementById('incomingDamageType')?.value || '';
     const raging = document.getElementById('characterClass')?.value === 'Barbarian' && Boolean(document.getElementById('classFeature_rageActive')?.checked);
-    const resistedByRage = raging && ['bludgeoning','piercing','slashing'].includes(damageType);
-    const damage = resistedByRage ? Math.floor(enteredDamage / 2) : enteredDamage;
+    const bearTotem=raging&&(document.getElementById('characterSubclass')?.value||'').toLocaleLowerCase().includes('totem warrior')&&document.getElementById('classFeature_totemSpirit')?.value==='Bear';
+    const resistedByRage = raging && (['bludgeoning','piercing','slashing'].includes(damageType)||bearTotem&&damageType&&damageType!=='psychic'&&damageType!=='other');
+    const race=document.getElementById('characterRace')?.value||'',subrace=(document.getElementById('characterSubrace')?.value||'').toLocaleLowerCase();
+    const dragonResistance=Object.entries({black:'acid',blue:'lightning',brass:'fire',bronze:'lightning',copper:'acid',gold:'fire',green:'poison',red:'fire',silver:'cold',white:'cold'}).find(([ancestry])=>subrace.includes(ancestry))?.[1];
+    const resistedByRace=(race==='Aasimar'&&['necrotic','radiant'].includes(damageType))||(race==='Dwarf'&&damageType==='poison')||(race==='Tiefling'&&damageType==='fire')||(race==='Dragonborn'&&damageType===dragonResistance)||(race==='Genasi'&&((subrace.includes('fire')&&damageType==='fire')||(subrace.includes('water')&&damageType==='acid')));
+    const damage = resistedByRage||resistedByRace ? Math.floor(enteredDamage / 2) : enteredDamage;
     const currentHp = document.getElementById('currentHp');
     const temporaryHp = document.getElementById('tempHp');
     if(!Number.isInteger(enteredDamage) || enteredDamage <= 0){incomingDamageResult.textContent = 'Adj meg 1 vagy nagyobb egész sebzésértéket.'; return;}
+    let combatInspirationText='';
+    if(document.getElementById('combatInspirationAc')?.checked){
+        const attackTotal=Number(document.getElementById('combatIncomingAttackTotal').value),roll=Number(document.getElementById('combatInspirationAcRoll').value),sides=Number.parseInt((document.getElementById('inspirationDie')?.value||'').slice(1),10),armor=Number(document.getElementById('armorClass')?.value);
+        if(!Number.isInteger(attackTotal)||attackTotal<1||!Number.isInteger(roll)||roll<1||roll>sides){incomingDamageResult.textContent=`Adj meg érvényes támadási eredményt és 1–${sides||'?'} közötti inspirációs dobást.`;return;}
+        const boosted=armor+roll;combatInspirationText=`Combat Inspiration: AC ${armor} + ${roll} = ${boosted}; támadás ${attackTotal}. `;
+        commitRollInspiration({used:true});
+        updateCombatInspirationAcControls();
+        if(attackTotal<boosted){incomingDamageResult.textContent=combatInspirationText+'A támadás nem talált, ezért nincs sebzés.';appendCombatGuideEvent({kind:'incoming',category:'incoming',label:'Combat Inspiration – kivédett támadás',detail:incomingDamageResult.textContent,total:0,absorbed:0,hpLoss:0});damageField.value='';renderCombatGuide();saveCharacter();return;}
+    }
     if(rangerApplyCompanionDamage(enteredDamage))return;
     if(!currentHp || !Number.isFinite(Number(currentHp.value))){incomingDamageResult.textContent = 'Az aktuális HP mezőben nincs érvényes érték.'; return;}
     const oldTemp = Math.max(0, Number(temporaryHp?.value) || 0);
@@ -7675,8 +7867,9 @@ function applyIncomingDamage(){
     currentHp.value = String(nextHp);
     currentHp.dispatchEvent(new Event('input', {bubbles:true}));
     currentHp.dispatchEvent(new Event('change', {bubbles:true}));
-    incomingDamageResult.textContent = `Bevitt sebzés: ${enteredDamage}${resistedByRage ? `, harag miatti ellenállás után ${damage}` : ''}. Ideiglenes HP: −${absorbed}; aktuális HP: −${hpLoss}.`;
-    if(shapeDamage)incomingDamageResult.textContent=`Bevitt sebzés: ${enteredDamage}. Ideiglenes HP: −${absorbed}; Vad alak HP: −${shapeDamage.loss}; karakter HP: −${shapeDamage.overflow}.`+(shapeDamage.ended?' Az állati alak megszűnt.':'');
+    const resistanceText=resistedByRage?'harag miatti':resistedByRace?'faji':'';
+    incomingDamageResult.textContent = combatInspirationText+`Bevitt sebzés: ${enteredDamage}${resistanceText ? `, ${resistanceText} ellenállás után ${damage}` : ''}. Ideiglenes HP: −${absorbed}; aktuális HP: −${hpLoss}.`;
+    if(shapeDamage)incomingDamageResult.textContent=combatInspirationText+`Bevitt sebzés: ${enteredDamage}${resistanceText ? `, ${resistanceText} ellenállás után ${damage}` : ''}. Ideiglenes HP: −${absorbed}; Vad alak HP: −${shapeDamage.loss}; karakter HP: −${shapeDamage.overflow}.`+(shapeDamage.ended?' Az állati alak megszűnt.':'');
     if(shapeDamage?.ended){
         combatAttackFlow={phase:'choose',attackKey:'',lastNatural:null,eventType:'attack'};
         combatGuideState.intent=null;reactionPanelContexts={attack:null,reaction:null};
@@ -7756,6 +7949,7 @@ function updateRollInspirationControls(reset=false){
     const die=document.getElementById('inspirationDie')?.value||'';
     const sides=Number.parseInt(die.slice(1),10)||0;
     const cardState=document.querySelector('#inspirationCard .inspiration-state');
+    const combatSource=document.getElementById('inspirationCombat');if(combatSource){combatSource.disabled=!available;if(reset||!available)combatSource.checked=false;}
     if(cardState)cardState.textContent=available?(die?`Aktív inspiráció: ${die}`:'Aktív; válassz kockaértéket'):'Nincs aktív inspiráció';
     document.querySelectorAll('.roll-inspiration').forEach(container=>{
         const checkbox=container.querySelector('[data-inspiration-use]');
@@ -7768,12 +7962,14 @@ function updateRollInspirationControls(reset=false){
         input.max=sides?String(sides):'';
         input.placeholder=sides?`1–${sides}`:'pl. 4';
     });
+    updateCombatInspirationAcControls();
 }
 
 function readRollInspiration(containerId){
     const container=document.getElementById(containerId);
     const selected=Boolean(document.getElementById('inspiration')?.checked)&&Boolean(container?.querySelector('[data-inspiration-use]')?.checked);
     if(!selected)return {used:false,value:0,text:''};
+    if(containerId==='combatRollInspiration'&&getCombatRollType()==='damage'&&!document.getElementById('inspirationCombat')?.checked)throw new Error('Sebzésdobáshoz csak College of Valor Combat Inspiration használható.');
     const input=container.querySelector('[data-inspiration-value]');
     const value=Number(input.value);
     const die=document.getElementById('inspirationDie')?.value||'';
@@ -7790,6 +7986,7 @@ function commitRollInspiration(inspiration){
     if(!inspiration.used)return;
     const source=document.getElementById('inspiration');
     source.checked=false;
+    const combat=document.getElementById('inspirationCombat');if(combat)combat.checked=false;
     source.dispatchEvent(new Event('change',{bubbles:true}));
     updateRollInspirationControls(true);
     saveCharacter();
@@ -7898,11 +8095,20 @@ function warlockCombatDamageBonus(){
 function wizardCombatDamageBonus(){
     const c=classFeatureContext();return c.klass==='Wizard'&&document.getElementById('combatEmpoweredEvocation')?.checked?c.intMod:0;
 }
+function sorcererElementalAffinityBonus(){
+    const c=classFeatureContext();return c.klass==='Sorcerer'&&document.getElementById('combatElementalAffinity')?.checked?c.chaMod:0;
+}
+function sorcererAncestryMatchesDamage(ancestry,damage){
+    const pattern={Acid:/\b(?:acid|sav)\b/i,Cold:/\b(?:cold|hideg)\b/i,Fire:/\b(?:fire|tűz)\b/i,Lightning:/\b(?:lightning|villám)\b/i,Poison:/\b(?:poison|méreg)\b/i}[ancestry];
+    return Boolean(pattern?.test(String(damage||'')));
+}
+function combatDestructiveWrathEligible(damage){return /\b(?:lightning|thunder|villám|mennydörgés)\b/i.test(String(damage||''));}
 function updateCombatClassOptions(preserveSelection=true){
     const panel=document.getElementById('combatClassOptions');
     if(!panel)return;
     const {klass,level,subclass}=classFeatureContext();
     const previous=new Map([...panel.querySelectorAll('input[type=checkbox]')].map(input=>[input.id,input.checked]));
+    const previousSelects=new Map([...panel.querySelectorAll('select')].map(input=>[input.id,input.value]));
     const options=[];
     if(getCombatRollType()==='damage'&&combatAttackFlow.eventType==='spell'){
         const spell=readCombatSpell(),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row));
@@ -7912,18 +8118,41 @@ function updateCombatClassOptions(preserveSelection=true){
             options.push('<small class="combat-class-note">Repelling Blast: találatkor a célpont legfeljebb 10 ft-tal távolabb lökhető.</small>');
         if(klass==='Wizard'&&level>=10&&subclass.includes('evocation')&&catalog?.school==='evocation')
             options.push(`<label><input id="combatEmpoweredEvocation" type="checkbox"> Empowered Evocation (${classFeatureContext().intMod>=0?'+':''}${classFeatureContext().intMod} egy sebzésdobáshoz)</label>`);
+        if(klass==='Wizard'&&level>=2&&subclass.includes('evocation')&&catalog?.school==='evocation')options.push(`<label><input id="combatSculptSpells" type="checkbox"> Sculpt Spells: legfeljebb ${1+(combatRulesSpell(spell?.row)?.level||0)} védett lény automatikusan ment és 0 sebzést kap</label>`);
+        if(klass==='Wizard'&&level>=6&&subclass.includes('evocation')&&combatRulesSpell(spell?.row)?.level===0&&catalog?.resolution==='save')options.push('<label><input id="combatPotentCantripSaved" type="checkbox"> Potent Cantrip: a célpont sikeresen mentett, ezért fél sebzést kap</label>');
+        if(klass==='Wizard'&&level>=2&&subclass.includes('necromancy')&&combatRulesSpell(spell?.row)?.level>0&&!combatRulesRead()?.used?.grimHarvest)options.push('<label><input id="combatGrimHarvestKill" type="checkbox"> Grim Harvest: ez a varázslat megölt egy nem élőholt, nem szerkezet célpontot</label>');
+        if(klass==='Cleric'&&level>=2&&subclass.includes('tempest')&&combatDestructiveWrathEligible(spell?.damage)&&(Number(document.getElementById('classFeature_channelDivinity')?.value)||0)>0)options.push('<label><input id="combatDestructiveWrath" type="checkbox"> Destructive Wrath: a villám- vagy mennydörgéssebzés kockái maximálisak (1 Channel Divinity)</label>');
+        if(klass==='Sorcerer'&&level>=6&&subclass.includes('draconic bloodline')){
+            const ancestry=document.getElementById('classFeature_draconicAncestry')?.value||'';
+            if(ancestry&&sorcererAncestryMatchesDamage(ancestry,spell?.damage)){
+                options.push(`<label><input id="combatElementalAffinity" type="checkbox"> Elemental Affinity (${classFeatureContext().chaMod>=0?'+':''}${classFeatureContext().chaMod} sebzés; ${ancestry})</label>`);
+                if((Number(document.getElementById('classFeature_sorceryPoints')?.value)||0)>0)options.push(`<label><input id="combatDraconicResistance" type="checkbox"> Elemental Affinity: 1 Varázserő-pontért ${ancestry} ellenállás 1 órára</label>`);
+            }
+        }
+        if(combatAasimarTransformationActive()&&!combatRulesRead()?.used?.aasimarRevelation)options.push(`<label><input id="combatAasimarRevelationDamage" type="checkbox"> Égi átalakulás (+${level} sebzés; körönként egyszer)</label>`);
         panel.innerHTML=options.join('');
         if(preserveSelection)panel.querySelectorAll('input[type=checkbox]').forEach(input=>{input.checked=previous.get(input.id)||false;});
         panel.hidden=!options.length;buildCombatBonusDiceInputs(preserveSelection);return;
     }
     if(klass==='Fighter'&&getCombatRollType()==='attack'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Archery'))options.push('<label><input id="combatFighterStyle" type="checkbox"> Archery Fighting Style (+2 támadás; távolsági fegyvernél)</label>');
+    if(klass==='Barbarian'&&level>=2&&getCombatRollType()==='attack')options.push('<label><input id="combatRecklessAttack" type="checkbox"> Reckless Attack: előny a STR-alapú közelharci támadásra; a következő körömig ellenem is előnnyel támadnak</label>');
+    if(klass==='Sorcerer'&&subclass.includes('wild magic')&&['attack','spell'].includes(getCombatRollType())&&(Number(document.getElementById('classFeature_tidesOfChaos')?.value)||0)>0)options.push('<label><input id="combatTidesOfChaos" type="checkbox"> Tides of Chaos: előny erre a d20 dobásra (hosszú pihenőig vagy a mesélő által kiváltott Wild Magic Surge-ig)</label>');
+    if(klass==='Monk'&&getCombatRollType()==='attack'&&!activeCombatWildShape()&&!String(combatAttackSelect.value).startsWith('companion:')){
+        const unarmed=combatAttackSelect.value==='__unarmed__';
+        options.push(`<label><input id="combatMonkMartialArts" type="checkbox" ${unarmed?'checked disabled':'checked'}> Harcművészet: DEX használata STR helyett (pusztakezes vagy szerzetesi fegyver, páncél és pajzs nélkül)</label>`);
+    }
+    if(getCombatRollType()==='attack'){
+        const attack=readCombatAttack(),variants=combatDamageVariants(attack?.damage);
+        if(variants.length>1)options.push(`<label class="wide">Fegyverhasználat<select id="combatWeaponDamageVariant">${variants.map((variant,index)=>`<option value="${variant.expression}" ${index===0?'selected':''}>${variant.label}: ${variant.expression}</option>`).join('')}</select></label>`);
+    }
     if(klass==='Fighter'&&getCombatRollType()==='damage'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Dueling'))options.push('<label><input id="combatFighterStyle" type="checkbox"> Dueling Fighting Style (+2 sebzés; egykezes közelharci fegyvernél, másik fegyver nélkül)</label>');
     if(klass==='Fighter'&&getCombatRollType()==='damage'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Great Weapon Fighting'))options.push('<small class="combat-class-note">Great Weapon Fighting: két kézzel használt two-handed vagy versatile fegyver sebzéskockájának 1-es és 2-es eredménye egyszer újradobható; az új eredményt kell használni.</small>');
     if(klass==='Paladin'&&level>=2&&getCombatRollType()==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Dueling')options.push('<label><input id="combatPaladinStyle" type="checkbox"> Dueling Fighting Style (+2 sebzés; egykezes közelharci fegyvernél, másik fegyver nélkül)</label>');
     if(klass==='Paladin'&&level>=2&&getCombatRollType()==='damage'&&document.getElementById('classFeature_fightingStyle')?.value==='Great Weapon Fighting')options.push('<small class="combat-class-note">Great Weapon Fighting: két kézzel használt two-handed vagy versatile fegyver sebzéskockájának 1-es és 2-es eredménye egyszer újradobható; az új eredményt kell használni.</small>');
     if(klass==='Paladin'&&getCombatRollType()==='attack'&&document.getElementById('classFeature_sacredWeaponActive')?.checked)options.push(`<label><input id="combatSacredWeapon" type="checkbox"> Sacred Weapon (+${Math.max(1,classFeatureContext().chaMod)} támadás; a megszentelt fegyvernél)</label>`);
     if(getCombatRollType()==='damage'&&klass==='Rogue'&&level>=1)options.push(`<label><input id="combatSneakAttack" type="checkbox"> Orvtámadás (+${Math.ceil(level/2)}d6; finesse vagy távolsági fegyver, előny vagy szövetséges 1,5 m-en belül, hátrány nélkül; körönként egyszer)</label>`);
-    if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=3&&subclass.includes('assassin'))options.push('<small class="combat-class-note">Assassinate: előnyöd van az olyan célpont elleni támadásra, aki még nem került sorra ebben a harcban. A meglepett célpont elleni találat kritikus találat.</small>');
+    if(getCombatRollType()==='damage'&&combatAasimarTransformationActive()&&!combatRulesRead()?.used?.aasimarRevelation)options.push(`<label><input id="combatAasimarRevelationDamage" type="checkbox"> Égi átalakulás (+${level} sebzés; körönként egyszer)</label>`);
+    if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=3&&subclass.includes('assassin'))options.push('<label><input id="combatAssassinateAdvantage" type="checkbox"> Assassinate: a célpont még nem került sorra, ezért előnnyel támadok</label><label><input id="combatAssassinateSurprised" type="checkbox"> Assassinate: a célpont meglepett, ezért a találat kritikus</label>');
     if(getCombatRollType()==='attack'&&klass==='Rogue'&&level>=13&&subclass.includes('arcane trickster'))options.push('<small class="combat-class-note">Versatile Trickster: ha ebben a körben bónuszakcióval kijelölted a Mage Hand mellett álló célpontot, a kör végéig előnyöd van az ellene végzett támadásokra.</small>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=2&&characterSpellSlotMaximums().some(Boolean))options.push('<label><input id="combatDivineSmite" type="checkbox"> Isteni Sújtás (közelharci fegyveres találat után; a legkisebb elérhető varázsrekesz fogyasztása)</label><label class="combat-class-suboption"><input id="combatSmiteFiendUndead" type="checkbox"> Élőholt vagy alvilági ellenfél (+1d8, legfeljebb +6d8)</label>');
     if(getCombatRollType()==='damage'&&klass==='Paladin'&&level>=11)options.push('<label><input id="combatImprovedDivineSmite" type="checkbox"> Improved Divine Smite (+1d8 radiant; minden közelharci fegyveres találat)</label>');
@@ -7937,6 +8166,9 @@ function updateCombatClassOptions(preserveSelection=true){
         const spell=readCombatSpell(),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row));
         if(catalog?.school==='evocation')options.push(`<label><input id="combatEmpoweredEvocation" type="checkbox"> Empowered Evocation (${classFeatureContext().intMod>=0?'+':''}${classFeatureContext().intMod} egy sebzésdobáshoz)</label>`);
     }
+    if(getCombatRollType()==='damage'&&klass==='Cleric'&&level>=2&&subclass.includes('tempest')){
+        const source=readCombatDamageSource();if(combatDestructiveWrathEligible(source?.damage)&&(Number(document.getElementById('classFeature_channelDivinity')?.value)||0)>0)options.push('<label><input id="combatDestructiveWrath" type="checkbox"> Destructive Wrath: a villám- vagy mennydörgéssebzés kockái maximálisak (1 Channel Divinity)</label>');
+    }
     if(getCombatRollType()==='damage'&&klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Colossus Slayer')options.push('<label><input id="combatColossusSlayer" type="checkbox"> Colossus Slayer (+1d8; sérült célpont, fordulónként egyszer)</label>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Giant Killer'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Giant Killer: ha egy legfeljebb 1,5 m-re lévő Nagy vagy nagyobb lény eltalál vagy elhibáz, reakcióból közelharci támadást indíthatsz ellene.</small>');
     if(klass==='Ranger'&&level>=3&&subclass.includes('hunter')&&document.getElementById('classFeature_hunterPrey')?.value==='Horde Breaker'&&getCombatRollType()==='attack')options.push('<small class="combat-class-note">Horde Breaker: saját fordulónként egyszer további támadás ugyanazzal a fegyverrel egy másik, az elsőtől 1,5 m-en belüli, fegyvertávban lévő célpontra, akit ebben a fordulóban még nem támadtál meg.</small>');
@@ -7945,7 +8177,7 @@ function updateCombatClassOptions(preserveSelection=true){
     if(getCombatRollType()==='damage'&&klass==='Monk'&&level>=3&&subclass.includes('open hand')&&combatRulesRead()?.pending?.choice==='flurry')options.push(`<label class="wide">Open Hand Technique<select id="combatOpenHandTechnique"><option value="">Nincs</option><option value="prone">DEX mentő vagy prone</option><option value="push">STR mentő vagy 15 ft lökés</option><option value="no-reactions">Nincs reakció a következő köröm végéig</option></select></label>`);
     if(getCombatRollType()==='damage'&&klass==='Monk'&&level>=17&&subclass.includes('open hand')&&(Number(document.getElementById('classFeature_kiPoints')?.value)||0)>=3)options.push('<label><input id="combatQuiveringPalm" type="checkbox"> Quivering Palm rezgés elhelyezése (pusztakezes találat; 3 Ki)</label>');
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const die=level>=18?'d12':level>=10?'d10':'d8';const pool=document.getElementById('classFeature_superiorityDice');options.push(`<small class="combat-class-note">Battle Master: ${die} manőverkocka (${pool?`${pool.value} / ${pool.max}`:'—'}). Válaszd ki a manővert a kasztjellemzőknél, és annak leírása szerint használd.</small>`);}
-    if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const pool=document.getElementById('classFeature_superiorityDice');if(pool&&Number(pool.value)>0)options.push('<label><input id="combatManeuverDamage" type="checkbox"> Manőverkocka a sebzéshez (csak olyan manővernél, amely ezt engedi; 1 kockát elkölt)</label>');}
+    if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=3&&subclass.includes('battle master')){const pool=document.getElementById('classFeature_superiorityDice');if(pool&&Number(pool.value)>0)options.push('<label><input id="combatManeuverDamage" type="checkbox"> Manőverkocka a sebzéshez (1 kockát elkölt)</label><label class="wide">Sebzést növelő manőver<select id="combatManeuverChoice"><option value="">Válassz…</option><option>Disarming Attack</option><option>Distracting Strike</option><option>Goading Attack</option><option>Maneuvering Attack</option><option>Menacing Attack</option><option>Pushing Attack</option><option>Trip Attack</option></select></label><small class="combat-class-note">A Riposte külön reakciós támadás, a Sweeping Attack pedig a második célpontnak csak a manőverkocka sebzését okozza, ezért ezek nem adhatók ehhez a sebzésdobáshoz.</small>');}
     if(getCombatRollType()==='damage'&&klass==='Fighter'&&level>=10&&subclass.includes('eldritch knight'))options.push('<small class="combat-class-note">Eldritch Strike: fegyveres találat után a célpont a következő saját köröd végéig hátránnyal ment az általad használt varázslatok ellen.</small>');
     if(getCombatRollType()==='damage'&&klass==='Bard'&&level>=3&&subclass.includes('college of swords')){const inspiration=document.getElementById('classFeature_bardicInspiration');if(inspiration&&Number(inspiration.value)>0){const die=level>=15?'d12':level>=10?'d10':level>=5?'d8':'d6';options.push(`<label><input id="combatBladeFlourish" type="checkbox"> Blade Flourish (+${die}; találat után, 1 Bárdi inspirációt elkölt)</label><small class="combat-class-note">Válaszd ki a támadási eredmény után a Defensive, Slashing vagy Mobile Flourish változatot, és alkalmazd annak hatását.</small>`);}}
     if(getCombatRollType()==='spell'&&klass==='Sorcerer'&&level>=3){
@@ -7957,11 +8189,19 @@ function updateCombatClassOptions(preserveSelection=true){
             options.push(`<label class="wide">Metamagic<select id="combatSorcererMetamagic" ${forced?'disabled':''}><option value="">Nincs</option>${choices.map(name=>`<option ${name===selected?'selected':''}>${name}</option>`).join('')}</select></label><small class="combat-class-note">${forced?'A bónuszakciós varázsláshoz a Quickened Spell automatikus.':'A pontköltség a varázslat rögzítésekor automatikusan levonódik.'}</small>`);
         }
     }
+    if(getCombatRollType()==='spell'&&klass==='Rogue'&&level>=9&&subclass.includes('arcane trickster'))options.push('<label><input id="combatMagicalAmbush" type="checkbox"> Magical Ambush: rejtőzésből varázsolok, ezért a célpont hátránnyal ment</label>');
+    if(['attack','spell'].includes(getCombatRollType())&&klass==='Wizard'&&level>=2&&subclass.includes('divination')){
+        const portentValues=combatPortentValues();
+        if(portentValues.length)options.push(`<label class="wide">Portent<select id="combatPortentValue"><option value="">Nem használom</option>${portentValues.map((value,index)=>`<option value="${index}">${value}</option>`).join('')}</select></label><small class="combat-class-note">A kiválasztott eltett érték a d20 dobás helyére kerül, majd törlődik a Portent mezőből.</small>`);
+    }
     const animalFeatures=getCombatRollType()==='damage'?(combatAnimalAttackFeatures()||[]):[];
     animalFeatures.forEach((feature,index)=>options.push(`<label><input id="combatAnimalFeature${index}" data-combat-animal-feature="${index}" type="checkbox"> ${feature.name}: ${feature.condition}</label><small class="combat-class-note">${feature.followup||(feature.key==='attack-effect'?'A jelölés a kiegészítő hatást a támadás eredményével együtt rögzíti.':'Alkalmazd az állat adatlapján szereplő további hatást.')}${feature.attackKey?' A folytatás a sebzés rögzítése után jelenik meg, a kör bónuszakcióját használja, és minden új körben ismét elérhető.':''}</small>`));
     rangerCombatRollOptions(options,previous,preserveSelection);
     panel.innerHTML=options.join('');
-    if(preserveSelection)panel.querySelectorAll('input[type=checkbox]').forEach(input=>{input.checked=previous.get(input.id)||false;});
+    if(preserveSelection){
+        panel.querySelectorAll('input[type=checkbox]').forEach(input=>{if(previous.has(input.id))input.checked=previous.get(input.id);});
+        panel.querySelectorAll('select').forEach(input=>{if(previousSelects.has(input.id)&&[...input.options].some(option=>option.value===previousSelects.get(input.id)))input.value=previousSelects.get(input.id);});
+    }
     panel.hidden=!options.length;
     combatRulesFilterDamageOptions();
     buildCombatBonusDiceInputs(preserveSelection);
@@ -7992,7 +8232,15 @@ function readCombatAttack(){
         .find(candidate => candidate.dataset.attackRowKey === (combatAttackFlow.attackKey || combatAttackSelect.value) && !candidate.hidden);
     if(!row) return null;
     const inputs = row.querySelectorAll('input');
-    return {name: inputs[0].value.trim() || 'Támadás', bonus: inputs[1].value.trim(), damage: inputs[2].value.trim()};
+    let name=inputs[0].value.trim()||'Támadás',bonus=inputs[1].value.trim(),damage=inputs[2].value.trim();
+    const chosenDamage=combatAttackFlow.phase==='choose'?document.getElementById('combatWeaponDamageVariant')?.value:combatAttackFlow.damageExpression;
+    if(chosenDamage)damage=chosenDamage;
+    if(document.getElementById('combatMonkMartialArts')?.checked||combatAttackFlow.monkMartialArts){
+        const context=classFeatureContext(),dex=context.dexMod;
+        bonus=String(dex+context.proficiency);
+        damage=combatReplaceDamageModifier(damage,dex);
+    }
+    return {name,bonus,damage};
 }
 
 function readCombatSpell(){
@@ -8035,6 +8283,63 @@ function parseDamageExpression(value){
         }
     }
     return {expression, dice, modifier};
+}
+
+function combatDamageVariants(value){
+    const text=String(value||'').replace(/[−–]/g,'-'),base=parseDamageExpression(text),variants=[];
+    if(base)variants.push({label:'Egy kézzel',expression:base.expression.replace(/\s/g,'')});
+    for(const match of text.matchAll(/\(([^()]*)\)/g)){
+        const spec=parseDamageExpression((match[1].match(/(?:\d*d\d+|\d+)(?:\s*[+-]\s*(?:\d*d\d+|\d+))*/i)||[])[0]);
+        if(!spec)continue;
+        const label=match[1].slice(0,match[1].toLowerCase().indexOf(spec.expression.toLowerCase())).replace(/[:;,-]+$/,'').trim()||'Alternatív használat';
+        const expression=spec.expression.replace(/\s/g,'');
+        if(!variants.some(variant=>variant.expression===expression))variants.push({label,expression});
+    }
+    return variants;
+}
+
+function combatReplaceDamageModifier(value,modifier){
+    const text=String(value||''),match=text.match(/^\s*(\d*d\d+)(?:\s*[+-]\s*\d+)?/i);
+    if(!match)return text;
+    return match[1]+(modifier>=0?'+':'')+modifier+text.slice(match[0].length);
+}
+
+function combatPortentValues(){
+    const field=document.getElementById('classFeature_portentDice');
+    return (field?.value||'').match(/\b(?:[1-9]|1\d|20)\b/g)?.map(Number)||[];
+}
+function combatSelectedPortent(){
+    const select=document.getElementById('combatPortentValue');
+    if(!select||select.value==='')return null;
+    const values=combatPortentValues(),index=Number(select.value);
+    return Number.isInteger(index)&&values[index]!==undefined?{index,value:values[index]}:null;
+}
+function consumeCombatPortent(portent){
+    if(!portent)return;
+    const field=document.getElementById('classFeature_portentDice'),values=combatPortentValues();
+    values.splice(portent.index,1);field.value=values.join(', ');field.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function consumeCombatTidesOfChaos(){
+    if(!document.getElementById('combatTidesOfChaos')?.checked)return false;
+    const field=document.getElementById('classFeature_tidesOfChaos');
+    if(!field||Number(field.value)<1)return false;
+    field.value=String(Number(field.value)-1);field.dispatchEvent(new Event('input',{bubbles:true}));return true;
+}
+function applyArcaneWardFromSpell(spell){
+    const c=classFeatureContext(),rule=combatRulesSpell(spell?.row),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row));
+    if(c.klass!=='Wizard'||!c.subclass.includes('abjuration')||!rule||rule.level<1||catalog?.school!=='abjuration')return '';
+    const field=document.getElementById('classFeature_arcaneWardHp'),maximum=Math.max(0,2*c.level+c.intMod);
+    if(!field||maximum<1)return '';
+    const current=Math.max(0,Number(field.value)||0),next=current===0?maximum:Math.min(maximum,current+2*rule.level);
+    field.value=String(next);field.dispatchEvent(new Event('input',{bubbles:true}));
+    return current===0?` | Arcane Ward létrejött: ${next}/${maximum} HP`:` | Arcane Ward: ${current} → ${next}/${maximum} HP`;
+}
+function combatResolveD20(manualValue,advantage=false){
+    const portent=combatSelectedPortent();
+    if(portent)return {die:portent.value,portent,detail:', Portent'};
+    if(manualValue!==null)return {die:manualValue,portent:null,detail:', kézi'};
+    if(advantage){const first=rollDie(20),second=rollDie(20);return {die:Math.max(first,second),portent:null,detail:`, előny: ${first}/${second}`};}
+    return {die:rollDie(20),portent:null,detail:''};
 }
 
 function buildCombatDamageDiceInputs(){
@@ -8144,7 +8449,7 @@ function performCombatRoll(){
         const spell=readCombatSpell();
         if(!spell){combatRollResult.textContent='Adj meg egy varázslatot a Varázslás panelen, majd válaszd ki.';return;}
         if(!spellRowCanCast(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
-        const die=manualValue??rollDie(20);
+        const tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked),d20=combatResolveD20(manualValue,tides),die=d20.die;
         let inspiration={used:false,value:0,text:''};
         if(die!==1){try{inspiration=readRollInspiration('combatRollInspiration');}catch(error){combatRollResult.textContent=error.message;return;}}
         const rulesIntent=combatRulesCurrentRoll();
@@ -8152,11 +8457,14 @@ function performCombatRoll(){
         if(!rulesPlan.ok){combatRollResult.textContent=rulesPlan.error;return;}
         if(!spendSpellUse(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
         if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
+        consumeCombatPortent(d20.portent);
+        const tidesUsed=!d20.portent&&consumeCombatTidesOfChaos(),wardText=applyArcaneWardFromSpell(spell);
         const total=die+spell.bonus+inspiration.value;
         const note=die===20?' — természetes 20':die===1?' — természetes 1':'';
-        const dcText=spell.dc?' | Mentődobás DC: '+spell.dc:'';
+        const ambush=document.getElementById('combatMagicalAmbush')?.checked;
+        const dcText=spell.dc?' | Mentődobás DC: '+spell.dc+(ambush?' (Magical Ambush: hátránnyal)':''):'';
         const metamagicText=rulesIntent.metamagic?' | '+rulesIntent.metamagic+' ('+sorcererMetamagicCost(rulesIntent.metamagic,combatRulesSpell(spell.row)?.level)+' Varázserő-pont)':'';
-        showCombatResult(spell.name+': d20 ('+die+(manualValue!==null?', kézi':'')+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+metamagicText+note,total);
+        showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
         commitRollInspiration(inspiration);
         combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell'};
         recordCombatGuideRoll('spell',spell.name);
@@ -8169,10 +8477,13 @@ function performCombatRoll(){
     const attack=type==='damage'?readCombatDamageSource():readCombatAttack();
     if(!attack){combatRollResult.textContent='Adj meg vagy válassz egy támadássort.';return;}
     if(type==='attack'){
-        const die=manualValue??rollDie(20);
+        const reckless=Boolean(document.getElementById('combatRecklessAttack')?.checked),assassinateAdvantage=Boolean(document.getElementById('combatAssassinateAdvantage')?.checked),tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked);
+        const d20=combatResolveD20(manualValue,reckless||assassinateAdvantage||tides),die=d20.die;
         let inspiration={used:false,value:0,text:''};
         if(die!==1){try{inspiration=readRollInspiration('combatRollInspiration');}catch(error){combatRollResult.textContent=error.message;return;}}
         if(!combatRulesTakeRoll())return;
+        consumeCombatPortent(d20.portent);
+        const tidesUsed=!d20.portent&&consumeCombatTidesOfChaos();
         if(die===1)showCombatCriticalFailure(attack.name,manualValue!==null);
         else{
             const foeBonus=rangerFoeSlayerBonus(),styleBonus=rangerStyleBonus('attack')+fighterStyleBonus('attack')+paladinStyleBonus('attack');
@@ -8180,11 +8491,13 @@ function performCombatRoll(){
             rangerRecordFoeSlayer();
             const context=classFeatureContext();
             const criticalThreshold=context.klass==='Fighter'&&context.subclass.includes('champion')&&context.level>=3?(context.level>=15?18:19):20;
-            const note=die>=criticalThreshold?' — kritikus találat!':'';
-            showCombatResult(attack.name+': d20 ('+die+(manualValue!==null?', kézi':'')+') '+(bonus>=0?'+':'−')+' '+Math.abs(bonus)+inspiration.text+note,die+bonus+inspiration.value);
+            const forcedCritical=Boolean(document.getElementById('combatAssassinateSurprised')?.checked);
+            const note=forcedCritical?' — Assassinate: kritikus találat!':die>=criticalThreshold?' — kritikus találat!':'';
+            const recklessText=reckless?' | Reckless Attack: ellened előny a következő körödig':'';
+            showCombatResult(attack.name+': d20 ('+die+d20.detail+') '+(bonus>=0?'+':'−')+' '+Math.abs(bonus)+inspiration.text+note+recklessText+(tidesUsed?' | Tides of Chaos elköltve':''),die+bonus+inspiration.value);
             commitRollInspiration(inspiration);
         }
-        combatAttackFlow={phase:'rolled',attackKey:combatAttackSelect.value,lastNatural:die,eventType:'attack'};
+        combatAttackFlow={phase:'rolled',attackKey:combatAttackSelect.value,lastNatural:die,eventType:'attack',damageExpression:attack.damage,monkMartialArts:Boolean(document.getElementById('combatMonkMartialArts')?.checked),forcedCritical:Boolean(document.getElementById('combatAssassinateSurprised')?.checked)};
         recordCombatGuideRoll('attack',attack.name);
         syncCombatAttackFlow();
         return;
@@ -8197,11 +8510,14 @@ function performCombatRoll(){
     if(!spec){combatRollResult.textContent='A sebzésmező elején adj meg kockaképletet, például: 2d6+3.';return;}
     const inputs=[...combatDamageDiceInputs.querySelectorAll('input[data-combat-die-index]')];
     const provided=inputs.map(input=>input.value.trim());
-    if(provided.some(Boolean)&&provided.some(value=>!value)){
+    const destructiveWrath=Boolean(document.getElementById('combatDestructiveWrath')?.checked),channelDivinity=document.getElementById('classFeature_channelDivinity');
+    if(!destructiveWrath&&provided.some(Boolean)&&provided.some(value=>!value)){
         combatRollResult.textContent='Add meg az összes sebzéskocka eredményét, vagy hagyd mindet üresen az automatikus dobáshoz.';
         return;
     }
+    if(destructiveWrath&&(!combatDestructiveWrathEligible(attack.damage)||!channelDivinity||Number(channelDivinity.value)<1)){combatRollResult.textContent='A Destructive Wrath csak villám- vagy mennydörgéssebzéshez, elérhető Channel Divinity használattal alkalmazható.';return;}
     const rolls=spec.dice.map((die,index)=>{
+        if(destructiveWrath)return {value:die.sides,sign:die.sign};
         const value=provided[index]?Number(provided[index]):rollDie(die.sides);
         return Number.isInteger(value)&&value>=1&&value<=die.sides?{value,sign:die.sign}:null;
     });
@@ -8211,6 +8527,7 @@ function performCombatRoll(){
     const openHandTechnique=spellDamage?'':document.getElementById('combatOpenHandTechnique')?.value||'';
     const quiveringPalm=!spellDamage&&Boolean(document.getElementById('combatQuiveringPalm')?.checked);
     const maneuverSelected=!spellDamage&&Boolean(document.getElementById('combatManeuverDamage')?.checked);
+    const maneuverChoice=maneuverSelected?(document.getElementById('combatManeuverChoice')?.value||''):'';
     const flourishSelected=!spellDamage&&Boolean(document.getElementById('combatBladeFlourish')?.checked);
     const smiteSelected=!spellDamage&&Boolean(document.getElementById('combatDivineSmite')?.checked);
     const availableAnimalFeatures=spellDamage?[]:(combatAnimalAttackFeatures()||[]);
@@ -8219,11 +8536,14 @@ function performCombatRoll(){
     const ki=document.getElementById('classFeature_kiPoints');
     const maneuverPool=document.getElementById('classFeature_superiorityDice');
     const bardPool=document.getElementById('classFeature_bardicInspiration');
+    const draconicResistance=spellDamage&&Boolean(document.getElementById('combatDraconicResistance')?.checked),sorceryPoints=document.getElementById('classFeature_sorceryPoints');
     if(stunningStrike&&(!ki||Number(ki.value)<1)){combatRollResult.textContent='Nincs elegendő Ki-pont a Stunning Strike-hoz.';return;}
     if(quiveringPalm&&(!ki||Number(ki.value)<3)){combatRollResult.textContent='Nincs elegendő Ki-pont a Quivering Palmhoz.';return;}
     if(maneuverSelected&&(!maneuverPool||Number(maneuverPool.value)<1)){combatRollResult.textContent='Nincs elérhető Battle Master manőverkocka.';return;}
+    if(maneuverSelected&&!maneuverChoice){combatRollResult.textContent='Válaszd ki a használt Battle Master manővert.';return;}
     if(flourishSelected&&(!bardPool||Number(bardPool.value)<1)){combatRollResult.textContent='Nincs elérhető Bárdi inspiráció a Blade Flourish-hoz.';return;}
     if(smiteSelected&&!lowestAvailableSpellSlot()){combatRollResult.textContent='Az Isteni Sújtáshoz nincs felhasználható varázsrekesz.';return;}
+    if(draconicResistance&&(!sorceryPoints||Number(sorceryPoints.value)<1)){combatRollResult.textContent='Nincs elegendő Varázserő-pont az elemi ellenálláshoz.';return;}
     buildCombatBonusDiceInputs();
     let bonusRolls;
     try{bonusRolls=readCombatBonusRolls(selectedCombatBonusDice());}catch(error){combatRollResult.textContent=error.message;return;}
@@ -8235,12 +8555,19 @@ function performCombatRoll(){
     if(quiveringPalm){ki.value=String(Number(ki.value)-3);ki.dispatchEvent(new Event('input',{bubbles:true}));const primed=document.getElementById('classFeature_quiveringPalmPrimed');if(primed)primed.checked=true;}
     if(maneuverSelected){maneuverPool.value=String(Number(maneuverPool.value)-1);maneuverPool.dispatchEvent(new Event('input',{bubbles:true}));}
     if(flourishSelected){bardPool.value=String(Number(bardPool.value)-1);bardPool.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(destructiveWrath){channelDivinity.value=String(Number(channelDivinity.value)-1);channelDivinity.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(draconicResistance){sorceryPoints.value=String(Number(sorceryPoints.value)-1);sorceryPoints.dispatchEvent(new Event('input',{bubbles:true}));}
     const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0);
     const rageBonus=!spellDamage&&document.getElementById('combatRageDamageEligible')?.checked?barbarianRageDamageBonus():0;
-    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+(spellDamage?warlockCombatDamageBonus()+wizardCombatDamageBonus():rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage'));
+    const aasimarDamage=document.getElementById('combatAasimarRevelationDamage')?.checked?context.level:0;
+    const featureDamage=bonusRolls.reduce((sum,group)=>sum+group.total,0)+aasimarDamage+(spellDamage?warlockCombatDamageBonus()+wizardCombatDamageBonus()+sorcererElementalAffinityBonus():rangerFoeSlayerBonus()+rangerStyleBonus('damage')+fighterStyleBonus('damage')+paladinStyleBonus('damage'));
+    if(aasimarDamage){const state=combatRulesRead();if(state){state.used.aasimarRevelation=true;state.revision++;combatRulesWrite(state);}}
     if(!spellDamage)rangerRecordFoeSlayer();
     const offhandAdjustment=spellDamage?0:combatRulesDamageModifier();
-    const total=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
+    const baseDamage=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
+    const naturalTwenty=combatRulesIsNatural20();
+    const potentCantripSaved=spellDamage&&Boolean(document.getElementById('combatPotentCantripSaved')?.checked);
+    const total=potentCantripSaved?Math.floor(baseDamage/2):naturalTwenty?baseDamage*2:baseDamage;
     const diceDetail=rolls.length?rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + '):'fix sebzés';
     const flatModifier=spec.modifier+offhandAdjustment;
     const modifierText=flatModifier?' '+(flatModifier>=0?'+':'−')+' '+Math.abs(flatModifier):'';
@@ -8253,11 +8580,20 @@ function performCombatRoll(){
     if(document.getElementById('combatAgonizingBlast')?.checked)featureNotes.push('Agonizing Blast '+(context.chaMod>=0?'+':'')+context.chaMod);
     if(document.getElementById('combatLifedrinker')?.checked)featureNotes.push('Lifedrinker '+(context.chaMod>=0?'+':'')+context.chaMod+' necrotic');
     if(document.getElementById('combatEmpoweredEvocation')?.checked)featureNotes.push('Empowered Evocation '+(context.intMod>=0?'+':'')+context.intMod);
+    if(document.getElementById('combatElementalAffinity')?.checked)featureNotes.push('Elemental Affinity '+(context.chaMod>=0?'+':'')+context.chaMod);
+    if(document.getElementById('combatDraconicResistance')?.checked)featureNotes.push('1 Varázserő-pont elköltve; elemi ellenállás 1 órára');
+    if(destructiveWrath)featureNotes.push('Destructive Wrath: maximális villám-/mennydörgéskockák; 1 Channel Divinity elköltve');
+    if(aasimarDamage)featureNotes.push('Égi átalakulás +'+aasimarDamage);
+    if(document.getElementById('combatSculptSpells')?.checked)featureNotes.push('Sculpt Spells: a kijelölt védett lények automatikusan mentenek és 0 sebzést kapnak');
+    if(potentCantripSaved)featureNotes.push('Potent Cantrip: sikeres mentő, fél sebzés');
+    if(spellDamage&&document.getElementById('combatGrimHarvestKill')?.checked){const spell=readCombatSpell(),rule=combatRulesSpell(spell?.row),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row)),heal=(catalog?.school==='necromancy'?3:2)*(rule?.level||0),hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value)||Infinity;if(heal>0){hp.value=String(Math.min(max,Number(hp.value)+heal));hp.dispatchEvent(new Event('input',{bubbles:true}));const state=combatRulesRead();if(state){state.used.grimHarvest=true;state.revision++;combatRulesWrite(state);}featureNotes.push('Grim Harvest: '+heal+' HP gyógyulás');}}
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
     if(stunningStrike)featureNotes.push('Stunning Strike: CON mentő DC '+(8+context.proficiency+context.wisMod)+'; 1 Ki elköltve');
+    if(maneuverChoice){const dc=8+context.proficiency+Math.max(context.strMod,context.dexMod),effects={'Disarming Attack':'STR mentő vagy elejti a választott tárgyat','Distracting Strike':'a következő másik támadó előnyt kap','Goading Attack':'WIS mentő vagy hátrány más célpontok ellen','Maneuvering Attack':'egy szövetséges reakcióval fél sebességet mozoghat','Menacing Attack':'WIS mentő vagy frightened','Pushing Attack':'STR mentő vagy 15 ft lökés','Riposte':'reakciós visszatámadás','Sweeping Attack':'második közeli célpont a manőverkocka sebzését kapja','Trip Attack':'STR mentő vagy prone'};featureNotes.push(maneuverChoice+': '+effects[maneuverChoice]+'; DC '+dc);}
     if(openHandTechnique)featureNotes.push('Open Hand Technique: '+({prone:'DEX mentő vagy prone',push:'STR mentő vagy 15 ft lökés','no-reactions':'nincs reakció a következő köröd végéig'}[openHandTechnique]||openHandTechnique)+'; DC '+(8+context.proficiency+context.wisMod));
     if(quiveringPalm)featureNotes.push('Quivering Palm rezgés aktív; 3 Ki elköltve');
+    if(naturalTwenty)featureNotes.push('Természetes 20: a teljes '+baseDamage+' sebzés megduplázva');
     showCombatResult(attack.name+': '+spec.expression+' | Dobások: '+diceDetail+modifierText+rageText+(featureNotes.length?' | '+featureNotes.join(' | '):'')+inspiration.text,total);
     commitRollInspiration(inspiration);
     document.querySelectorAll('#spellEntries .spell-entry-row').forEach(updateSpellUsageStatus);
@@ -8272,10 +8608,14 @@ function performCombatRoll(){
 function combatRulesIsCritical(){
     const c=classFeatureContext();
     const threshold=c.klass==='Fighter'&&c.subclass.includes('champion')&&c.level>=3?(c.level>=15?18:19):20;
-    return combatAttackFlow.eventType==='attack'&&combatAttackFlow.lastNatural>=threshold;
+    return combatAttackFlow.eventType==='attack'&&(combatAttackFlow.forcedCritical||combatAttackFlow.lastNatural>=threshold);
+}
+function combatRulesIsNatural20(){
+    return combatAttackFlow.eventType==='attack'&&combatAttackFlow.lastNatural===20;
 }
 function combatRulesDamageSpec(spec){
     if(!spec||!combatRulesIsCritical())return spec;
+    if(combatRulesIsNatural20())return {...spec,expression:spec.expression+' (természetes 20: teljes sebzés ×2)'};
     return {...spec,dice:[...spec.dice,...spec.dice.map(die=>({...die}))],expression:spec.expression+' (kritikus: kétszeres kockák)'};
 }
 
@@ -8283,6 +8623,7 @@ setupRollInspirationControls();
 setupCombatGuide();
 document.getElementById('inspiration')?.addEventListener('change',()=>updateRollInspirationControls());
 document.getElementById('inspirationDie')?.addEventListener('change',()=>updateRollInspirationControls());
+document.getElementById('inspirationCombat')?.addEventListener('change',()=>{updateRollInspirationControls();saveCharacter();});
 document.addEventListener('change',event=>{
     if(event.target.matches('[data-inspiration-use]')){updateRollInspirationControls();combatRollResult.textContent='';}
 });
@@ -8330,7 +8671,7 @@ combatRollType?.addEventListener('change', () => {
 });
 combatAttackSelect?.addEventListener('change', () => {
     if(combatAttackFlow.phase!=='choose'){combatAttackSelect.value=combatAttackFlow.attackKey;return;}
-    combatRollResult.textContent='';
+    updateCombatClassOptions(false);combatRollResult.textContent='';
 });
 combatSpellSelect?.addEventListener('change', () => { combatRollResult.textContent = ''; });
 combatModeOverlay?.addEventListener('click', event => { if(event.target === combatModeOverlay) closeCombatMode(); });
@@ -10413,6 +10754,7 @@ function refreshDruidBeastEligibility(){
   if(!druidBeastSelect)return;
   ensureCombatWildShapeSnapshot();
   const limits=druidBeastRuleLimits();
+    if(druidFormCard)druidFormCard.hidden=limits.className!=='Druid';
   [...druidBeastSelect.options].forEach(option=>{
     if(!option.value)return;
     if(!option.dataset.baseLabel) option.dataset.baseLabel=option.textContent;

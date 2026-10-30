@@ -2971,7 +2971,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     <div id="combatRulesRollConditionsSlot"></div>
     <label id="combatRageDamageOption" class="combat-rage-option" hidden><input id="combatRageDamageEligible" type="checkbox"> Erő-alapú közelharci fegyvertámadás (haragbónusz)</label>
     <div id="combatClassOptions" class="combat-class-options" hidden></div>
-    <div id="combatSpellChoice" hidden><label for="combatSpellSelect">Varázslat kiválasztása</label><select id="combatSpellSelect"></select></div>
+    <div id="combatSpellChoice" hidden><label for="combatSpellSelect">Varázslat kiválasztása</label><select id="combatSpellSelect"></select><label for="combatSpellCastMode">Felhasználás módja</label><select id="combatSpellCastMode"></select><small id="combatSpellCastModeHint" class="combat-class-note"></small></div>
     <label id="combatManualRollLabel" for="combatManualRoll">Kézi dobott érték <span id="combatManualRollUnit">(d20: 1–20, üresen automatikus)</span></label>
     <input id="combatManualRoll" type="number" inputmode="numeric" step="1" placeholder="Üresen automatikus dobás">
     <div id="combatDamageDiceInputs" class="combat-dice-inputs" hidden></div>
@@ -3611,19 +3611,21 @@ function spellCatalogCanUse(row){
     if(!info.available)return false;
     return !info.choice.requiresSlot||availableSpellSlotsForLevel(info.choice.castLevel).current>0;
 }
-function spellCatalogConsumeSlot(level){
+function spellCatalogConsumeSlot(level,exactLevel=0){
     const maximums=characterSpellSlotMaximums(),klass=document.getElementById('characterClass')?.value;
-    let chosen=klass==='Warlock'?highestSpellSlotLevel(maximums):0;
+    let chosen=Number(exactLevel)||0;
+    if(chosen&&chosen<level)return false;
+    if(!chosen)chosen=klass==='Warlock'?highestSpellSlotLevel(maximums):0;
     if(!chosen)for(let sl=level;sl<=9;sl++){if(parseSpellSlotValue(document.getElementById('spellSlots'+sl))?.current>0){chosen=sl;break;}}
     if(chosen<level)return false;
     const field=document.getElementById('spellSlots'+chosen),slot=parseSpellSlotValue(field);
     if(!slot||slot.current<1)return false;
     field.value=`${slot.current-1} / ${slot.maximum??maximums[chosen-1]}`;return true;
 }
-function spellCatalogSpend(row){
+function spellCatalogSpend(row,castLevel=0){
     const info=spellCatalogResource(row);if(!info)return null;
     if(spellCatalogWarning(row)||!spellCatalogCanUse(row))return false;
-    if(info.choice.requiresSlot&&!spellCatalogConsumeSlot(info.choice.castLevel))return false;
+    if(info.choice.requiresSlot&&!spellCatalogConsumeSlot(info.choice.castLevel,castLevel))return false;
     const resource=info.resource;
     if(resource?.kind==='racial'){const ledger=spellCatalogLedger();ledger[resource.key]={used:1,rest:resource.rest||'long'};spellCatalogSetLedger(ledger);}
     else if(resource?.kind==='flag')info.field.value='true';
@@ -4140,6 +4142,8 @@ const combatAttackChoice = document.getElementById('combatAttackChoice');
 const combatAttackSelect = document.getElementById('combatAttackSelect');
 const combatSpellChoice = document.getElementById('combatSpellChoice');
 const combatSpellSelect = document.getElementById('combatSpellSelect');
+const combatSpellCastMode = document.getElementById('combatSpellCastMode');
+const combatSpellCastModeHint = document.getElementById('combatSpellCastModeHint');
 const combatRollResult = document.getElementById('combatRollResult');
 const combatManualRoll = document.getElementById('combatManualRoll');
 const combatManualRollUnit = document.getElementById('combatManualRollUnit');
@@ -5169,7 +5173,8 @@ function combatRulesSpell(row){
     const value=row.querySelector('select[id$="_level"]')?.value;
     const text=(row.querySelector('input[id$="_castingTime"]')?.value||'').trim();
     const time=/bónusz|bonus/i.test(text)?'bonus':/reakció|reaction/i.test(text)?'reaction':/^1\s*(?:akció|action)(?=\s|$)/i.test(text)?'action':'unsupported';
-    return {level:value==='cantrip'?0:Number(value),time};
+    const mode=combatSpellUseMode();
+    return {level:mode.kind==='slot'?mode.level:value==='cantrip'?0:Number(value),time:mode.kind==='ritual'?'ritual':time,mode:mode.kind};
 }
 
 function combatRulesIntent(kind,category,choice,preview=false){
@@ -5231,6 +5236,7 @@ function combatRulesPlan(intent){
     if(intent.category==='concentration'&&context.raging)return {ok:false,error:'Harag közben nem tartható fenn koncentráció.'};
     if(intent.kind==='attack'&&rangerFoeSlayerSelected()&&state.used.foeSlayer&&!intent.preview)return {ok:false,error:'A Foe Slayer ebben a fordulóban már elfogyott.'};
     if(intent.kind==='spell'&&!intent.spell)return {ok:false,error:'Válassz érvényes varázslatot.'};
+    if(intent.kind==='spell'&&intent.spell.time==='ritual')return {ok:false,error:'A rituális használat a normál varázslási időn felül 10 percet igényel. Nem hajtható végre egyetlen Combat körműveletként, és nem fogyaszt varázsrekeszt.'};
     if(intent.kind==='spell'&&intent.spell.time==='unsupported')return {ok:false,error:'Egy akció, bónuszakció vagy reakció idejű varázslatot válassz. A hosszabb varázslást több körön át a megjegyzésben lehet követni.'};
     const attackChoices=['nick','companion-attack','companion-multiattack','companion-ranger-attack','companion-opportunity','volley','whirlwind','wild-multiattack','attack','opportunity','readied','giant-killer','opportunist','horde-breaker','frenzy','martial-arts','flurry','war-priest','war-magic','improved-war-magic','battle-magic','two-weapon','animal-triggered-attack'];
     if(intent.kind==='attack'&&!attackChoices.includes(intent.choice))return {ok:false,error:'Ehhez a művelethez nem tartozik fegyvertámadás.'};
@@ -6881,9 +6887,43 @@ function spellRowCanCast(row){
     return false;
 }
 
-function spendSpellUse(row){
+function combatSpellRitualEligible(row){
+    const meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId),choice=spellCatalogSelection(row);
+    if(!spell?.ritual)return false;
+    if(choice?.ritualOnly||choice?.sourceKind==='ritual')return true;
+    return ['Bard','Cleric','Druid','Wizard'].includes(document.getElementById('characterClass')?.value||'');
+}
+function combatSpellUseMode(){
+    const value=combatSpellCastMode?.value||'default';
+    if(value==='ritual')return {kind:'ritual',level:0};
+    if(value.startsWith('slot:'))return {kind:'slot',level:Number(value.slice(5))||0};
+    return {kind:'default',level:0};
+}
+function selectedCombatSpellRow(){return [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].find(row=>row.dataset.spellEntryKey===combatSpellSelect.value)||null;}
+function refreshCombatSpellCastModes(){
+    if(!combatSpellCastMode)return;
+    const previous=combatSpellCastMode.value,row=selectedCombatSpellRow();combatSpellCastMode.replaceChildren();
+    if(!row){combatSpellCastMode.add(new Option('Nincs választható felhasználás','default'));combatSpellCastMode.disabled=true;if(combatSpellCastModeHint)combatSpellCastModeHint.textContent='';return;}
+    const levelValue=row.querySelector('select[id$="_level"]')?.value||'',meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId);
+    const baseLevel=spell?.level??(levelValue==='cantrip'?0:Number(levelValue)||0),policy=row.querySelector('select[id$="_usage"]')?.value||'slots';
+    const choice=spellCatalogSelection(row),resource=spellCatalogResource(row),slotBased=baseLevel>0&&policy==='slots'&&!isWarlockArcanum(row)&&(!resource||choice?.requiresSlot);
+    if(baseLevel===0)combatSpellCastMode.add(new Option('Trükk – nem fogyaszt varázsrekeszt','default'));
+    else if(slotBased){
+        const klass=document.getElementById('characterClass')?.value||'',levels=klass==='Warlock'?[highestSpellSlotLevel(characterSpellSlotMaximums())]:Array.from({length:10-baseLevel},(_,index)=>baseLevel+index);
+        levels.filter(level=>level>=baseLevel).forEach(level=>{const slot=parseSpellSlotValue(document.getElementById('spellSlots'+level));if(slot?.current>0)combatSpellCastMode.add(new Option(`${level}. szintű varázsrekesz (${slot.current} / ${slot.maximum} maradt)`,`slot:${level}`));});
+    }else combatSpellCastMode.add(new Option('Képesség szerinti használat','default'));
+    if(combatSpellRitualEligible(row))combatSpellCastMode.add(new Option('Rituáléként (+10 perc, nincs rekesz)','ritual'));
+    if(!combatSpellCastMode.options.length)combatSpellCastMode.add(new Option('Nincs elérhető felhasználási mód','default'));
+    if([...combatSpellCastMode.options].some(option=>option.value===previous))combatSpellCastMode.value=previous;
+    combatSpellCastMode.disabled=combatSpellCastMode.options.length<2;
+    const mode=combatSpellUseMode();
+    if(combatSpellCastModeHint)combatSpellCastModeHint.textContent=mode.kind==='ritual'?'A rituálé a normál varázslási időn felül 10 percet igényel, ezért Combat módban nem hajtható végre egyetlen körműveletként.':mode.kind==='slot'&&mode.level>baseLevel?`Magasabb szinten használva a skálázódó hatás és sebzés a ${mode.level}. szinthez igazodik.`:baseLevel>0?'A kiválasztott rekesz a varázslat használatakor levonódik.':'A trükk nem fogyaszt varázsrekeszt.';
+}
+
+function spendSpellUse(row,castMode=combatSpellUseMode()){
     if(spellEntryLevelStatus(row))return false;
-    const catalogSpent=spellCatalogSpend(row);if(catalogSpent!==null)return catalogSpent;
+    if(castMode.kind==='ritual')return combatSpellRitualEligible(row);
+    const catalogSpent=spellCatalogSpend(row,castMode.kind==='slot'?castMode.level:0);if(catalogSpent!==null)return catalogSpent;
     const policy=row.querySelector('select[id$="_usage"]')?.value||'slots';
     if(policy==='free')return true;
     const limit=spellUseLimit(policy);
@@ -6900,9 +6940,9 @@ function spendSpellUse(row){
         remaining.value='0';updateSpellUsageStatus(row);saveCharacter();return true;
     }
     const maximums=characterSpellSlotMaximums();
-    let chosen=0;
-    if(klass==='Warlock') chosen=highestSpellSlotLevel(maximums);
-    else for(let slotLevel=spellLevel;slotLevel<=9;slotLevel++){const slot=parseSpellSlotValue(document.getElementById(`spellSlots${slotLevel}`));if(slot?.current>0){chosen=slotLevel;break;}}
+    let chosen=castMode.kind==='slot'?castMode.level:0;
+    if(!chosen&&klass==='Warlock') chosen=highestSpellSlotLevel(maximums);
+    else if(!chosen)for(let slotLevel=spellLevel;slotLevel<=9;slotLevel++){const slot=parseSpellSlotValue(document.getElementById(`spellSlots${slotLevel}`));if(slot?.current>0){chosen=slotLevel;break;}}
     if(!chosen||chosen<spellLevel)return false;
     const slotInput=document.getElementById(`spellSlots${chosen}`),slot=parseSpellSlotValue(slotInput);
     if(!slot||slot.current<1)return false;
@@ -7660,7 +7700,7 @@ function refreshCombatAttackOptions(){
     spellRows.forEach(({row,name,damage}) => {
         if(combatGuideState.panel==='reaction'&&!combatReactionUsageInfo('spell:'+row.dataset.spellEntryKey).available)return;
         updateSpellUsageStatus(row);
-        if(!spellRowCanCast(row)) return;
+        if(!spellRowCanCast(row)&&!combatSpellRitualEligible(row)) return;
         const option = document.createElement('option');
         option.value = row.dataset.spellEntryKey;
         option.textContent = name+(damage?' ('+damage+')':'');
@@ -7668,6 +7708,7 @@ function refreshCombatAttackOptions(){
     });
     if(!combatSpellSelect.options.length){const empty=document.createElement('option');empty.value='';empty.textContent='Nincs elérhető varázslat';empty.disabled=true;combatSpellSelect.appendChild(empty);}
     if(spellRows.some(({row}) => row.dataset.spellEntryKey === spellPrevious)) combatSpellSelect.value = spellPrevious;
+    refreshCombatSpellCastModes();
     combatAttackChoice.hidden = !['attack','damage'].includes(getCombatRollType());
     combatSpellChoice.hidden = getCombatRollType() !== 'spell';
     updateCombatRageOption();
@@ -8514,14 +8555,17 @@ function readCombatSpell(){
     const name = row.querySelector('input[id$="_name"]')?.value.trim();
     if(!name) return null;
     const source=spellCatalogSelection(row);
+    const meta=spellCatalogMetadata(row),catalogSpell=spellCatalogData.find(item=>item.id===meta?.spellId);
+    const liveMode=combatSpellUseMode(),savedMode=combatAttackFlow.eventType==='spell'&&combatAttackFlow.phase!=='choose'?{kind:combatAttackFlow.castMode||'default',level:combatAttackFlow.castLevel||0}:liveMode;
+    const scaledDamage=catalogSpell&&savedMode.kind==='slot'?spellCatalogScaledDamage(catalogSpell,savedMode.level):row.querySelector('input[id$="_damage"]')?.value.trim()||'';
     if(source?.ability){
         const score=Number(document.getElementById(source.ability)?.value)||10,mod=Math.floor((score-10)/2);
         const level=Number(document.getElementById('characterLevel')?.value)||1,prof=2+Math.floor((level-1)/4);
-        return {row,name,damage:row.querySelector('input[id$="_damage"]')?.value.trim()||'',bonus:mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
-            dc:8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0)};
+        return {row,name,damage:combatAttackFlow.damageExpression||scaledDamage,bonus:mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
+            dc:8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level};
     }
-    return {row,name,damage:row.querySelector('input[id$="_damage"]')?.value.trim()||'', bonus:Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0,
-        dc:document.getElementById('spellSaveDC')?.value || ''};
+    return {row,name,damage:combatAttackFlow.damageExpression||scaledDamage, bonus:Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0,
+        dc:document.getElementById('spellSaveDC')?.value || '',castMode:savedMode.kind,castLevel:savedMode.level};
 }
 
 function readCombatDamageSource(){return combatAttackFlow.eventType==='spell'?readCombatSpell():readCombatAttack();}
@@ -8712,6 +8756,12 @@ function performCombatRoll(){
     if(type==='spell'){
         const spell=readCombatSpell();
         if(!spell){combatRollResult.textContent='Adj meg egy varázslatot a Varázslás panelen, majd válaszd ki.';return;}
+        const castMode=combatSpellUseMode();
+        if(castMode.kind==='ritual'){combatRollResult.textContent='A rituálé a normál varázslási időn felül 10 percet igényel, ezért Combat módban nem hajtható végre egyetlen körműveletként. Nem fogyaszt varázsrekeszt.';return;}
+        if(castMode.kind==='slot'){
+            const slot=parseSpellSlotValue(document.getElementById('spellSlots'+castMode.level));
+            if(!slot||slot.current<1){refreshCombatSpellCastModes();combatRollResult.textContent=`Nincs elérhető ${castMode.level}. szintű varázsrekesz.`;return;}
+        }
         if(!spellRowCanCast(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
         const tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked),d20=combatResolveD20(manualValue,tides),die=d20.die;
         let inspiration={used:false,value:0,text:''};
@@ -8719,7 +8769,7 @@ function performCombatRoll(){
         const rulesIntent=combatRulesCurrentRoll();
         const rulesPlan=combatRulesPlan(rulesIntent);
         if(!rulesPlan.ok){combatRollResult.textContent=rulesPlan.error;return;}
-        if(!spendSpellUse(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
+        if(!spendSpellUse(spell.row,castMode)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
         if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
         consumeCombatPortent(d20.portent);
         const tidesUsed=!d20.portent&&consumeCombatTidesOfChaos(),wardText=applyArcaneWardFromSpell(spell);
@@ -8728,10 +8778,12 @@ function performCombatRoll(){
         const ambush=document.getElementById('combatMagicalAmbush')?.checked;
         const dcText=spell.dc?' | Mentődobás DC: '+spell.dc+(ambush?' (Magical Ambush: hátránnyal)':''):'';
         const metamagicText=rulesIntent.metamagic?' | '+rulesIntent.metamagic+' ('+sorcererMetamagicCost(rulesIntent.metamagic,combatRulesSpell(spell.row)?.level)+' Varázserő-pont)':'';
-        showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
+        const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:'';
+        showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+castText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
         commitRollInspiration(inspiration);
-        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell'};
-        recordCombatGuideRoll('spell',spell.name);
+        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage};
+        const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='ritual'?`${spell.name} (rituálé)`:spell.name;
+        recordCombatGuideRoll('spell',spellUseLabel);
         refreshCombatAttackOptions();
         updateCombatClassOptions(false);
         updateCombatManualRollLabel();
@@ -8937,7 +8989,16 @@ combatAttackSelect?.addEventListener('change', () => {
     if(combatAttackFlow.phase!=='choose'){combatAttackSelect.value=combatAttackFlow.attackKey;return;}
     updateCombatClassOptions(false);combatRollResult.textContent='';
 });
-combatSpellSelect?.addEventListener('change', () => { combatRollResult.textContent = ''; });
+combatSpellSelect?.addEventListener('change', () => {
+    refreshCombatSpellCastModes();
+    combatRollResult.textContent = '';
+    syncCombatAttackFlow();
+});
+combatSpellCastMode?.addEventListener('change', () => {
+    refreshCombatSpellCastModes();
+    combatRollResult.textContent = '';
+    syncCombatAttackFlow();
+});
 combatModeOverlay?.addEventListener('click', event => { if(event.target === combatModeOverlay) closeCombatMode(); });
 window.addEventListener('resize', () => { if(combatModeOverlay && !combatModeOverlay.hidden) fitCombatDialogToMobileSheet(); });
 document.addEventListener('keydown', event => { if(event.key === 'Escape' && combatModeOverlay && !combatModeOverlay.hidden) closeCombatMode(); });
@@ -12233,7 +12294,7 @@ Object.assign(uiTranslationsEn,{
 'Hogyan működik?':'How does it work?','A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.':'The final bonus is the ability modifier + proficiency bonus (if proficient) + other bonus + automatic class bonus.','A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.':'The sheet detects proficiency granted by your class and class features. Use the checkbox only for proficiency gained from another source.','Mentő és jártasság':'Save & Proficiency','Végső bónusz':'Final Bonus','Egyéb':'Other','Kasztból jár':'Granted by Class','Más forrásból jár':'Other Source','Tulajdonság':'Ability','Jártasság':'Proficiency','Összesen':'Total','Automatikus jártasság':'Automatic proficiency','🎲 Mentődobás végrehajtása':'🎲 Make a Saving Throw','Mentődobás kiválasztása':'Choose Saving Throw','Kézi d20 érték':'Manual d20 Roll','Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.':'Leave the manual field blank to roll the d20 automatically.','🎲 Mentődobás':'🎲 Saving Throw','A kézi d20 érték 1 és 20 közötti egész szám lehet.':'The manual d20 roll must be a whole number from 1 to 20.','automatikus dobás':'automatic roll','kézi dobás':'manual roll','bónusz':'bonus','A panel a karakterszint alapján automatikusan jeleníti meg az elért képességeket.':'The panel automatically shows unlocked features based on character level.','szinttől elérhető alosztály-képesség.':'subclass feature available from this level.','A használat részleteit a':'Apply the usage details according to the','szabályleírása szerint alkalmazd.':'rules description.',
 'Vad alak':'Wild Shape','♧ Vad alak':'♧ Wild Shape','Vad alak használatai':'Wild Shape Uses','Megmaradt Vad alak használatok':'Remaining Wild Shape Uses','Vad alak kiválasztása':'Choose Wild Shape','Druida állati alak':'Druid Wild Shape','Állati vagy elemi alak kiválasztása (2014)':'Choose Beast or Elemental Form (2014)','Állati forma neve':'Beast Form Name','Alak típusa':'Form Type','Kihívási érték':'Challenge Rating','Vértezet (AC)':'Armor Class (AC)','Járássebesség':'Walking Speed','Mászás / úszás / repülés':'Climb / Swim / Fly','Érzékek':'Senses','Támadások':'Attacks','Különleges tulajdonságok és megjegyzések':'Special Traits and Notes','Egyéni / más forrásból származó alak':'Custom / Other Source Form','Válassz állati formát…':'Choose a beast form…','Nincs aktív állati alak.':'No active Wild Shape.','Átváltok a kiválasztott alakba':'Transform into the selected form','Aktív vad alak':'Active Wild Shape','Az alak támadásai és képességei':'Form Attacks and Features',
 'Állati társ':'Animal Companion','Állati társ műveletei':'Animal Companion Actions','Társ mozgása (ft)':'Companion Movement (ft)','Társ mozgásmódja':'Companion Movement Mode','Ki támad?':'Who is attacking?','Ranger – saját fegyverek':'Ranger — Own Weapons','Helyváltoztatás':'Movement','Hátralévő műveletkeretek':'Remaining Action Economy','Külön lehetőségek':'Special Options','Most nem használható képességek (':'Currently Unavailable Features (',
-'Saját magamat gyógyítom.':'I heal myself.','Másik lény fordulójában reagálok.':'I react during another creature’s turn.','A kör során bármikor befejezheted a fordulódat.':'You can end your turn at any time.','A végrehajtott dobások és rögzített műveletek itt jelennek meg.':'Completed rolls and recorded actions appear here.','Válaszd ki a történést, majd rögzítsd a kör naplójába.':'Choose the event, then record it in the turn log.','Akció részletei':'Action Details','Bónuszakció részletei':'Bonus Action Details','Reakció részletei':'Reaction Details','Mozgás részletei':'Movement Details','Koncentráció részletei':'Concentration Details','Tárgyinterakció részletei':'Object Interaction Details','Faji vagy automatikus esemény részletei':'Racial or Automatic Event Details','pl. célpont, megtett távolság, hatás…':'e.g. target, distance moved, effect…','Következő lépés':'Next Step','Művelet':'Action','Műveletek':'Actions','Esemény':'Event','esemény':'event','Tárgy':'Item','Faji / automatikus':'Racial / Automatic','Faji / egyéb':'Racial / Other','Dobás és sebzés':'Attack Roll and Damage','Dobás típusa':'Roll Type','Kézi dobott érték':'Manual Roll','Üresen automatikus dobás':'Blank Rolls Automatically','Támadás kiválasztása':'Choose Attack','Varázslat kiválasztása':'Choose Spell','Támadás neve, bónusza, sebzése és hatása':'Attack name, bonus, damage, and effect','Célpontok száma':'Number of Targets','Most támadott célpont sorszáma':'Current Target Number','Sebzés célpontja':'Damage Target','Jóváhagyáskor az ideiglenes HP fogy először, a fennmaradó sebzés az aktuális HP-ból vonódik le.':'Temporary hit points are spent first; remaining damage is subtracted from current hit points.',
+'Saját magamat gyógyítom.':'I heal myself.','Másik lény fordulójában reagálok.':'I react during another creature’s turn.','A kör során bármikor befejezheted a fordulódat.':'You can end your turn at any time.','A végrehajtott dobások és rögzített műveletek itt jelennek meg.':'Completed rolls and recorded actions appear here.','Válaszd ki a történést, majd rögzítsd a kör naplójába.':'Choose the event, then record it in the turn log.','Akció részletei':'Action Details','Bónuszakció részletei':'Bonus Action Details','Reakció részletei':'Reaction Details','Mozgás részletei':'Movement Details','Koncentráció részletei':'Concentration Details','Tárgyinterakció részletei':'Object Interaction Details','Faji vagy automatikus esemény részletei':'Racial or Automatic Event Details','pl. célpont, megtett távolság, hatás…':'e.g. target, distance moved, effect…','Következő lépés':'Next Step','Művelet':'Action','Műveletek':'Actions','Esemény':'Event','esemény':'event','Tárgy':'Item','Faji / automatikus':'Racial / Automatic','Faji / egyéb':'Racial / Other','Dobás és sebzés':'Attack Roll and Damage','Dobás típusa':'Roll Type','Kézi dobott érték':'Manual Roll','Üresen automatikus dobás':'Blank Rolls Automatically','Támadás kiválasztása':'Choose Attack','Varázslat kiválasztása':'Choose Spell','Felhasználás módja':'Casting Method','Rituáléként (+10 perc, nincs rekesz)':'As a Ritual (+10 minutes, no spell slot)','Támadás neve, bónusza, sebzése és hatása':'Attack name, bonus, damage, and effect','Célpontok száma':'Number of Targets','Most támadott célpont sorszáma':'Current Target Number','Sebzés célpontja':'Damage Target','Jóváhagyáskor az ideiglenes HP fogy először, a fennmaradó sebzés az aktuális HP-ból vonódik le.':'Temporary hit points are spent first; remaining damage is subtracted from current hit points.',
 'Teljes sebesség beállítása':'Set Total Speed','Sebesség frissítése':'Update Speed','Ennek a mozgásmódnak a sebessége':'Speed for This Movement Mode','Megtett távolság (':'Distance Moved (','Dash – további mozgás':'Dash — Additional Movement','Disengage – kiválás':'Disengage','Nehéz terep (+1 mozgás / távolságegység).':'Difficult terrain (costs 1 extra foot per foot moved).','Van külön sebességem ehhez a mozgásmódhoz (repülésnél kötelező).':'I have a separate speed for this movement mode (required for flying).','Mozgás rögzítése':'Record Movement','Egység':'Unit',
 'Adottságok és képzettségek':'Features & Traits','Adottságok, feat-ek, különleges képességek…':'Features, feats, and special abilities…','Faji és kasztjellemzők, eszközjártasságok, nyelvek és egyéb megjegyzések…':'Racial and class features, tool proficiencies, languages, and other notes…','Ellenállások, különleges érzékek, képességek…':'Resistances, special senses, and features…','Personality / Ideals / Bonds / Flaws':'Personality Traits / Ideals / Bonds / Flaws','További karakteradatok':'Additional Character Information',
 'Erő (STR)':'Strength (STR)','Ügyesség (DEX)':'Dexterity (DEX)','Erő-alapú közelharci fegyvertámadás (haragbónusz)':'Strength-based melee weapon attack (Rage damage bonus)','A másodlagos fegyver sebzésében szereplő tulajdonság':'Ability used for the off-hand weapon damage','A Two-Weapon Fighting harci stílust választottam, ezért hozzáadom a pozitív módosítót is.':'I have the Two-Weapon Fighting style, so add the positive ability modifier.','A pozitív tulajdonságmódosító levonódik a fegyver sebzésképletéből; a mágikus bónusz megmarad.':'The positive ability modifier is removed from the weapon damage formula; the magic bonus remains.',

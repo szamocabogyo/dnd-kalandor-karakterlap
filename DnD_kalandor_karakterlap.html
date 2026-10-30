@@ -2099,6 +2099,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .sheet .money-card .wealth-section-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;min-width:0;margin:8px 0 0;padding:8px 0 0;color:var(--accent);font-size:.82rem;line-height:1.4}
 .sheet .money-card .wealth-section-total output,.sheet .money-card .wealth-overall-total output{min-width:0;max-width:100%;font-size:1rem;font-weight:700;overflow-wrap:anywhere}
 .sheet .money-card .wealth-overall-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;min-width:0;margin-top:14px;padding:12px;border:1px solid var(--accent);border-radius:7px;background:var(--bg);color:var(--accent);font-size:.82rem;line-height:1.4}
+.sheet .money-card .money-collapsed-total{display:none;margin-left:.55em;color:var(--text);font-size:.72em;font-weight:700;letter-spacing:.02em;text-transform:none;white-space:nowrap;text-shadow:none}
+.sheet .money-card.collapsed .money-collapsed-total{display:inline}
 </style>
 <style id="hitDiceDefaultsStyles">
 .hit-dice-availability{min-width:0;max-width:100%;margin:12px 0 0;padding:9px 10px;border-left:2px solid var(--accent);border-radius:0 5px 5px 0;background:var(--bg);color:var(--text);font-size:.8rem;line-height:1.45;overflow-wrap:anywhere}
@@ -2720,7 +2722,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     <details id="deathSaveNotesDisclosure" class="death-save-notes"><summary>Mesélő utasításai</summary><div id="deathSaveNoteHome" aria-hidden="true"></div><label id="deathSaveNoteField" class="death-save-note-field">Jegyzet<textarea id="deathSaveDmNote" placeholder="Írd ide a mesélő utasításait…"></textarea></label></details>
   </div>
   <div class="card extra-card money-card">
-    <h3><span class="dnd-mark" aria-hidden="true">◉</span> Pénz</h3>
+    <h3><span class="dnd-mark" aria-hidden="true">◉</span> Pénz <output id="moneyCollapsedTotal" class="money-collapsed-total" aria-label="Összesített pénzérték">0 arany</output></h3>
     <div class="coin-inventory wealth-section" role="group" aria-labelledby="coinInventoryTitle">
       <div class="wealth-section-heading"><h4 id="coinInventoryTitle"><span aria-hidden="true">◉</span> Érmék</h4></div>
       <div class="currency-grid">
@@ -10156,9 +10158,12 @@ function updateMoneyInventoryTotals(){
     const gemOutput=document.getElementById('gemInventoryTotal');
     const gemTotal=Number(gemOutput?.dataset.copper)||0;
     const overall=document.getElementById('moneyInventoryTotal');
+    const collapsedTotal=document.getElementById('moneyCollapsedTotal');
     if(overall){
         const total=coinTotal+gemTotal;
-        overall.textContent=Number.isSafeInteger(total)?formatGemGold(total):'—';
+        const formatted=Number.isSafeInteger(total)?formatGemGold(total):'—';
+        overall.textContent=formatted;
+        if(collapsedTotal)collapsedTotal.textContent='• '+formatted;
     }
 }
 

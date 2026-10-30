@@ -1236,6 +1236,8 @@ input:focus, textarea:focus, select:focus {
 .extra-sheet-grid label,.extra-sheet-grid .field-label{font-size:.82em;color:var(--accent)}
 .extra-sheet-grid input,.extra-sheet-grid select,.extra-sheet-grid textarea{box-sizing:border-box;width:100%;min-width:0;max-width:100%}
 .extra-sheet-grid input[type=checkbox]{width:18px;height:18px;min-height:18px;padding:0;accent-color:var(--accent)}
+.saving-throws-card input,.saving-throws-card select,.saving-throws-card textarea{box-sizing:border-box;width:100%;min-width:0;max-width:100%}
+.saving-throws-card input[type=checkbox]{width:18px;height:18px;min-height:18px;padding:0;accent-color:var(--accent)}
 .inspiration-row{display:flex;align-items:center;gap:9px;margin-top:10px}
 .save-throw-row{display:grid;grid-template-columns:minmax(0,1fr) 76px 76px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
 .save-throw-row label{display:flex;align-items:center;gap:8px;margin:0;color:var(--text)}
@@ -2681,7 +2683,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       <label>Passzív Észlelés<input id="passivePerception" type="number" step="1"></label><label>Észlelés egyéb bónusz<input id="passivePerceptionBonus" type="number" step="1" value="0"></label><label>Páncél típusa<select id="armorType"><option value="unarmored">Páncél nélkül</option><option value="padded">Párnázott</option><option value="leather">Bőr</option><option value="studded">Szegecselt bőr</option><option value="hide">Bőr (közepes)</option><option value="chainshirt">Láncing</option><option value="scalemail">Pikkelyvért</option><option value="breastplate">Mellvért</option><option value="halfplate">Félvért</option><option value="ringmail">Gyűrűs páncél</option><option value="chainmail">Láncvért</option><option value="splint">Sodronyvért</option><option value="plate">Lemezvért</option></select></label><label>Pajzs AC bónusz<input id="shieldAC" type="number" step="1" value="0"></label><label>AC egyéb bónusz<input id="armorACBonus" type="number" step="1" value="0"></label><label>Kezdeményezés egyéb bónusz<input id="initiativeBonus" type="number" step="1" value="0"></label>
     </div>
   </div>
-  <div class="card extra-card">
+  <div id="savingThrowsCard" class="card extra-card saving-throws-card">
     <h3><span class="dnd-mark" aria-hidden="true">◈</span> Mentődobások</h3>
     <div class="save-throw-help"><strong>Hogyan működik?</strong><span>A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.</span><span>A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.</span></div>
     <div class="save-throw-head" aria-hidden="true"><span>Mentő és jártasság</span><span>Végső bónusz</span><span>Egyéb</span></div>
@@ -10792,6 +10794,9 @@ localStorage.removeItem('theme');
     if(!sheet)return;
     const panelSelector=['.character-info','.main>.abilities','.main>.center>.combat','.main>.right-column>.combat','.main>.center>.card','.main>.right-column>.card','.extra-sheet-grid>.card'].join(',');
     const panels=[...sheet.querySelectorAll(panelSelector)];
+    const savingThrowsPanel=document.getElementById('savingThrowsCard');
+    const equipmentPanel=document.getElementById('equipment')?.closest('.card');
+    const skillsPanel=document.querySelector('.skills-list')?.closest('.card');
     const panelRank=panel=>{
         if(panel.matches('.character-info'))return 0;
         if(panel.matches('.hp-card'))return 10;
@@ -10808,11 +10813,17 @@ localStorage.removeItem('theme');
         if(panel.matches('.money-card'))return 90;
         if(panel.querySelector('#playerName'))return 100;
         if(panel.querySelector('#hitDieType'))return 110;
-        if(panel.querySelector('#saveProfSTR'))return 120;
+        if(panel===savingThrowsPanel)return 45;
         if(panel.querySelector('#otherProficiencies'))return 130;
         return 200+panels.indexOf(panel);
     };
+    const positionSavingThrowsPanel=()=>{
+        if(!savingThrowsPanel)return;
+        const anchor=sheet.classList.contains('mobile-mode')?skillsPanel:equipmentPanel;
+        if(anchor&&anchor.nextElementSibling!==savingThrowsPanel)anchor.after(savingThrowsPanel);
+    };
     const syncFixedPanelOrder=()=>{
+        positionSavingThrowsPanel();
         if(sheet.classList.contains('mobile-mode')){
             [...panels].sort((a,b)=>panelRank(a)-panelRank(b)).forEach((panel,index)=>{panel.style.order=String(index);});
         }else{

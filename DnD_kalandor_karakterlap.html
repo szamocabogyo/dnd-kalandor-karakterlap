@@ -1238,6 +1238,18 @@ input:focus, textarea:focus, select:focus {
 .inspiration-row{display:flex;align-items:center;gap:9px;margin-top:10px}
 .save-throw-row{display:grid;grid-template-columns:minmax(0,1fr) 76px 76px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
 .save-throw-row label{display:flex;align-items:center;gap:8px;margin:0;color:var(--text)}
+.save-throw-help{display:grid;gap:5px;margin:8px 0 12px;padding:10px 11px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));background:color-mix(in srgb,var(--class-surface) 82%,transparent);font-size:.78em;line-height:1.35;color:var(--muted)}
+.save-throw-help strong{color:var(--accent);font-size:1.05em}
+.save-throw-head{display:grid;grid-template-columns:minmax(0,1fr) 76px 76px;gap:10px;align-items:end;padding:0 0 5px;border-bottom:1px solid var(--border);color:var(--accent);font-size:.66em;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.save-throw-head span:not(:first-child){text-align:center}
+.save-throw-row{position:relative}
+.save-throw-row input[readonly]{font-weight:800;color:var(--accent);text-align:center;background:color-mix(in srgb,var(--class-surface) 86%,#000)}
+.save-throw-row input[type=number]{text-align:center}
+.save-proficiency-label{min-width:0;flex-wrap:wrap}
+.save-proficiency-source{display:none;padding:2px 5px;border:1px solid color-mix(in srgb,var(--accent) 55%,var(--border));border-radius:999px;color:var(--accent);font-size:.64em;line-height:1.2;text-transform:uppercase;letter-spacing:.03em}
+.save-throw-row.is-auto-proficient .save-proficiency-source,.save-throw-row.is-manual-proficient .save-proficiency-source{display:inline-block}
+.save-throw-row.is-auto-proficient{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 9%,transparent),transparent 72%)}
+.save-formula{grid-column:1/-1;margin-top:-5px;padding-left:26px;color:var(--muted);font-size:.68em;line-height:1.25}
 .death-save-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .death-save-checks{display:flex;align-items:center;gap:8px;margin-top:6px}
 .currency-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
@@ -2640,13 +2652,14 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
   </div>
   <div class="card extra-card">
     <h3><span class="dnd-mark" aria-hidden="true">◈</span> Mentődobások</h3>
-    <p class="field-label">Jelöld a jártasságot; az összeg automatikus, az egyéb bónusz külön megadható.</p>
-    <div class="save-throw-row"><label><input id="saveProfSTR" type="checkbox"> Erő</label><input id="saveValueSTR" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Erő mentődobás módosító" readonly><input id="saveExtraSTR" type="number" placeholder="Egyéb" aria-label="Erő mentődobás egyéb módosító" value="0"></div>
-    <div class="save-throw-row"><label><input id="saveProfDEX" type="checkbox"> Ügyesség</label><input id="saveValueDEX" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Ügyesség mentődobás módosító" readonly><input id="saveExtraDEX" type="number" placeholder="Egyéb" aria-label="Ügyesség mentődobás egyéb módosító" value="0"></div>
-    <div class="save-throw-row"><label><input id="saveProfCON" type="checkbox"> Állóképesség</label><input id="saveValueCON" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Állóképesség mentődobás módosító" readonly><input id="saveExtraCON" type="number" placeholder="Egyéb" aria-label="Állóképesség mentődobás egyéb módosító" value="0"></div>
-    <div class="save-throw-row"><label><input id="saveProfINT" type="checkbox"> Intelligencia</label><input id="saveValueINT" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Intelligencia mentődobás módosító" readonly><input id="saveExtraINT" type="number" placeholder="Egyéb" aria-label="Intelligencia mentődobás egyéb módosító" value="0"></div>
-    <div class="save-throw-row"><label><input id="saveProfWIS" type="checkbox"> Bölcsesség</label><input id="saveValueWIS" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Bölcsesség mentődobás módosító" readonly><input id="saveExtraWIS" type="number" placeholder="Egyéb" aria-label="Bölcsesség mentődobás egyéb módosító" value="0"></div>
-    <div class="save-throw-row"><label><input id="saveProfCHA" type="checkbox"> Karizma</label><input id="saveValueCHA" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Karizma mentődobás módosító" readonly><input id="saveExtraCHA" type="number" placeholder="Egyéb" aria-label="Karizma mentődobás egyéb módosító" value="0"></div>
+    <div class="save-throw-help"><strong>Hogyan működik?</strong><span>A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.</span><span>A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.</span></div>
+    <div class="save-throw-head" aria-hidden="true"><span>Mentő és jártasság</span><span>Végső bónusz</span><span>Egyéb</span></div>
+    <div class="save-throw-row" data-save-ability="STR"><label class="save-proficiency-label"><input id="saveProfSTR" type="checkbox"> Erő <span class="save-proficiency-source" id="saveSourceSTR"></span></label><input id="saveValueSTR" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Erő mentődobás végső bónusza" readonly><input id="saveExtraSTR" type="number" placeholder="Egyéb" aria-label="Erő mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaSTR"></small></div>
+    <div class="save-throw-row" data-save-ability="DEX"><label class="save-proficiency-label"><input id="saveProfDEX" type="checkbox"> Ügyesség <span class="save-proficiency-source" id="saveSourceDEX"></span></label><input id="saveValueDEX" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Ügyesség mentődobás végső bónusza" readonly><input id="saveExtraDEX" type="number" placeholder="Egyéb" aria-label="Ügyesség mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaDEX"></small></div>
+    <div class="save-throw-row" data-save-ability="CON"><label class="save-proficiency-label"><input id="saveProfCON" type="checkbox"> Állóképesség <span class="save-proficiency-source" id="saveSourceCON"></span></label><input id="saveValueCON" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Állóképesség mentődobás végső bónusza" readonly><input id="saveExtraCON" type="number" placeholder="Egyéb" aria-label="Állóképesség mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaCON"></small></div>
+    <div class="save-throw-row" data-save-ability="INT"><label class="save-proficiency-label"><input id="saveProfINT" type="checkbox"> Intelligencia <span class="save-proficiency-source" id="saveSourceINT"></span></label><input id="saveValueINT" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Intelligencia mentődobás végső bónusza" readonly><input id="saveExtraINT" type="number" placeholder="Egyéb" aria-label="Intelligencia mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaINT"></small></div>
+    <div class="save-throw-row" data-save-ability="WIS"><label class="save-proficiency-label"><input id="saveProfWIS" type="checkbox"> Bölcsesség <span class="save-proficiency-source" id="saveSourceWIS"></span></label><input id="saveValueWIS" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Bölcsesség mentődobás végső bónusza" readonly><input id="saveExtraWIS" type="number" placeholder="Egyéb" aria-label="Bölcsesség mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaWIS"></small></div>
+    <div class="save-throw-row" data-save-ability="CHA"><label class="save-proficiency-label"><input id="saveProfCHA" type="checkbox"> Karizma <span class="save-proficiency-source" id="saveSourceCHA"></span></label><input id="saveValueCHA" type="text" inputmode="numeric" placeholder="Összesen" aria-label="Karizma mentődobás végső bónusza" readonly><input id="saveExtraCHA" type="number" placeholder="Egyéb" aria-label="Karizma mentődobás egyéb bónusza" value="0"><small class="save-formula" id="saveFormulaCHA"></small></div>
   </div>
   <div class="card extra-card">
     <h3><span class="dnd-mark" aria-hidden="true">⚄</span> Életerőkockák és halálmentők</h3>
@@ -7261,11 +7274,12 @@ function renderClassFeatures(){
     fields.dataset.className=context.klass;
     fields.innerHTML=model.fields.map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
-        control.addEventListener('input',()=>{updateClassFeatureCalculations();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
-        control.addEventListener('change',()=>{updateClassFeatureCalculations();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
+        control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
+        control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
+    updateDerivedFields();
     syncExpertiseSkillOptions();
     refreshSpellCatalog();
     renderRangerCompanion();
@@ -9182,6 +9196,21 @@ function automaticSpellcastingAbility(){
     return '';
 }
 
+const classSavingThrowProficiencies={
+    Barbarian:['STR','CON'],Bard:['DEX','CHA'],Cleric:['WIS','CHA'],Druid:['INT','WIS'],
+    Fighter:['STR','CON'],Monk:['STR','DEX'],Paladin:['WIS','CHA'],Ranger:['STR','DEX'],
+    Rogue:['DEX','INT'],Sorcerer:['CON','CHA'],Warlock:['WIS','CHA'],Wizard:['INT','WIS']
+};
+function automaticSavingThrowSources(ability,context=classFeatureContext()){
+    const sources=[];
+    if(classSavingThrowProficiencies[context.klass]?.includes(ability))sources.push('Kasztból jár');
+    if(context.klass==='Rogue'&&context.level>=15&&ability==='WIS')sources.push('Slippery Mind');
+    if(context.klass==='Monk'&&context.level>=14)sources.push('Diamond Soul');
+    const stone=document.getElementById('classFeature_transmutersStone')?.value||'';
+    if(context.klass==='Wizard'&&context.subclass.includes('transmutation')&&ability==='CON'&&stone==='CON saving throw proficiency')sources.push('Transmuter’s Stone');
+    return [...new Set(sources)];
+}
+
 function updateDerivedFields(){
     updateProficiencyBonusFromLevel();
     updateAdvancedBaseDefaults();
@@ -9192,12 +9221,33 @@ function updateDerivedFields(){
     };
     ['STR','DEX','CON','INT','WIS','CHA'].forEach(ability => {
         const saveContext=classFeatureContext();
-        const proficient = document.getElementById(`saveProf${ability}`)?.checked||(ability==='WIS'&&saveContext.klass==='Rogue'&&saveContext.level>=15)||(saveContext.klass==='Monk'&&saveContext.level>=14);
+        const checkbox=document.getElementById(`saveProf${ability}`);
+        const manuallyProficient=Boolean(checkbox?.checked);
+        const automaticSources=automaticSavingThrowSources(ability,saveContext);
+        const proficient=manuallyProficient||automaticSources.length>0;
         const extra = parseInt(document.getElementById(`saveExtra${ability}`)?.value, 10) || 0;
         const paladinAura=saveContext.klass==='Paladin'&&saveContext.level>=6?Math.max(1,saveContext.chaMod):0;
-        const result = modifierFor(ability) + (proficient ? prof : 0) + extra + paladinAura;
+        const abilityModifier=modifierFor(ability),proficiencyPart=proficient?prof:0;
+        const result = abilityModifier + proficiencyPart + extra + paladinAura;
         const output = document.getElementById(`saveValue${ability}`);
-        if(output) output.value = formatModifier(result);
+        const row=document.querySelector(`.save-throw-row[data-save-ability="${ability}"]`);
+        const source=document.getElementById(`saveSource${ability}`);
+        const formula=document.getElementById(`saveFormula${ability}`);
+        if(output){
+            output.value=formatModifier(result);
+            output.title=`Tulajdonság: ${formatModifier(abilityModifier)}; jártasság: ${formatModifier(proficiencyPart)}; egyéb: ${formatModifier(extra)}; kasztbónusz: ${formatModifier(paladinAura)}; összesen: ${formatModifier(result)}`;
+        }
+        row?.classList.toggle('is-auto-proficient',automaticSources.length>0);
+        row?.classList.toggle('is-manual-proficient',manuallyProficient&&automaticSources.length===0);
+        if(source)source.textContent=automaticSources.length?automaticSources.join(' + '):(manuallyProficient?'Más forrásból jár':'');
+        if(formula){
+            const parts=[`Tulajdonság: ${formatModifier(abilityModifier)}`];
+            if(proficient)parts.push(`Jártasság: ${formatModifier(proficiencyPart)}`);
+            if(extra)parts.push(`Egyéb: ${formatModifier(extra)}`);
+            if(paladinAura)parts.push(`Aura of Protection: ${formatModifier(paladinAura)}`);
+            formula.textContent=`${parts.join(' · ')} · Összesen: ${formatModifier(result)}`;
+        }
+        if(checkbox)checkbox.title=automaticSources.length?`Automatikus jártasság: ${automaticSources.join(', ')}. A jelölő csak további, más forrású jártasság rögzítésére szolgál.`:'Jelöld be, ha más forrásból jártas ebben a mentődobásban.';
     });
 
     const perception = [...document.querySelectorAll('.skill-row')].find(skill => characterSkillBaseName(skill)==='Perception');
@@ -11808,6 +11858,7 @@ const uiTranslationsEn={
 };
 const uiTranslationPhrasesEn={'KASZTJELLEMZŐK':'CLASS FEATURES','kasztjellemzők':'class features',' szint':' level',' használat':' use','Megmaradt':'Remaining','Használatok':'Uses','használatok':'uses','Jártassági bónusz':'Proficiency Bonus','jártassági bónusz':'proficiency bonus','halálmentődobás':'death saving throw','mentődobás':'saving throw','Sebzés':'Damage','sebzés':'damage','Gyógyítás':'Healing','gyógyítás':'healing','ideiglenes HP':'temporary HP','Válassz':'Choose','Nincs aktív':'No active','fordulónként':'once per turn','Bónuszakció':'Bonus Action','bónuszakció':'bonus action','Akció':'Action','akció':'action','Reakció':'Reaction','reakció':'reaction','Mozgás':'Movement','mozgás':'movement','Kezdeményezés':'Initiative','Képességek':'Features','képességek':'features','Faji jellemzők':'Racial Traits','Nyelvek':'Languages','Jártasságok':'Proficiencies','Páncél':'Armor','Fegyver':'Weapon','fegyver':'weapon','Varázslat':'Spell','varázslat':'spell','Varázsrekesz':'Spell Slot','varázsrekesz':'spell slot','Koncentráció':'Concentration','koncentráció':'concentration','Célpont':'Target','célpont':'target','Kudarc':'Failure','kudarc':'failure','Siker':'Success','siker':'success','Üresen automatikus':'Blank rolls automatically','Automatikusan számított':'Automatically calculated','Egyéni érték':'Custom value','Visszaállítás':'Reset','Bezárás':'Close','Mégse':'Cancel'};
 Object.assign(uiTranslationsEn,{
+'Hogyan működik?':'How does it work?','A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.':'The final bonus is the ability modifier + proficiency bonus (if proficient) + other bonus + automatic class bonus.','A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.':'The sheet detects proficiency granted by your class and class features. Use the checkbox only for proficiency gained from another source.','Mentő és jártasság':'Save & Proficiency','Végső bónusz':'Final Bonus','Egyéb':'Other','Kasztból jár':'Granted by Class','Más forrásból jár':'Other Source','Tulajdonság':'Ability','Jártasság':'Proficiency','Összesen':'Total','Automatikus jártasság':'Automatic proficiency',
 'Vad alak':'Wild Shape','♧ Vad alak':'♧ Wild Shape','Vad alak használatai':'Wild Shape Uses','Megmaradt Vad alak használatok':'Remaining Wild Shape Uses','Vad alak kiválasztása':'Choose Wild Shape','Druida állati alak':'Druid Wild Shape','Állati vagy elemi alak kiválasztása (2014)':'Choose Beast or Elemental Form (2014)','Állati forma neve':'Beast Form Name','Alak típusa':'Form Type','Kihívási érték':'Challenge Rating','Vértezet (AC)':'Armor Class (AC)','Járássebesség':'Walking Speed','Mászás / úszás / repülés':'Climb / Swim / Fly','Érzékek':'Senses','Támadások':'Attacks','Különleges tulajdonságok és megjegyzések':'Special Traits and Notes','Egyéni / más forrásból származó alak':'Custom / Other Source Form','Válassz állati formát…':'Choose a beast form…','Nincs aktív állati alak.':'No active Wild Shape.','Átváltok a kiválasztott alakba':'Transform into the selected form','Aktív vad alak':'Active Wild Shape','Az alak támadásai és képességei':'Form Attacks and Features',
 'Állati társ':'Animal Companion','Állati társ műveletei':'Animal Companion Actions','Társ mozgása (ft)':'Companion Movement (ft)','Társ mozgásmódja':'Companion Movement Mode','Ki támad?':'Who is attacking?','Ranger – saját fegyverek':'Ranger — Own Weapons','Helyváltoztatás':'Movement','Hátralévő műveletkeretek':'Remaining Action Economy','Külön lehetőségek':'Special Options','Most nem használható képességek (':'Currently Unavailable Features (',
 'Saját magamat gyógyítom.':'I heal myself.','Másik lény fordulójában reagálok.':'I react during another creature’s turn.','A kör során bármikor befejezheted a fordulódat.':'You can end your turn at any time.','A végrehajtott dobások és rögzített műveletek itt jelennek meg.':'Completed rolls and recorded actions appear here.','Válaszd ki a történést, majd rögzítsd a kör naplójába.':'Choose the event, then record it in the turn log.','Akció részletei':'Action Details','Bónuszakció részletei':'Bonus Action Details','Reakció részletei':'Reaction Details','Mozgás részletei':'Movement Details','Koncentráció részletei':'Concentration Details','Tárgyinterakció részletei':'Object Interaction Details','Faji vagy automatikus esemény részletei':'Racial or Automatic Event Details','pl. célpont, megtett távolság, hatás…':'e.g. target, distance moved, effect…','Következő lépés':'Next Step','Művelet':'Action','Műveletek':'Actions','Esemény':'Event','esemény':'event','Tárgy':'Item','Faji / automatikus':'Racial / Automatic','Faji / egyéb':'Racial / Other','Dobás és sebzés':'Attack Roll and Damage','Dobás típusa':'Roll Type','Kézi dobott érték':'Manual Roll','Üresen automatikus dobás':'Blank Rolls Automatically','Támadás kiválasztása':'Choose Attack','Varázslat kiválasztása':'Choose Spell','Támadás neve, bónusza, sebzése és hatása':'Attack name, bonus, damage, and effect','Célpontok száma':'Number of Targets','Most támadott célpont sorszáma':'Current Target Number','Sebzés célpontja':'Damage Target','Jóváhagyáskor az ideiglenes HP fogy először, a fennmaradó sebzés az aktuális HP-ból vonódik le.':'Temporary hit points are spent first; remaining damage is subtracted from current hit points.',

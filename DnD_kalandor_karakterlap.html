@@ -1262,6 +1262,8 @@ input:focus, textarea:focus, select:focus {
 .saving-throw-roll-result:empty{display:none}
 .saving-throw-roll-result.is-error{padding:9px;border:1px solid #b84b4b;color:#ffb1a8;background:rgba(100,0,0,.18);font-size:.78em}
 .saving-throw-result-card{display:grid;gap:5px;padding:11px;border:1px solid var(--accent);background:color-mix(in srgb,var(--bg) 82%,transparent)}
+.saving-throw-result-card.is-critical-failure{border-color:#c94b4b;background:linear-gradient(145deg,rgba(120,0,0,.24),color-mix(in srgb,var(--bg) 88%,transparent));box-shadow:inset 0 0 18px rgba(180,20,20,.12)}
+.saving-throw-result-card.is-critical-failure .saving-throw-result-name,.saving-throw-result-card.is-critical-failure .saving-throw-result-total{color:#ff8b80}
 .saving-throw-result-name{color:var(--muted);font-size:.74em;text-transform:uppercase;letter-spacing:.04em}
 .saving-throw-result-total{color:var(--accent);font-size:1.85em;font-weight:900;line-height:1}
 .saving-throw-result-math{color:var(--text);font-size:.82em}
@@ -9487,17 +9489,17 @@ function performSkillRoll(){
     if(manualRoll!==null&&(!Number.isInteger(manualRoll)||manualRoll<1||manualRoll>20)){
         result.className='saving-throw-roll-result is-error';result.textContent='A kézi d20 érték 1 és 20 közötti egész szám lehet.';manualField.focus();return;
     }
-    const rolled=manualRoll??rollDie(20),context=classFeatureContext();
+    const rolled=manualRoll??rollDie(20),context=classFeatureContext(),naturalOne=rolled===1;
     const proficient=row.classList.contains('proficient')||row.classList.contains('expertise-proficient');
-    const reliableTalent=context.klass==='Rogue'&&context.level>=11&&proficient&&rolled<10;
+    const reliableTalent=!naturalOne&&context.klass==='Rogue'&&context.level>=11&&proficient&&rolled<10;
     const effectiveRoll=reliableTalent?10:rolled;
-    const bonus=Number.parseInt(row.querySelector('.skill-value')?.textContent,10)||0,total=effectiveRoll+bonus;
+    const bonus=Number.parseInt(row.querySelector('.skill-value')?.textContent,10)||0,total=naturalOne?1:effectiveRoll+bonus;
     const skillName=characterSkillBaseName(row),ability=row.dataset.ability||'';
     result.className='saving-throw-roll-result';result.replaceChildren();
-    const card=document.createElement('div');card.className='saving-throw-result-card';
-    const name=document.createElement('span');name.className='saving-throw-result-name';name.textContent=`${skillName} (${ability}) · ${manualRoll===null?'automatikus dobás':'kézi dobás'}`;
+    const card=document.createElement('div');card.className='saving-throw-result-card'+(naturalOne?' is-critical-failure':'');
+    const name=document.createElement('span');name.className='saving-throw-result-name';name.textContent=`${skillName} (${ability}) · ${naturalOne?'kritikus hiba':manualRoll===null?'automatikus dobás':'kézi dobás'}`;
     const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
-    const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`d20: ${rolled}${reliableTalent?' → 10 (Reliable Talent)':''} + bónusz: ${formatModifier(bonus)} = ${total}`;
+    const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=naturalOne?'d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.':`d20: ${rolled}${reliableTalent?' → 10 (Reliable Talent)':''} + bónusz: ${formatModifier(bonus)} = ${total}`;
     card.append(name,totalElement,math);result.append(card);
 }
 function updateSkills() {
@@ -12098,7 +12100,7 @@ Object.assign(uiTranslationsEn,{
 'Erő (STR)':'Strength (STR)','Ügyesség (DEX)':'Dexterity (DEX)','Erő-alapú közelharci fegyvertámadás (haragbónusz)':'Strength-based melee weapon attack (Rage damage bonus)','A másodlagos fegyver sebzésében szereplő tulajdonság':'Ability used for the off-hand weapon damage','A Two-Weapon Fighting harci stílust választottam, ezért hozzáadom a pozitív módosítót is.':'I have the Two-Weapon Fighting style, so add the positive ability modifier.','A pozitív tulajdonságmódosító levonódik a fegyver sebzésképletéből; a mágikus bónusz megmarad.':'The positive ability modifier is removed from the weapon damage formula; the magic bonus remains.',
 'Automatikusan számított Armor Class':'Automatically Calculated Armor Class','A választás automatikusan kitölti':'The selection fills this automatically','Összegből kimaradnak a hiányos vagy hibás tételek.':'Incomplete or invalid entries are excluded from the total.','Az összegből kimaradnak a hiányos vagy hibás tételek.':'Incomplete or invalid entries are excluded from the total.','Az összegből kimaradnak a hibás darabszámmal megadott tételek.':'Entries with an invalid quantity are excluded from the total.','Új fegyver hozzáadása':'Add New Weapon','＋ Új':'＋ Add','🎲 Dobás':'🎲 Roll','Combat bezárása':'Close Combat','Combat művelet':'Combat Action','Értesítés bezárása':'Dismiss Notification','A körön belüli sorrendet te döntöd el.':'You choose the order of actions during your turn.','A kör során':'During the turn','Lezárt harcok (':'Completed Combats ('
 });
-Object.assign(uiTranslationsEn,{'Skillpróba dobása':'Roll a Skill Check','🎲 Skillpróba':'🎲 Skill Check','Skill kiválasztása':'Choose a Skill','Válassz skillt.':'Choose a skill.','aktuális bónusza':'current bonus'});
+Object.assign(uiTranslationsEn,{'Skillpróba dobása':'Roll a Skill Check','🎲 Skillpróba':'🎲 Skill Check','Skill kiválasztása':'Choose a Skill','Válassz skillt.':'Choose a skill.','aktuális bónusza':'current bonus','kritikus hiba':'critical failure','d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.':'d20: 1 · Critical Failure · The bonus is not added.'});
 const uiOriginalText=new WeakMap(),uiRenderedText=new WeakMap(),uiOriginalAttrs=new WeakMap(),uiRenderedAttrs=new WeakMap();let activeUiLanguage='hu';
 function translateUiValue(value){const match=String(value).match(/^(\s*)([\s\S]*?)(\s*)$/),lead=match?.[1]||'',body=match?.[2]||'',tail=match?.[3]||'';if(uiTranslationsEn[body])return lead+uiTranslationsEn[body]+tail;let translated=body;Object.entries(uiTranslationPhrasesEn).sort((a,b)=>b[0].length-a[0].length).forEach(([hu,en])=>{translated=translated.split(hu).join(en);});return lead+translated+tail;}
 function translateUiTextNode(node,refresh=false){if(!node?.parentElement||node.parentElement.closest('script,style,svg,[contenteditable="true"],[data-i18n-ignore]'))return;const current=node.nodeValue||'',rendered=uiRenderedText.get(node);if(refresh||!uiOriginalText.has(node)||rendered!==current)uiOriginalText.set(node,current);const original=uiOriginalText.get(node)||'',next=activeUiLanguage==='en'?translateUiValue(original):original;uiRenderedText.set(node,next);if(current!==next)node.nodeValue=next;}

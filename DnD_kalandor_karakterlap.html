@@ -1265,6 +1265,8 @@ input:focus, textarea:focus, select:focus {
 .saving-throw-result-name{color:var(--muted);font-size:.74em;text-transform:uppercase;letter-spacing:.04em}
 .saving-throw-result-total{color:var(--accent);font-size:1.85em;font-weight:900;line-height:1}
 .saving-throw-result-math{color:var(--text);font-size:.82em}
+.skill-roll-bonus-preview{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:8px 10px;border-left:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--muted);font-size:.74em}
+.skill-roll-bonus-preview strong{color:var(--accent);font-size:1.15em}
 @media(max-width:430px){.saving-throw-roll-fields{grid-template-columns:1fr}.saving-throw-roll-fields label{font-size:.68em}}
 .death-save-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .death-save-checks{display:flex;align-items:center;gap:8px;margin-top:6px}
@@ -2622,6 +2624,17 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 
 <div class="skill-row" data-ability="WIS"><span class="skill-dot"></span><span class="skill-name">Survival</span><span class="skill-value">+0</span></div>
 
+        </div>
+        <div class="saving-throw-roller skill-check-roller" aria-label="Skillpróba dobása">
+          <h4>🎲 Skillpróba</h4>
+          <div class="saving-throw-roll-fields">
+            <label>Skill<select data-skill-roll-name aria-label="Skill kiválasztása"></select></label>
+            <label>Kézi d20 érték<input data-skill-roll-manual type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
+          </div>
+          <div class="skill-roll-bonus-preview"><span data-skill-roll-formula>Válassz skillt.</span><strong data-skill-roll-bonus>+0</strong></div>
+          <small class="saving-throw-roll-hint">Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.</small>
+          <button data-skill-roll-button type="button">🎲 Skillpróba</button>
+          <div class="saving-throw-roll-result" data-skill-roll-result aria-live="polite"></div>
         </div>
     </div>
 
@@ -9447,6 +9460,46 @@ function performSavingThrowRoll(){
     const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`d20: ${rolled} + bónusz: ${formatModifier(bonus)} = ${total}`;
     card.append(name,totalElement,math);result.append(card);
 }
+function selectedSkillRollRow(){
+    const selected=document.querySelector('[data-skill-roll-name]')?.value||'';
+    return [...document.querySelectorAll('.skill-row')].find(row=>characterSkillBaseName(row)===selected)||null;
+}
+function updateSkillRollerPreview(clearResult=false){
+    const row=selectedSkillRollRow(),bonusElement=document.querySelector('[data-skill-roll-bonus]'),formula=document.querySelector('[data-skill-roll-formula]');
+    if(!row){if(bonusElement)bonusElement.textContent='+0';if(formula)formula.textContent='Válassz skillt.';return;}
+    const value=row.querySelector('.skill-value'),bonus=Number.parseInt(value?.textContent,10)||0;
+    if(bonusElement)bonusElement.textContent=formatModifier(bonus);
+    if(formula)formula.textContent=value?.title||`${characterSkillBaseName(row)} aktuális bónusza`;
+    if(clearResult){const result=document.querySelector('[data-skill-roll-result]');if(result){result.className='saving-throw-roll-result';result.replaceChildren();}}
+}
+function setupSkillRoller(){
+    const select=document.querySelector('[data-skill-roll-name]');if(!select)return;
+    const selected=select.value;
+    select.replaceChildren(...[...document.querySelectorAll('.skill-row')].map(row=>new Option(characterSkillBaseName(row),characterSkillBaseName(row))));
+    if(selected&&[...select.options].some(option=>option.value===selected))select.value=selected;
+    updateSkillRollerPreview();
+}
+function performSkillRoll(){
+    const row=selectedSkillRollRow(),manualField=document.querySelector('[data-skill-roll-manual]'),result=document.querySelector('[data-skill-roll-result]');
+    if(!row||!manualField||!result)return;
+    updateSkills();
+    const manualText=manualField.value.trim(),manualRoll=manualText===''?null:Number(manualText);
+    if(manualRoll!==null&&(!Number.isInteger(manualRoll)||manualRoll<1||manualRoll>20)){
+        result.className='saving-throw-roll-result is-error';result.textContent='A kézi d20 érték 1 és 20 közötti egész szám lehet.';manualField.focus();return;
+    }
+    const rolled=manualRoll??rollDie(20),context=classFeatureContext();
+    const proficient=row.classList.contains('proficient')||row.classList.contains('expertise-proficient');
+    const reliableTalent=context.klass==='Rogue'&&context.level>=11&&proficient&&rolled<10;
+    const effectiveRoll=reliableTalent?10:rolled;
+    const bonus=Number.parseInt(row.querySelector('.skill-value')?.textContent,10)||0,total=effectiveRoll+bonus;
+    const skillName=characterSkillBaseName(row),ability=row.dataset.ability||'';
+    result.className='saving-throw-roll-result';result.replaceChildren();
+    const card=document.createElement('div');card.className='saving-throw-result-card';
+    const name=document.createElement('span');name.className='saving-throw-result-name';name.textContent=`${skillName} (${ability}) · ${manualRoll===null?'automatikus dobás':'kézi dobás'}`;
+    const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
+    const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`d20: ${rolled}${reliableTalent?' → 10 (Reliable Talent)':''} + bónusz: ${formatModifier(bonus)} = ${total}`;
+    card.append(name,totalElement,math);result.append(card);
+}
 function updateSkills() {
 
     updateProficiencyBonusFromLevel();
@@ -9497,6 +9550,7 @@ function updateSkills() {
         valueElement.title=`${parts.join('; ')}; összesen: ${formatModifier(value)}`;
         skill.title=valueElement.title;
     });
+    updateSkillRollerPreview();
     updateDerivedFields();
 }
 
@@ -9586,6 +9640,10 @@ document.querySelectorAll('#spellcastingAbility,#spellSaveDCBonus,#spellAttackBo
 document.querySelector('[data-save-roll-button]')?.addEventListener('click',performSavingThrowRoll);
 document.querySelector('[data-save-roll-manual]')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();performSavingThrowRoll();}});
 document.querySelector('[data-save-roll-ability]')?.addEventListener('change',()=>{const result=document.querySelector('[data-save-roll-result]');if(result){result.className='saving-throw-roll-result';result.replaceChildren();}});
+setupSkillRoller();
+document.querySelector('[data-skill-roll-button]')?.addEventListener('click',performSkillRoll);
+document.querySelector('[data-skill-roll-manual]')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();performSkillRoll();}});
+document.querySelector('[data-skill-roll-name]')?.addEventListener('change',()=>updateSkillRollerPreview(true));
 function layoutDesktopExtraCards(){
     const sheet=document.querySelector('.sheet'),grid=document.querySelector('.extra-sheet-grid');
     if(!sheet||!grid)return;
@@ -12040,6 +12098,7 @@ Object.assign(uiTranslationsEn,{
 'Erő (STR)':'Strength (STR)','Ügyesség (DEX)':'Dexterity (DEX)','Erő-alapú közelharci fegyvertámadás (haragbónusz)':'Strength-based melee weapon attack (Rage damage bonus)','A másodlagos fegyver sebzésében szereplő tulajdonság':'Ability used for the off-hand weapon damage','A Two-Weapon Fighting harci stílust választottam, ezért hozzáadom a pozitív módosítót is.':'I have the Two-Weapon Fighting style, so add the positive ability modifier.','A pozitív tulajdonságmódosító levonódik a fegyver sebzésképletéből; a mágikus bónusz megmarad.':'The positive ability modifier is removed from the weapon damage formula; the magic bonus remains.',
 'Automatikusan számított Armor Class':'Automatically Calculated Armor Class','A választás automatikusan kitölti':'The selection fills this automatically','Összegből kimaradnak a hiányos vagy hibás tételek.':'Incomplete or invalid entries are excluded from the total.','Az összegből kimaradnak a hiányos vagy hibás tételek.':'Incomplete or invalid entries are excluded from the total.','Az összegből kimaradnak a hibás darabszámmal megadott tételek.':'Entries with an invalid quantity are excluded from the total.','Új fegyver hozzáadása':'Add New Weapon','＋ Új':'＋ Add','🎲 Dobás':'🎲 Roll','Combat bezárása':'Close Combat','Combat művelet':'Combat Action','Értesítés bezárása':'Dismiss Notification','A körön belüli sorrendet te döntöd el.':'You choose the order of actions during your turn.','A kör során':'During the turn','Lezárt harcok (':'Completed Combats ('
 });
+Object.assign(uiTranslationsEn,{'Skillpróba dobása':'Roll a Skill Check','🎲 Skillpróba':'🎲 Skill Check','Skill kiválasztása':'Choose a Skill','Válassz skillt.':'Choose a skill.','aktuális bónusza':'current bonus'});
 const uiOriginalText=new WeakMap(),uiRenderedText=new WeakMap(),uiOriginalAttrs=new WeakMap(),uiRenderedAttrs=new WeakMap();let activeUiLanguage='hu';
 function translateUiValue(value){const match=String(value).match(/^(\s*)([\s\S]*?)(\s*)$/),lead=match?.[1]||'',body=match?.[2]||'',tail=match?.[3]||'';if(uiTranslationsEn[body])return lead+uiTranslationsEn[body]+tail;let translated=body;Object.entries(uiTranslationPhrasesEn).sort((a,b)=>b[0].length-a[0].length).forEach(([hu,en])=>{translated=translated.split(hu).join(en);});return lead+translated+tail;}
 function translateUiTextNode(node,refresh=false){if(!node?.parentElement||node.parentElement.closest('script,style,svg,[contenteditable="true"],[data-i18n-ignore]'))return;const current=node.nodeValue||'',rendered=uiRenderedText.get(node);if(refresh||!uiOriginalText.has(node)||rendered!==current)uiOriginalText.set(node,current);const original=uiOriginalText.get(node)||'',next=activeUiLanguage==='en'?translateUiValue(original):original;uiRenderedText.set(node,next);if(current!==next)node.nodeValue=next;}

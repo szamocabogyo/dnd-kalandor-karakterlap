@@ -7314,19 +7314,89 @@ Wizard:{
 'Bladesinging':['TCoE',[2,'Training in War and Song; Bladesong'],[6,'Extra Attack'],[10,'Song of Defense'],[14,'Song of Victory']],
 'Order of Scribes':['TCoE',[2,'Wizardly Quill; Awakened Spellbook'],[6,'Manifest Mind'],[10,'Master Scrivener'],[14,'One with the Word']]}
 };
+const supplementalSubclassGuides={
+'Path of the Ancestral Guardian':'A haragod ősi védőszellemeket hív. Az első általad eltalált ellenfél nehezebben sebez mást, később reakcióval csökkentheted egy közeli szövetséges sebzését, jósló szellemeket kérdezhetsz, végül a Spirit Shield a támadóra is erősebzést ver vissza.',
+'Path of the Storm Herald':'Harag kezdetén sivatagi, tengeri vagy tundrai aurát választasz, amely bónuszakcióval körönként hatást fejt ki körülötted. Ugyanez a környezet ellenállást, majd szövetségesvédelmet ad; magas szinten az aura reakciós vagy kontrolláló hatása is megnyílik.',
+'Path of the Zealot':'Harag közben fordulónként az első fegyvertalálat extra radiant vagy necrotic sebzést okoz. Könnyebben hozható vissza az életbe, mentődobást újradobhat, csatakiáltással előnyt oszthat, végül 0 HP-n és sikertelen halálmentők mellett is harcolhat a harag végéig.',
+'Path of the Beast':'Haragkor természetes fegyvert növesztesz: harapás, karom vagy farok eltérő támadó és védő előnnyel. Később a fegyver mágikussá válik és mozgásformát kapsz; találattal őrületet vagy extra sebzést válthatsz ki, végül társakat erősítő vadászfalkát hívsz.',
+'Path of Wild Magic':'Harag kezdetén Wild Surge tábláról kapsz véletlen mágikus hatást, és érzékelheted a közeli varázslatokat. Később saját vagy társad dobásait, illetve varázsrekeszeit erősítheted; sebződéskor új hullámot idézhetsz, majd két eredmény közül választhatsz.',
+'College of Glamour':'Bárdi inspiráció elköltésével ideiglenes HP-t és reakció nélküli helyezkedést adhatsz több szövetségesnek. Előadásoddal közönséget bűvölsz el, később a Command varázslatot uralkodói jelenléttel ismételheted, végül ellenfeleid nehezebben támadhatnak meg.',
+'College of Swords':'Fegyveres bárd, aki harci stílust és Blade Flourish lehetőségeket kap. Találat után Bárdi inspirációs kockával növeli a sebzést, és védekező, területsebző vagy mozgást segítő hatást választ; később Extra Attack, majd ingyenes d6 flourish jár.',
+'College of Whispers':'Bárdi inspirációt Psychic Blades extra pszichikus sebzésre költhetsz. Beszélgetéssel félelmet keltesz, egy halott árnyékából álruhát és emlékfoszlányt nyersz, végül egy célpont titkait felhasználva hosszabb ideig elbűvölheted.',
+'College of Creation':'A Bárdi inspiráció külön mote-hatást kap attól függően, mire használják. Létrehozhatsz érték- és méretkorlátos tárgyat, később egy tárgyat táncoló társsá animálhatsz; magas szinten több, drágább tárgyat teremthetsz egyszerre.',
+'College of Eloquence':'Deception és Persuasion próbán a gyenge d20 eredmény 10-nek számít. Bárdi inspirációval levonást tehetsz egy ellenfél következő mentőjére; később az elrontott inspiráció nem fogy el, nyelvtől független beszédet adhatsz, végül sikeres inspiráció után másnak is oszthatsz.',
+'Forge Domain':'Nehézpáncél- és kovácsjártasságot kapsz; hosszú pihenő után egy fegyvert vagy páncélt +1 mágikus tárggyá tehetsz. Channel Divinity fémtárgyat készít, később tűzellenállás és páncélos AC-bónusz, extra tűzsebzés, végül tűzimmunitás és fizikai ellenállás jár.',
+'Grave Domain':'A haldoklók gyógyítását maximalizálod, távolról használhatod a Spare the Dyingot és érzékeled az élőholtakat. Channel Divinity sebezhetővé tesz egy célpontot a következő találatra; reakcióval kritikus találatot semlegesítesz, később halálkor gyógyítasz egy közeli lényt.',
+'Order Domain':'Nehézpáncél vagy extra skill jár. Ha szövetségest célzol rekeszes varázslattal, reakciós fegyvertámadást engedhetsz neki; Channel Divinity elbűvöl és fegyvereldobásra kényszerít, később enchantment varázslatot gyorsítasz és társad támadásához pszichikus sebzést készítesz elő.',
+'Peace Domain':'Insight, Performance vagy Persuasion jártasságot kapsz, és jártassági bónusznyi lényt köthetsz Emboldening Bonddal: körönként egyszer d4-et adhatnak dobásukhoz, ha közel vannak egymáshoz. Channel Divinity mozgás közben gyógyít, később a kötelék teleportáló sebzésátvállalást és ellenállást ad.',
+'Twilight Domain':'Nehézpáncél, harci fegyver, nagy hatótávú darkvision és kezdeményezési előny osztható. Twilight Sanctuary aurája körönként ideiglenes HP-t ad vagy megszüntet charm/fear hatást; később félhomályban repülsz, extra radiant sebzést és az aurában fél fedezéket adsz.',
+'Circle of Dreams':'Balm of the Summer Court bónuszakciós, távolsági gyógyítást és ideiglenes HP-t ad külön kockakészletből. Pihenőhelyet védő burkot hozol létre, később bónuszakcióval teleportálsz magad vagy társad, végül különleges utazó és álomvarázslatokat használsz.',
+'Circle of the Shepherd':'Beszélsz bestiákkal és szellemekkel, továbbá bónuszakcióval medve-, sólyom- vagy unikornis-totemet idézel eltérő aurával. Idézett lényeid erősebbek és mágikusak, aurában gyógyulnak, végül eszméletvesztéskor automatikus védőidézést kapsz.',
+'Circle of Spores':'Halo of Spores reakciós necrotic sebzést okoz a közeledben. Wild Shape használatból Symbiotic Entity ideiglenes HP-t és erősebb spórákat ad; később holttestet zombivá emelsz, távolra helyezed a spóraaurát, végül több testi állapotra és kritikus találatra immunissá válsz.',
+'Circle of Stars':'Star Map fókuszt, Guidance-ot és Guiding Bolt használatokat ad. Wild Shape-ből Archer, Chalice vagy Dragon csillagalakot választasz támadó, gyógyító vagy koncentrációs előnnyel; később Cosmic Omen dobásokat módosít, alakot válthatsz körönként, végül fizikai ellenállást kapsz.',
+'Circle of Wildfire':'Wild Shape használatból tűzszellemet idézel, amely teleportál és külön támad. A szellemen keresztül varázsolva gyógyításod vagy tűzsebzésed nő; később elhunyt lény helyén gyógyító vagy sebző lángot hozol létre, végül a szellem egyszer megmenthet 0 HP-n.',
+'Arcane Archer':'Arcana/Nature jártasságot, mágikus nyílkezelést és két Arcane Shot opciót kapsz; találatkor különleges nyílhatást alkalmazol korlátozott használattal. Később elhibázott nyilat bónuszakcióval más célra irányítasz, üres készlettel egy használat visszatér, a nyíl sebzése pedig nő.',
+'Cavalier':'Lovaglási előnyök és Unwavering Mark jár: közelharci találattal megjelölt ellenfeled nehezebben támad mást, és büntető bónusztámadást válthat ki. Reakcióval védelmet adhatsz, belépéskor opportunity attackkel megállítasz, rohammal fellöksz, végül minden más lény körében reagálhatsz.',
+'Samurai':'Fighting Spirit bónuszakcióval előnyt ad fegyvertámadásaidra és ideiglenes HP-t biztosít, korlátozott használattal. Bölcsességed társas próbákhoz is segít, később kezdeményezéskor visszakapsz egy használatot, előnyből további támadást készítesz, végül 0 HP-n egy teljes extra kört kapsz.',
+'Psi Warrior':'Psionic Energy kockákkal sebzést csökkentesz, találatot erősítesz vagy tárgyat/lényt mozgatsz. Később pszionikus ugrás és fellökés nyílik meg, charm/fear ellen véded elméd, társaknak fél fedezéket adsz, végül Telekinesist használsz és közben támadhatsz.',
+'Rune Knight':'Rúnákat vésel felszerelésedbe: mindegyik passzív előnyt és rövid pihenős aktiválást ad. Giant’s Might bónuszakcióval nagyobbá tesz, STR-próbákhoz és mentőkhöz előnyt, illetve körönként extra sebzést ad; később dobást átirányítasz, több rúnát használsz és Huge méretet érhetsz el.',
+'Way of the Drunken Master':'Flurry of Blows után Disengage és extra mozgás jár. Később felállásod olcsóbb, elhibázott közelharci támadást más célra terelsz, Kiért megszünteted hátrányodat, végül Flurry során több különböző célpont ellen további támadásokat kapsz.',
+'Way of the Kensei':'Kensei fegyvereket választasz; ezekkel Agile Parry AC-t, távolsági sebzésnövelést és művészi jártasságot kapsz. Később fegyvereid mágikusak és Kiért extra sebzést okoznak, ideiglenes +1–+3 bónuszt adhatsz nekik, végül körönként egy hibát újradobsz.',
+'Way of the Sun Soul':'Radiant Sun Bolt távolsági varázstámadást használ a Martial Arts kockával, és Flurry részeként is lőhető. Kiért Burning Hands jellegű sugarat, majd területi radiant robbanást hozol létre; végül fényaurád reakcióból radiant sebzést okoz a közelharci támadónak.',
+'Way of Mercy':'Medicine/Insight és gyógyítói eszköz jár. Flurry egyik ütése helyett Hand of Healing gyógyít, Hand of Harm találat után necrotic sebzést ad; később állapotot gyógyítasz vagy poisoned állapotot okozol, Flurryben mindkettőt olcsóbban használod, végül halottat élesztesz Kiért.',
+'Way of the Astral Self':'Kiért spektrális karokat idézel: Wisdom használható STR-próbához/mentőhöz és támadáshoz, nagyobb eléréssel és force sebzéssel. A visage látást, hangot és mentális védelmet ad, később testpáncél és extra támadás, végül teljes alak AC- és sebzésbónusszal jár.',
+'Oath of Conquest':'Channel Divinity félelmet kelt vagy nagy támadási bónuszt ad egy dobásra. Aurád a frightened ellenfelek sebességét 0-ra csökkenti és pszichikus sebzést okoz; később a téged eltaláló sérül, végül átalakulásod ellenállást, extra támadást és jobb kritikus esélyt ad.',
+'Oath of Redemption':'Channel Divinity meggyőzést erősít vagy reakcióval visszaadja a támadó sebzését. Aurával szövetséges sebzését vállalod át, később körönként gyógyulsz fél HP alatt, végül a téged megtámadó lény ellen ellenállást és visszasebzést kapsz, amíg te nem támadod.',
+'Oath of Glory':'Channel Divinity atletikus előnyöket ad vagy Divine Smite után ideiglenes HP-t oszt. Aurád növeli a közeli társak sebességét; reakcióval AC-t emelsz egy támadás ellen, végül legendás alakod előnyt, mentő-újradobást és automatikus találattá alakítást ad.',
+'Oath of the Watchers':'Channel Divinity mentális mentőkre ad előnyt több szövetségesnek vagy extraplanáris lényeket fordít el. Aurád jártassági bónuszt ad kezdeményezéshez; mentősiker után reakciós force sebzést okozol, végül truesight, előny és banishing rider jár.',
+'Gloom Stalker':'Wisdom kerül a kezdeményezéshez, az első körben nő a sebességed és egy extra, erősebb támadást kapsz. Darkvision és sötétlátók elleni láthatatlanság jár; később Wisdom mentőjártasság, körönként egy hibázott támadás újrapróbálása és reakciós hátrányadás nyílik meg.',
+'Horizon Walker':'Érzékeled a közeli síkkapukat, és bónuszakcióval egy célpont elleni következő találatodat force sebzésre váltod extra kockával. Később Ethereal Plane-re lépsz, támadások között teleportálsz és több célpontnál extra támadást kapsz, végül reakcióval fél sebzést szenvedsz.',
+'Monster Slayer':'Akcióval feltárod egy lény ellenállásait és immunitásait, bónuszakcióval pedig Slayer’s Prey célpontot jelölsz körönként extra sebzéshez. A célpont ellen mentőid javulnak, reakcióval varázslást/teleportot akadályozol, végül mentődobást saját reakciós támadással biztosíthatsz.',
+'Fey Wanderer':'Fegyvertalálataid különböző célpontokon körönként pszichikus többletsebzést okoznak, Wisdomod pedig Charisma próbákat erősít. Charm/fear sikerét vagy kudarcát más célpontra fordíthatod, fey lényt idézhetsz koncentráció nélkül, végül Misty Stepet többször és társaddal együtt használhatod.',
+'Swarmkeeper':'A raj egy találat után extra sebzést, saját mozgatást vagy célpontmozgatást ad Wisdom mentő ellen. Mage Hand és tematikus varázslatok járnak; később a raj repülést ad, erősebb hatásokat kap, végül sebződéskor reakcióval teleportálsz és ellenállást szerzel.',
+'Inquisitive':'Insight próbán gyenge d20 eredmény 8-nak számít, bónuszakcióval rejtett lényt/tárgyat keresel vagy Insightful Fightinggal Sneak Attack jogosultságot szerzel. Később lassú mozgásnál érzékelési előny, illúzió- és alakváltó-felismerés, végül extra Sneak Attack sebzés jár a megjelölt célpontra.',
+'Mastermind':'Álca-, hamisító- és játékkészlet, nyelvek és beszédutánzás jár. Help bónuszakcióként és 30 ft-ról használható; később beszédből tulajdonságokat olvasol ki, rád irányuló támadást fedezék mögötti lényre terelsz, végül gondolatolvasás és igazságmágia ellen védett vagy.',
+'Scout':'Reakcióval fél sebességet mozoghatsz, ha ellenfél kerül melléd, opportunity attack nélkül; Nature és Survival szakértelmet kapsz. Később gyorsabb vagy, kezdeményezési előnyt és első körös támadási előnyt osztasz, végül bónuszakciós második támadásból külön Sneak Attack is lehet.',
+'Swashbuckler':'Az általad megtámadott célpont nem tud opportunity attackkel büntetni, és egyedüli párbajban előny nélkül is járhat Sneak Attack. Charisma kerül kezdeményezéshez; később Panache provokál vagy elbűvöl, bónuszakciós akrobatikus előnyt kapsz, végül hibázott támadást újradobsz.',
+'Phantom':'Pihenő után ideiglenes skill- vagy eszközjártasságot kérsz a holtaktól. Sneak Attack után második célpontot necrotic sebzés ér; később lélekjelzőket gyűjtesz védelemhez és erőforráshoz, szellemalakban mozogsz, végül a Wails több sebzést okoz és pihenőn jelzőt kapsz.',
+'Soulknife':'Psionic Energy kockák segítik a sikertelen képzettségpróbát és telepatikus kapcsolatot hoznak létre. Psychic Blade támadás után bónuszakciós második penge jár; később hibát pszionikusan javítasz és teleportálsz, láthatatlanná válsz, végül találattal stunned állapotot kényszerítesz.',
+'Divine Soul':'Cleric varázslatokból is választhatsz, eredetedhez igazodó plusz varázslattal. Favored by the Gods mentőhöz vagy támadáshoz 2d4-et ad pihenőnként; később gyógyítókockát újradobsz, szárnyat növesztesz, végül bónuszakcióval visszagyógyítod HP-d felét.',
+'Shadow Magic':'120 ft darkvision és sorcery pointból Darkness jár, amelyen átlátsz. 0 HP-n Charisma mentővel talpon maradhatsz; később Hound of Ill Omen üldözi a célpontot és rontja mentőit, árnyékból árnyékba teleportálsz, végül ellenálló árnyékalakká válsz.',
+'Storm Sorcery':'Primordial nyelv és varázslás után bónuszakciós, opportunity attack nélküli rövid repülés jár. Villám/mennydörgés varázslat körül sebzel és ellenállást kapsz, időjárást irányítasz, reakcióval visszasebzel és ellöksz, végül állandó repülést oszthatsz.',
+'Aberrant Mind':'Tematikus Psionic Spells lista és távolsági telepatikus beszéd jár. Sorcery pointból komponensek nélkül varázsolhatod e listát, pszichikus ellenállást és mentőelőnyt kapsz; később több testi átalakulás közül vásárolsz, végül teleportáló, behúzó térrobbanást hozol létre.',
+'Clockwork Soul':'Clockwork Magic lista jár, és reakcióval eltörölhetsz előnyt vagy hátrányt. Sorcery pointból védőkockákat helyezel lényre, később Trance of Order alatt a gyenge támadás/próba/mentő 10-nek számít, végül területen gyógyítasz, tárgyat javítasz és varázshatást szüntetsz meg.',
+'The Celestial':'Sacred Flame, Light és bővített varázslista jár. Healing Light bónuszakcióval d6 készletből gyógyít távolra; később radiant/fire sebzéshez Charisma jár, pihenő után ideiglenes HP-t osztasz, végül halálmentőkor felállsz, gyógyulsz és közeli ellenfeleket vakítasz.',
+'The Hexblade':'Hexblade’s Curse bónuszakcióval extra sebzést, jobb kritikus esélyt és célpont halálakor gyógyulást ad. Hex Warrior egy fegyvernél Charismát használ; később megölt humanoidból spectert emelsz, átokcélpont támadását d6-tal elhárítod, végül az átkot új célpontra viheted.',
+'The Fathomless':'Bónuszakcióval hidegsebző csápot idézel és úszósebességet kapsz. Később hidegellenállás és reakciós Guardian Coil sebzéscsökkentés jár; az Evard’s Black Tentacles erősödik és nem töri koncentrációdat sebzés, végül több lényt vízhez teleportálsz.',
+'The Genie':'Genie’s Vessel tárgyad jártassági bónusznyi extra elemi sebzést és belső menedéket ad, bővített varázslistával. Később repülés és patrónustól függő ellenállás, társakat fogadó rövid pihenős menedék, végül kívánságszerű, 6. szintig terjedő varázslatmásolás jár.',
+'War Magic':'Reakciós Arcane Deflection AC-t vagy mentőt növel, de következő körödben csak cantripet varázsolhatsz; Intelligence kerül kezdeményezéshez. Counterspell/Dispel után Power Surge gyűlik extra force sebzéshez, koncentráció közben AC/mentő nő, végül a deflection közeli ellenfeleket sebez.',
+'Bladesinging':'Könnyűpáncél-, fegyver- és Performance jártasság mellett bónuszakciós Bladesong jár: AC, sebesség, Acrobatics és koncentráció javul, használata jártassági bónuszhoz kötött. Később Extra Attack egyik támadása cantrip lehet, rekesz költhető sebzéscsökkentésre, végül Intelligence kerül közelharci sebzéshez.',
+'Order of Scribes':'A mágikus toll gyorsan ír és tintát készít; az ébredt varázskönyv azonos szintű varázslatok sebzéstípusát cserélheti és rituálét gyorsíthat. Később a könyv szellemi elméje felderít és onnan varázsolhatsz, ingyenes tekercset készítesz, végül a könyv lapjait áldozod sebzés ellen.'
+};
 function supplementalSubclassFields(context){
     const entries=supplementalSubclassCatalog[context.klass]||{};
     const match=Object.entries(entries).find(([name])=>name.toLocaleLowerCase()===context.subclass);
     if(!match)return [];
-    const [subclass,definition]=match,source=definition[0];
-    return definition.slice(1).map(([level,names],index)=>({
+    const [subclass,definition]=match,source=definition[0],guide=supplementalSubclassGuides[subclass]||'';
+    const milestones=definition.slice(1).map(([level,names],index)=>({
         type:'output',
         key:('supplement_'+context.klass+'_'+subclass+'_'+index).replace(/[^a-z0-9]+/gi,'_'),
         label:names+' · '+source,
         wide:true,
         minLevel:level,
-        value:()=>level+'. szinttől elérhető alosztály-képesség. A használat részleteit a '+source+' szabályleírása szerint alkalmazd.'
+        value:()=>`${level}. szinten válik elérhetővé. Ettől a szinttől a fenti alosztály-útmutatóban összefoglalt ${names} képesség vagy képességcsoport használható. Forrás: ${source}.`
     }));
+    return [
+        {
+            type:'output',
+            key:('supplement_'+context.klass+'_'+subclass+'_guide').replace(/[^a-z0-9]+/gi,'_'),
+            label:subclass+' – részletes alosztály-útmutató · '+source,
+            wide:true,
+            minLevel:1,
+            value:()=>guide||`A ${subclass} alosztály szintenként megnyíló képességei az alábbi mezőkben jelennek meg. Forrás: ${source}.`
+        },
+        ...milestones
+    ];
 }
 function allClassFeatureFields(model,context){return [...(model?.fields||[]),...supplementalSubclassFields(context)];}
 
@@ -7401,7 +7471,7 @@ function renderClassFeatures(){
     }
     document.getElementById('classFeaturesTitle').innerHTML=`<span class="dnd-mark" aria-hidden="true">✦</span> ${context.klass} kasztjellemzők`;
     const supplement=supplementalSubclassCatalog[context.klass]?.[document.getElementById('characterSubclass')?.value||''];
-    document.getElementById('classFeaturesNote').textContent=supplement?`${supplement[0]} alosztály. A panel a karakterszint alapján automatikusan jeleníti meg az elért képességeket.`:model.note;
+    document.getElementById('classFeaturesNote').textContent=supplement?`${supplement[0]} alosztály. A részletes útmutató összefoglalja a speciális működést, az alatta lévő mezők pedig a karakterszint alapján csak a már elért képességeket jelenítik meg.`:model.note;
     fields.dataset.className=context.klass;
     fields.innerHTML=allClassFeatureFields(model,context).map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{

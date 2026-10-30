@@ -1190,7 +1190,8 @@ input:focus, textarea:focus, select:focus {
 .class-feature-resource .resource-value{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
 .class-feature-resource output{font-weight:700;color:var(--accent);white-space:nowrap}
 .class-feature-note{grid-column:1/-1;margin:0;color:var(--muted);font-size:.84em;line-height:1.45}
-.skill-background-source{font-size:.76em;color:var(--accent);font-weight:600}
+.skill-background-source,.skill-class-source{font-size:.76em;color:var(--accent);font-weight:600}
+.skill-class-source{display:block;margin-top:2px;letter-spacing:.01em}
 .class-feature-fields .toggle-field{flex-direction:row;align-items:center;gap:9px}
 .class-feature-fields .toggle-field input{width:18px;min-height:18px}
 .druid-wild-shape-usage{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);min-width:0}
@@ -9055,6 +9056,13 @@ function abilityCheckTrainingBonus(ability,proficient=false){
     if(klass==='Fighter'&&level>=7&&subclass==='champion'&&['STR','DEX','CON'].includes(ability))return Math.ceil(prof/2);
     return 0;
 }
+function abilityCheckTrainingSource(ability,proficient=false){
+    if(proficient)return 'Jártasság';
+    const {klass,level,subclass}=classFeatureContext();
+    if(klass==='Bard'&&level>=2)return 'Jack of All Trades';
+    if(klass==='Fighter'&&level>=7&&subclass==='champion'&&['STR','DEX','CON'].includes(ability))return 'Remarkable Athlete';
+    return '';
+}
 function bardExpertiseSkills(){
     if(classFeatureContext().klass!=='Bard')return new Set();
     return new Set([1,2,3,4].map(index=>document.getElementById('classFeature_bardExpertise'+index)?.value).filter(Boolean));
@@ -9217,6 +9225,9 @@ function updateAdvancedBaseDefaults(){
     const sizes={Aasimar:'Közepes',Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Faun:'Közepes',Genasi:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tabaxi:'Közepes',Tiefling:'Közepes'};
     writeAdvancedBaseDefault('characterSize',sizes[race]||'');
     writeAdvancedBaseDefault('initiativeBonus',abilityCheckTrainingBonus('DEX'));
+    const initiative=document.getElementById('initiativeBonus');
+    const initiativeSource=abilityCheckTrainingSource('DEX');
+    if(initiative&&initiativeSource)initiative.title+=` Automatikus kasztbónusz: ${initiativeSource} (${formatModifier(abilityCheckTrainingBonus('DEX'))}).`;
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10);
     const thresholds=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
     const xp=document.getElementById('experiencePoints');
@@ -9368,6 +9379,9 @@ function updateDerivedFields(){
     const perceptionTraining = abilityCheckTrainingBonus('WIS',racialPerception||Boolean(perception?.classList.contains('proficient')));
     const perceptionBonus = parseInt(document.getElementById('passivePerceptionBonus')?.value, 10) || 0;
     writeAdvancedBaseDefault('passivePerception',10+modifierFor('WIS')+perceptionTraining+perceptionBonus);
+    const passivePerception=document.getElementById('passivePerception');
+    const perceptionSource=abilityCheckTrainingSource('WIS',racialPerception||Boolean(perception?.classList.contains('proficient')));
+    if(passivePerception&&perceptionSource)passivePerception.title+=` Próba bónuszának forrása: ${perceptionSource} (${formatModifier(perceptionTraining)}).`;
 
     const spellAbilityField=document.getElementById('spellcastingAbility');
     const automaticSpellAbility=automaticSpellcastingAbility();
@@ -9459,14 +9473,29 @@ function updateSkills() {
         const skillName=characterSkillBaseName(skill);
         const knowledgeExpertise=clericKnowledgeExpertiseSkills().has(skillName);
         const proficient=skill.classList.contains('proficient')||knowledgeExpertise;
-        value += abilityCheckTrainingBonus(ability,proficient);
+        const trainingBonus=abilityCheckTrainingBonus(ability,proficient);
+        const trainingSource=abilityCheckTrainingSource(ability,proficient);
+        value += trainingBonus;
         const hasExpertise=proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName));
         skill.classList.toggle('expertise-proficient',hasExpertise||knowledgeExpertise);
         if(hasExpertise)value+=proficiency;
         if(knowledgeExpertise)value+=proficiency;
 
-        skill.querySelector('.skill-value')
-            .textContent = formatModifier(value);
+        const valueElement=skill.querySelector('.skill-value');
+        valueElement.textContent = formatModifier(value);
+        const nameElement=skill.querySelector('.skill-name');
+        let classSource=nameElement?.querySelector('.skill-class-source');
+        const automaticClassBonus=!proficient&&trainingBonus!==0&&trainingSource;
+        if(automaticClassBonus&&nameElement){
+            if(!classSource){classSource=document.createElement('span');classSource.className='skill-class-source';nameElement.appendChild(classSource);}
+            classSource.textContent=`${trainingSource}: ${formatModifier(trainingBonus)}`;
+        }else classSource?.remove();
+        const abilityModifier=getModifier(abilityScore);
+        const parts=[`Tulajdonság: ${formatModifier(abilityModifier)}`];
+        if(trainingBonus)parts.push(`${trainingSource||'Jártasság'}: ${formatModifier(trainingBonus)}`);
+        if(hasExpertise||knowledgeExpertise)parts.push(`Szakértelem: ${formatModifier(proficiency)}`);
+        valueElement.title=`${parts.join('; ')}; összesen: ${formatModifier(value)}`;
+        skill.title=valueElement.title;
     });
     updateDerivedFields();
 }

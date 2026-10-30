@@ -7225,6 +7225,93 @@ const classFeatureModels={
         {type:'output',key:'masterTransmuter',label:'Master Transmuter',wide:true,minLevel:14,when:c=>c.subclass.includes('transmutation'),value:()=> 'Akcióval elfogyasztod a Transmuter’s Stone-t: Major Transformation, Panacea, Restore Life vagy Restore Youth. Új kő hosszú pihenő vagy transmutation varázslat után készül.'}
     ]}
 };
+const supplementalSubclassCatalog={
+Barbarian:{
+'Path of the Ancestral Guardian':['XGtE',[3,'Ancestral Protectors'],[6,'Spirit Shield'],[10,'Consult the Spirits'],[14,'Vengeful Ancestors']],
+'Path of the Storm Herald':['XGtE',[3,'Storm Aura'],[6,'Storm Soul'],[10,'Shielding Storm'],[14,'Raging Storm']],
+'Path of the Zealot':['XGtE',[3,'Divine Fury; Warrior of the Gods'],[6,'Fanatical Focus'],[10,'Zealous Presence'],[14,'Rage Beyond Death']],
+'Path of the Beast':['TCoE',[3,'Form of the Beast'],[6,'Bestial Soul'],[10,'Infectious Fury'],[14,'Call the Hunt']],
+'Path of Wild Magic':['TCoE',[3,'Magic Awareness; Wild Surge'],[6,'Bolstering Magic'],[10,'Unstable Backlash'],[14,'Controlled Surge']]},
+Bard:{
+'College of Glamour':['XGtE',[3,'Mantle of Inspiration; Enthralling Performance'],[6,'Mantle of Majesty'],[14,'Unbreakable Majesty']],
+'College of Swords':['XGtE',[3,'Bonus Proficiencies; Fighting Style; Blade Flourish'],[6,'Extra Attack'],[14,'Master’s Flourish']],
+'College of Whispers':['XGtE',[3,'Psychic Blades; Words of Terror'],[6,'Mantle of Whispers'],[14,'Shadow Lore']],
+'College of Creation':['TCoE',[3,'Mote of Potential; Performance of Creation'],[6,'Animating Performance'],[14,'Creative Crescendo']],
+'College of Eloquence':['TCoE',[3,'Silver Tongue; Unsettling Words'],[6,'Unfailing Inspiration; Universal Speech'],[14,'Infectious Inspiration']]},
+Cleric:{
+'Forge Domain':['XGtE',[1,'Bonus Proficiency; Blessing of the Forge'],[2,'Channel Divinity: Artisan’s Blessing'],[6,'Soul of the Forge'],[8,'Divine Strike'],[17,'Saint of Forge and Fire']],
+'Grave Domain':['XGtE',[1,'Circle of Mortality; Eyes of the Grave'],[2,'Channel Divinity: Path to the Grave'],[6,'Sentinel at Death’s Door'],[8,'Potent Spellcasting'],[17,'Keeper of Souls']],
+'Order Domain':['TCoE',[1,'Bonus Proficiency; Voice of Authority'],[2,'Channel Divinity: Order’s Demand'],[6,'Embodiment of the Law'],[8,'Divine Strike'],[17,'Order’s Wrath']],
+'Peace Domain':['TCoE',[1,'Implement of Peace; Emboldening Bond'],[2,'Channel Divinity: Balm of Peace'],[6,'Protective Bond'],[8,'Potent Spellcasting'],[17,'Expansive Bond']],
+'Twilight Domain':['TCoE',[1,'Bonus Proficiencies; Eyes of Night; Vigilant Blessing'],[2,'Channel Divinity: Twilight Sanctuary'],[6,'Steps of Night'],[8,'Divine Strike'],[17,'Twilight Shroud']]},
+Druid:{
+'Circle of Dreams':['XGtE',[2,'Balm of the Summer Court'],[6,'Hearth of Moonlight and Shadow'],[10,'Hidden Paths'],[14,'Walker in Dreams']],
+'Circle of the Shepherd':['XGtE',[2,'Speech of the Woods; Spirit Totem'],[6,'Mighty Summoner'],[10,'Guardian Spirit'],[14,'Faithful Summons']],
+'Circle of Spores':['TCoE',[2,'Circle Spells; Halo of Spores; Symbiotic Entity'],[6,'Fungal Infestation'],[10,'Spreading Spores'],[14,'Fungal Body']],
+'Circle of Stars':['TCoE',[2,'Star Map; Starry Form'],[6,'Cosmic Omen'],[10,'Twinkling Constellations'],[14,'Full of Stars']],
+'Circle of Wildfire':['TCoE',[2,'Circle Spells; Summon Wildfire Spirit'],[6,'Enhanced Bond'],[10,'Cauterizing Flames'],[14,'Blazing Revival']]},
+Fighter:{
+'Arcane Archer':['XGtE',[3,'Arcane Archer Lore; Arcane Shot; Magic Arrow'],[7,'Curving Shot'],[15,'Ever-Ready Shot'],[18,'Improved Arcane Shot']],
+'Cavalier':['XGtE',[3,'Bonus Proficiency; Born to the Saddle; Unwavering Mark'],[7,'Warding Maneuver'],[10,'Hold the Line'],[15,'Ferocious Charger'],[18,'Vigilant Defender']],
+'Samurai':['XGtE',[3,'Bonus Proficiency; Fighting Spirit'],[7,'Elegant Courtier'],[10,'Tireless Spirit'],[15,'Rapid Strike'],[18,'Strength Before Death']],
+'Psi Warrior':['TCoE',[3,'Psionic Power'],[7,'Telekinetic Adept'],[10,'Guarded Mind'],[15,'Bulwark of Force'],[18,'Telekinetic Master']],
+'Rune Knight':['TCoE',[3,'Bonus Proficiencies; Rune Carver; Giant’s Might'],[7,'Runic Shield'],[10,'Great Stature'],[15,'Master of Runes'],[18,'Runic Juggernaut']]},
+Monk:{
+'Way of the Drunken Master':['XGtE',[3,'Bonus Proficiencies; Drunken Technique'],[6,'Tipsy Sway'],[11,'Drunkard’s Luck'],[17,'Intoxicated Frenzy']],
+'Way of the Kensei':['XGtE',[3,'Path of the Kensei'],[6,'One with the Blade'],[11,'Sharpen the Blade'],[17,'Unerring Accuracy']],
+'Way of the Sun Soul':['XGtE',[3,'Radiant Sun Bolt'],[6,'Searing Arc Strike'],[11,'Searing Sunburst'],[17,'Sun Shield']],
+'Way of Mercy':['TCoE',[3,'Implements of Mercy; Hand of Healing; Hand of Harm'],[6,'Physician’s Touch'],[11,'Flurry of Healing and Harm'],[17,'Hand of Ultimate Mercy']],
+'Way of the Astral Self':['TCoE',[3,'Arms of the Astral Self'],[6,'Visage of the Astral Self'],[11,'Body of the Astral Self'],[17,'Awakened Astral Self']]},
+Paladin:{
+'Oath of Conquest':['XGtE',[3,'Oath Spells; Channel Divinity'],[7,'Aura of Conquest'],[15,'Scornful Rebuke'],[20,'Invincible Conqueror']],
+'Oath of Redemption':['XGtE',[3,'Oath Spells; Channel Divinity'],[7,'Aura of the Guardian'],[15,'Protective Spirit'],[20,'Emissary of Redemption']],
+'Oath of Glory':['TCoE',[3,'Oath Spells; Channel Divinity'],[7,'Aura of Alacrity'],[15,'Glorious Defense'],[20,'Living Legend']],
+'Oath of the Watchers':['TCoE',[3,'Oath Spells; Channel Divinity'],[7,'Aura of the Sentinel'],[15,'Vigilant Rebuke'],[20,'Mortal Bulwark']]},
+Ranger:{
+'Gloom Stalker':['XGtE',[3,'Gloom Stalker Magic; Dread Ambusher; Umbral Sight'],[7,'Iron Mind'],[11,'Stalker’s Flurry'],[15,'Shadowy Dodge']],
+'Horizon Walker':['XGtE',[3,'Horizon Walker Magic; Detect Portal; Planar Warrior'],[7,'Ethereal Step'],[11,'Distant Strike'],[15,'Spectral Defense']],
+'Monster Slayer':['XGtE',[3,'Monster Slayer Magic; Hunter’s Sense; Slayer’s Prey'],[7,'Supernatural Defense'],[11,'Magic-User’s Nemesis'],[15,'Slayer’s Counter']],
+'Fey Wanderer':['TCoE',[3,'Dreadful Strikes; Fey Wanderer Magic; Otherworldly Glamour'],[7,'Beguiling Twist'],[11,'Fey Reinforcements'],[15,'Misty Wanderer']],
+'Swarmkeeper':['TCoE',[3,'Gathered Swarm; Swarmkeeper Magic'],[7,'Writhing Tide'],[11,'Mighty Swarm'],[15,'Swarming Dispersal']]},
+Rogue:{
+'Inquisitive':['XGtE',[3,'Ear for Deceit; Eye for Detail; Insightful Fighting'],[9,'Steady Eye'],[13,'Unerring Eye'],[17,'Eye for Weakness']],
+'Mastermind':['XGtE',[3,'Master of Intrigue; Master of Tactics'],[9,'Insightful Manipulator'],[13,'Misdirection'],[17,'Soul of Deceit']],
+'Scout':['XGtE',[3,'Skirmisher; Survivalist'],[9,'Superior Mobility'],[13,'Ambush Master'],[17,'Sudden Strike']],
+'Swashbuckler':['XGtE',[3,'Fancy Footwork; Rakish Audacity'],[9,'Panache'],[13,'Elegant Maneuver'],[17,'Master Duelist']],
+'Phantom':['TCoE',[3,'Whispers of the Dead; Wails from the Grave'],[9,'Tokens of the Departed'],[13,'Ghost Walk'],[17,'Death’s Friend']],
+'Soulknife':['TCoE',[3,'Psionic Power; Psychic Blades'],[9,'Soul Blades'],[13,'Psychic Veil'],[17,'Rend Mind']]},
+Sorcerer:{
+'Divine Soul':['XGtE',[1,'Divine Magic; Favored by the Gods'],[6,'Empowered Healing'],[14,'Otherworldly Wings'],[18,'Unearthly Recovery']],
+'Shadow Magic':['XGtE',[1,'Eyes of the Dark; Strength of the Grave'],[6,'Hound of Ill Omen'],[14,'Shadow Walk'],[18,'Umbral Form']],
+'Storm Sorcery':['XGtE',[1,'Wind Speaker; Tempestuous Magic'],[6,'Heart of the Storm; Storm Guide'],[14,'Storm’s Fury'],[18,'Wind Soul']],
+'Aberrant Mind':['TCoE',[1,'Psionic Spells; Telepathic Speech'],[6,'Psionic Sorcery; Psychic Defenses'],[14,'Revelation in Flesh'],[18,'Warping Implosion']],
+'Clockwork Soul':['TCoE',[1,'Clockwork Magic; Restore Balance'],[6,'Bastion of Law'],[14,'Trance of Order'],[18,'Clockwork Cavalcade']]},
+Warlock:{
+'The Celestial':['XGtE',[1,'Expanded Spell List; Bonus Cantrips; Healing Light'],[6,'Radiant Soul'],[10,'Celestial Resilience'],[14,'Searing Vengeance']],
+'The Hexblade':['XGtE',[1,'Expanded Spell List; Hexblade’s Curse; Hex Warrior'],[6,'Accursed Specter'],[10,'Armor of Hexes'],[14,'Master of Hexes']],
+'The Fathomless':['TCoE',[1,'Expanded Spell List; Tentacle of the Deeps; Gift of the Sea'],[6,'Oceanic Soul; Guardian Coil'],[10,'Grasping Tentacles'],[14,'Fathomless Plunge']],
+'The Genie':['TCoE',[1,'Expanded Spell List; Genie’s Vessel'],[6,'Elemental Gift'],[10,'Sanctuary Vessel'],[14,'Limited Wish']]},
+Wizard:{
+'War Magic':['XGtE',[2,'Arcane Deflection; Tactical Wit'],[6,'Power Surge'],[10,'Durable Magic'],[14,'Deflecting Shroud']],
+'Bladesinging':['TCoE',[2,'Training in War and Song; Bladesong'],[6,'Extra Attack'],[10,'Song of Defense'],[14,'Song of Victory']],
+'Order of Scribes':['TCoE',[2,'Wizardly Quill; Awakened Spellbook'],[6,'Manifest Mind'],[10,'Master Scrivener'],[14,'One with the Word']]}
+};
+function supplementalSubclassFields(context){
+    const entries=supplementalSubclassCatalog[context.klass]||{};
+    const match=Object.entries(entries).find(([name])=>name.toLocaleLowerCase()===context.subclass);
+    if(!match)return [];
+    const [subclass,definition]=match,source=definition[0];
+    return definition.slice(1).map(([level,names],index)=>({
+        type:'output',
+        key:('supplement_'+context.klass+'_'+subclass+'_'+index).replace(/[^a-z0-9]+/gi,'_'),
+        label:names+' · '+source,
+        wide:true,
+        minLevel:level,
+        value:()=>level+'. szinttől elérhető alosztály-képesség. A használat részleteit a '+source+' szabályleírása szerint alkalmazd.'
+    }));
+}
+function allClassFeatureFields(model,context){return [...(model?.fields||[]),...supplementalSubclassFields(context)];}
+
 const sorcererMetamagicCosts={
     'Careful Spell':()=>1,'Distant Spell':()=>1,'Empowered Spell':()=>1,'Extended Spell':()=>1,
     'Heightened Spell':()=>3,'Quickened Spell':()=>2,'Subtle Spell':()=>1,
@@ -7295,9 +7382,10 @@ function renderClassFeatures(){
         try{const saved=JSON.parse(localStorage.getItem('dndCharacter')||'{}');if(typeof saved.wizardArcaneRecoveryUsed==='boolean')state.wizardArcaneRecoveryUsed=saved.wizardArcaneRecoveryUsed;}catch{}
     }
     document.getElementById('classFeaturesTitle').innerHTML=`<span class="dnd-mark" aria-hidden="true">✦</span> ${context.klass} kasztjellemzők`;
-    document.getElementById('classFeaturesNote').textContent=model.note;
+    const supplement=supplementalSubclassCatalog[context.klass]?.[document.getElementById('characterSubclass')?.value||''];
+    document.getElementById('classFeaturesNote').textContent=supplement?`${supplement[0]} alosztály. A panel a karakterszint alapján automatikusan jeleníti meg az elért képességeket.`:model.note;
     fields.dataset.className=context.klass;
-    fields.innerHTML=model.fields.map(field=>renderClassFeatureField(field,context,state)).join('');
+    fields.innerHTML=allClassFeatureFields(model,context).map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
         control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
         control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
@@ -7313,7 +7401,7 @@ function renderClassFeatures(){
 function updateClassFeatureCalculations(){
     const context=classFeatureContext(),model=classFeatureModels[context.klass],fields=document.getElementById('classFeatureFields');
     if(!model||!fields)return;
-    model.fields.forEach(field=>{
+    allClassFeatureFields(model,context).forEach(field=>{
         if(field.type==='output'){
             const output=document.getElementById(`classFeatureValue_${field.key}`);
             if(output)output.textContent=field.value(context);
@@ -7334,7 +7422,7 @@ function updateClassFeatureCalculations(){
 function restoreClassResources(restType){
     const context=classFeatureContext(),model=classFeatureModels[context.klass],fields=document.getElementById('classFeatureFields');
     if(!model||!fields)return;
-    model.fields.forEach(field=>{
+    allClassFeatureFields(model,context).forEach(field=>{
         const policy=typeof field.rest==='function'?field.rest(restType,context):field.rest;
         if(field.type==='counter'&&(policy==='both'||policy===restType)){
             const input=document.getElementById(`classFeature_${field.key}`),maximum=field.max(context);
@@ -10087,18 +10175,18 @@ function saveCharacter() {
 }
 
 const characterSubclasses2014={
-  Barbarian:['Path of the Berserker','Path of the Totem Warrior'],
-  Bard:['College of Lore','College of Valor'],
-  Cleric:['Knowledge Domain','Life Domain','Light Domain','Nature Domain','Tempest Domain','Trickery Domain','War Domain'],
-  Druid:['Circle of the Land','Circle of the Moon'],
-  Fighter:['Champion','Battle Master','Eldritch Knight'],
-  Monk:['Way of the Open Hand','Way of Shadow','Way of the Four Elements'],
-  Paladin:['Oath of Devotion','Oath of the Ancients','Oath of Vengeance'],
-  Ranger:['Hunter','Beast Master'],
-  Rogue:['Thief','Assassin','Arcane Trickster'],
-  Sorcerer:['Draconic Bloodline','Wild Magic'],
-  Warlock:['The Archfey','The Fiend','The Great Old One'],
-  Wizard:['School of Abjuration','School of Conjuration','School of Divination','School of Enchantment','School of Evocation','School of Illusion','School of Necromancy','School of Transmutation']
+  Barbarian:['Path of the Berserker','Path of the Totem Warrior',...Object.keys(supplementalSubclassCatalog.Barbarian)],
+  Bard:['College of Lore','College of Valor',...Object.keys(supplementalSubclassCatalog.Bard)],
+  Cleric:['Knowledge Domain','Life Domain','Light Domain','Nature Domain','Tempest Domain','Trickery Domain','War Domain',...Object.keys(supplementalSubclassCatalog.Cleric)],
+  Druid:['Circle of the Land','Circle of the Moon',...Object.keys(supplementalSubclassCatalog.Druid)],
+  Fighter:['Champion','Battle Master','Eldritch Knight',...Object.keys(supplementalSubclassCatalog.Fighter)],
+  Monk:['Way of the Open Hand','Way of Shadow','Way of the Four Elements',...Object.keys(supplementalSubclassCatalog.Monk)],
+  Paladin:['Oath of Devotion','Oath of the Ancients','Oath of Vengeance',...Object.keys(supplementalSubclassCatalog.Paladin)],
+  Ranger:['Hunter','Beast Master',...Object.keys(supplementalSubclassCatalog.Ranger)],
+  Rogue:['Thief','Assassin','Arcane Trickster',...Object.keys(supplementalSubclassCatalog.Rogue)],
+  Sorcerer:['Draconic Bloodline','Wild Magic',...Object.keys(supplementalSubclassCatalog.Sorcerer)],
+  Warlock:['The Archfey','The Fiend','The Great Old One',...Object.keys(supplementalSubclassCatalog.Warlock)],
+  Wizard:['School of Abjuration','School of Conjuration','School of Divination','School of Enchantment','School of Evocation','School of Illusion','School of Necromancy','School of Transmutation',...Object.keys(supplementalSubclassCatalog.Wizard)]
 };
 var backgroundRules2014={
   Acolyte:{skills:'Insight, Religion',extras:'2 választható nyelv',feature:'Shelter of the Faithful — a hited közösségétől szállást és segítséget kérhetsz.'},
@@ -10288,7 +10376,8 @@ function updateCharacterSubclassOptions(selectedValue=''){
   options.forEach(name=>{
     const option=document.createElement('option');
     option.value=name;
-    option.textContent=name;
+    const supplement=supplementalSubclassCatalog[klass]?.[name];
+    option.textContent=supplement?`${name} · ${supplement[0]}`:name;
     subclassField.append(option);
   });
   const subclassAvailable=Boolean(klass)&&options.length>0&&level>=subclassLevel;
@@ -11913,7 +12002,7 @@ const uiTranslationsEn={
 };
 const uiTranslationPhrasesEn={'KASZTJELLEMZŐK':'CLASS FEATURES','kasztjellemzők':'class features',' szint':' level',' használat':' use','Megmaradt':'Remaining','Használatok':'Uses','használatok':'uses','Jártassági bónusz':'Proficiency Bonus','jártassági bónusz':'proficiency bonus','halálmentődobás':'death saving throw','mentődobás':'saving throw','Sebzés':'Damage','sebzés':'damage','Gyógyítás':'Healing','gyógyítás':'healing','ideiglenes HP':'temporary HP','Válassz':'Choose','Nincs aktív':'No active','fordulónként':'once per turn','Bónuszakció':'Bonus Action','bónuszakció':'bonus action','Akció':'Action','akció':'action','Reakció':'Reaction','reakció':'reaction','Mozgás':'Movement','mozgás':'movement','Kezdeményezés':'Initiative','Képességek':'Features','képességek':'features','Faji jellemzők':'Racial Traits','Nyelvek':'Languages','Jártasságok':'Proficiencies','Páncél':'Armor','Fegyver':'Weapon','fegyver':'weapon','Varázslat':'Spell','varázslat':'spell','Varázsrekesz':'Spell Slot','varázsrekesz':'spell slot','Koncentráció':'Concentration','koncentráció':'concentration','Célpont':'Target','célpont':'target','Kudarc':'Failure','kudarc':'failure','Siker':'Success','siker':'success','Üresen automatikus':'Blank rolls automatically','Automatikusan számított':'Automatically calculated','Egyéni érték':'Custom value','Visszaállítás':'Reset','Bezárás':'Close','Mégse':'Cancel'};
 Object.assign(uiTranslationsEn,{
-'Hogyan működik?':'How does it work?','A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.':'The final bonus is the ability modifier + proficiency bonus (if proficient) + other bonus + automatic class bonus.','A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.':'The sheet detects proficiency granted by your class and class features. Use the checkbox only for proficiency gained from another source.','Mentő és jártasság':'Save & Proficiency','Végső bónusz':'Final Bonus','Egyéb':'Other','Kasztból jár':'Granted by Class','Más forrásból jár':'Other Source','Tulajdonság':'Ability','Jártasság':'Proficiency','Összesen':'Total','Automatikus jártasság':'Automatic proficiency','🎲 Mentődobás végrehajtása':'🎲 Make a Saving Throw','Mentődobás kiválasztása':'Choose Saving Throw','Kézi d20 érték':'Manual d20 Roll','Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.':'Leave the manual field blank to roll the d20 automatically.','🎲 Mentődobás':'🎲 Saving Throw','A kézi d20 érték 1 és 20 közötti egész szám lehet.':'The manual d20 roll must be a whole number from 1 to 20.','automatikus dobás':'automatic roll','kézi dobás':'manual roll','bónusz':'bonus',
+'Hogyan működik?':'How does it work?','A végső bónusz a tulajdonság módosítója + jártassági bónusz (ha jártas) + egyéb bónusz + automatikus kasztbónusz.':'The final bonus is the ability modifier + proficiency bonus (if proficient) + other bonus + automatic class bonus.','A lap a kasztból és kasztképességből járó jártasságot felismeri. A jelölőt csak más forrásból kapott jártasságnál használd.':'The sheet detects proficiency granted by your class and class features. Use the checkbox only for proficiency gained from another source.','Mentő és jártasság':'Save & Proficiency','Végső bónusz':'Final Bonus','Egyéb':'Other','Kasztból jár':'Granted by Class','Más forrásból jár':'Other Source','Tulajdonság':'Ability','Jártasság':'Proficiency','Összesen':'Total','Automatikus jártasság':'Automatic proficiency','🎲 Mentődobás végrehajtása':'🎲 Make a Saving Throw','Mentődobás kiválasztása':'Choose Saving Throw','Kézi d20 érték':'Manual d20 Roll','Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.':'Leave the manual field blank to roll the d20 automatically.','🎲 Mentődobás':'🎲 Saving Throw','A kézi d20 érték 1 és 20 közötti egész szám lehet.':'The manual d20 roll must be a whole number from 1 to 20.','automatikus dobás':'automatic roll','kézi dobás':'manual roll','bónusz':'bonus','A panel a karakterszint alapján automatikusan jeleníti meg az elért képességeket.':'The panel automatically shows unlocked features based on character level.','szinttől elérhető alosztály-képesség.':'subclass feature available from this level.','A használat részleteit a':'Apply the usage details according to the','szabályleírása szerint alkalmazd.':'rules description.',
 'Vad alak':'Wild Shape','♧ Vad alak':'♧ Wild Shape','Vad alak használatai':'Wild Shape Uses','Megmaradt Vad alak használatok':'Remaining Wild Shape Uses','Vad alak kiválasztása':'Choose Wild Shape','Druida állati alak':'Druid Wild Shape','Állati vagy elemi alak kiválasztása (2014)':'Choose Beast or Elemental Form (2014)','Állati forma neve':'Beast Form Name','Alak típusa':'Form Type','Kihívási érték':'Challenge Rating','Vértezet (AC)':'Armor Class (AC)','Járássebesség':'Walking Speed','Mászás / úszás / repülés':'Climb / Swim / Fly','Érzékek':'Senses','Támadások':'Attacks','Különleges tulajdonságok és megjegyzések':'Special Traits and Notes','Egyéni / más forrásból származó alak':'Custom / Other Source Form','Válassz állati formát…':'Choose a beast form…','Nincs aktív állati alak.':'No active Wild Shape.','Átváltok a kiválasztott alakba':'Transform into the selected form','Aktív vad alak':'Active Wild Shape','Az alak támadásai és képességei':'Form Attacks and Features',
 'Állati társ':'Animal Companion','Állati társ műveletei':'Animal Companion Actions','Társ mozgása (ft)':'Companion Movement (ft)','Társ mozgásmódja':'Companion Movement Mode','Ki támad?':'Who is attacking?','Ranger – saját fegyverek':'Ranger — Own Weapons','Helyváltoztatás':'Movement','Hátralévő műveletkeretek':'Remaining Action Economy','Külön lehetőségek':'Special Options','Most nem használható képességek (':'Currently Unavailable Features (',
 'Saját magamat gyógyítom.':'I heal myself.','Másik lény fordulójában reagálok.':'I react during another creature’s turn.','A kör során bármikor befejezheted a fordulódat.':'You can end your turn at any time.','A végrehajtott dobások és rögzített műveletek itt jelennek meg.':'Completed rolls and recorded actions appear here.','Válaszd ki a történést, majd rögzítsd a kör naplójába.':'Choose the event, then record it in the turn log.','Akció részletei':'Action Details','Bónuszakció részletei':'Bonus Action Details','Reakció részletei':'Reaction Details','Mozgás részletei':'Movement Details','Koncentráció részletei':'Concentration Details','Tárgyinterakció részletei':'Object Interaction Details','Faji vagy automatikus esemény részletei':'Racial or Automatic Event Details','pl. célpont, megtett távolság, hatás…':'e.g. target, distance moved, effect…','Következő lépés':'Next Step','Művelet':'Action','Műveletek':'Actions','Esemény':'Event','esemény':'event','Tárgy':'Item','Faji / automatikus':'Racial / Automatic','Faji / egyéb':'Racial / Other','Dobás és sebzés':'Attack Roll and Damage','Dobás típusa':'Roll Type','Kézi dobott érték':'Manual Roll','Üresen automatikus dobás':'Blank Rolls Automatically','Támadás kiválasztása':'Choose Attack','Varázslat kiválasztása':'Choose Spell','Támadás neve, bónusza, sebzése és hatása':'Attack name, bonus, damage, and effect','Célpontok száma':'Number of Targets','Most támadott célpont sorszáma':'Current Target Number','Sebzés célpontja':'Damage Target','Jóváhagyáskor az ideiglenes HP fogy először, a fennmaradó sebzés az aktuális HP-ból vonódik le.':'Temporary hit points are spent first; remaining damage is subtracted from current hit points.',

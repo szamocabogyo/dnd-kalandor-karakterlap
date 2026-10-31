@@ -1846,7 +1846,14 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-outside-use button{min-height:40px;white-space:nowrap}
 .spell-outside-use-note,.spell-outside-use-result{grid-column:1/-1;margin:0;font-size:.76rem;line-height:1.4}
 .spell-outside-use-result{color:var(--accent);font-weight:600}
+.spell-outside-roll{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:8px;align-items:end;padding:10px;border:1px solid var(--border);background:color-mix(in srgb,var(--class-surface) 80%,var(--bg))}
+.spell-outside-roll label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.spell-outside-roll button,.spell-outside-roll-result,.spell-outside-roll-note{grid-column:1/-1}
+.spell-outside-roll button{min-height:40px}
+.spell-outside-roll-note{font-size:.76rem;line-height:1.4}
+.spell-outside-roll-result{min-height:1.4em;color:var(--accent);font-weight:700;line-height:1.45}
 @media(max-width:768px){.spell-outside-use{grid-template-columns:1fr}.spell-outside-use button{width:100%}}
+@media(max-width:768px){.spell-outside-roll{grid-template-columns:1fr}.spell-outside-roll button,.spell-outside-roll-result,.spell-outside-roll-note{grid-column:1}}
 .spell-entry-details[hidden]{display:none!important}
 .sheet.mobile-mode .spell-entry-details{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;align-items:start;padding:10px}
 @media(max-width:768px){.spell-entry-details{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;align-items:start;padding:10px}}
@@ -6838,6 +6845,7 @@ function updateSpellUsageStatus(row){
         updateSpellUsageStatusCore(row);
         const mode=row.querySelector('.spell-outside-use-mode');
         if(mode)populateSpellUseModes(row,mode,row.querySelector('.spell-outside-use-note'));
+        refreshSpellOutsideRoll(row);
     }
     finally{updateSpellRowAvailability(row);}
 }
@@ -7001,6 +7009,45 @@ function recordSpellUseOutsideCombat(row,select,result){
     const name=row.querySelector('input[id$="_name"]')?.value.trim()||'Varázslat';
     result.textContent=mode.kind==='slot'?`${name} használata rögzítve; egy ${mode.level}. szintű varázsrekesz levonva.`:`${name} használata rögzítve.`;
     saveCharacter();
+}
+
+function spellOutsideRollValues(row){
+    const selection=spellCatalogSelection(row),meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId);
+    let ability=selection?.ability||document.getElementById('spellcastingAbility')?.value||'';
+    const score=Number(document.getElementById(ability)?.value)||10,modifier=Math.floor((score-10)/2);
+    const level=Number(document.getElementById('characterLevel')?.value)||1,proficiency=2+Math.floor((level-1)/4);
+    const attack=selection?.ability?modifier+proficiency+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0):(Number(document.getElementById('spellAttackBonus')?.value)||0);
+    const dc=selection?.ability?8+modifier+proficiency+(Number(document.getElementById('spellSaveDCBonus')?.value)||0):(Number(document.getElementById('spellSaveDC')?.value)||0);
+    const damage=row.querySelector('input[id$="_damage"]')?.value||'';
+    const inferred=spell?.resolution||(/\b(?:sav|mentő)\b/i.test(damage)?'save':damage.trim()?'attack':'utility');
+    return {attack,dc,inferred,spell};
+}
+function refreshSpellOutsideRoll(row){
+    const panel=row?.querySelector('.spell-outside-roll');if(!panel)return;
+    const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button'),note=panel.querySelector('.spell-outside-roll-note');
+    const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim();
+    if(!type.dataset.userSelected||type.dataset.inferred!==values.inferred){type.value=['attack','save'].includes(values.inferred)?values.inferred:'utility';type.dataset.inferred=values.inferred;}
+    const utility=type.value==='utility',save=type.value==='save';
+    manual.disabled=utility;extra.disabled=utility;button.disabled=!name;
+    extraLabel.firstChild.nodeValue=save?'Célpont mentőbónusza ':'Egyéb dobásbónusz ';
+    button.textContent=utility?'✦ Hatás alkalmazása':'🎲 Varázslatdobás';
+    note.textContent=utility?'A varázslat nem igényel d20 dobást. A használatot a fenti külön gombbal rögzítheted.':save?`A célpont mentődobása a karakter ${values.dc} DC értékével kerül összevetésre.`:`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Üres kézi mezőnél a lap dob d20-at.`;
+}
+function performSpellOutsideRoll(row){
+    const panel=row?.querySelector('.spell-outside-roll'),result=panel?.querySelector('.spell-outside-roll-result');if(!panel||!result)return;
+    const name=row.querySelector('input[id$="_name"]')?.value.trim();if(!name){result.textContent='Előbb válassz varázslatot.';return;}
+    const type=panel.querySelector('.spell-outside-roll-type').value,values=spellOutsideRollValues(row);
+    if(type==='utility'){result.textContent=`${name}: a varázslat hatása alkalmazható; d20 dobás nem szükséges.`;return;}
+    const manualText=panel.querySelector('.spell-outside-roll-manual').value.trim(),manual=manualText===''?null:Number(manualText);
+    if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>20)){result.textContent='A kézi d20 érték 1 és 20 közötti egész szám lehet.';return;}
+    const die=manual??rollDie(20),extra=Number(panel.querySelector('.spell-outside-roll-extra').value)||0;
+    if(type==='save'){
+        const total=die+extra,success=total>=values.dc;
+        result.textContent=`${name} – célpont mentődobása: d20 (${die}) ${extra>=0?'+':'−'} ${Math.abs(extra)} = ${total}; DC ${values.dc} → ${success?'sikeres mentődobás':'sikertelen mentődobás'}.`;
+        return;
+    }
+    const bonus=values.attack+extra,total=die===1?1:die+bonus,note=die===20?' – természetes 20, kritikus találat':die===1?' – természetes 1, kritikus hiba':'';
+    result.textContent=`${name} – varázstámadás: d20 (${die})${die===1?'':` ${bonus>=0?'+':'−'} ${Math.abs(bonus)}`} = ${total}${note}.`;
 }
 
 function classFeatureContext(){
@@ -10259,6 +10306,21 @@ function createSpellRow(key, extra = false){
     outsideMode.addEventListener('change',()=>{populateSpellUseModes(row,outsideMode,outsideNote);outsideResult.textContent='';});
     outsideButton.addEventListener('click',()=>recordSpellUseOutsideCombat(row,outsideMode,outsideResult));
     outsideUse.append(outsideLabel,outsideButton,outsideNote,outsideResult);row.appendChild(outsideUse);
+    const outsideRoll=document.createElement('div');outsideRoll.className='spell-outside-roll';outsideRoll.setAttribute('aria-label','Harcon kívüli varázslatdobás');
+    const rollTypeLabel=document.createElement('label');rollTypeLabel.append(document.createTextNode('Dobás típusa '));
+    const rollType=document.createElement('select');rollType.className='spell-outside-roll-type';
+    [['attack','Varázstámadás'],['save','Célpont mentődobása'],['utility','Nincs d20 dobás']].forEach(([value,text])=>rollType.add(new Option(text,value)));rollTypeLabel.appendChild(rollType);
+    const manualLabel=document.createElement('label');manualLabel.append(document.createTextNode('Kézi d20 érték '));
+    const manual=document.createElement('input');manual.className='spell-outside-roll-manual';manual.type='number';manual.inputMode='numeric';manual.min='1';manual.max='20';manual.step='1';manual.placeholder='Üresen automatikus';manualLabel.appendChild(manual);
+    const extraLabel=document.createElement('label');extraLabel.className='spell-outside-roll-extra-label';extraLabel.append(document.createTextNode('Egyéb dobásbónusz '));
+    const rollExtra=document.createElement('input');rollExtra.className='spell-outside-roll-extra';rollExtra.type='number';rollExtra.inputMode='numeric';rollExtra.step='1';rollExtra.value='0';extraLabel.appendChild(rollExtra);
+    const rollNote=document.createElement('small');rollNote.className='spell-outside-roll-note';
+    const rollButton=document.createElement('button');rollButton.type='button';rollButton.className='spell-outside-roll-button';rollButton.textContent='🎲 Varázslatdobás';
+    const rollResult=document.createElement('div');rollResult.className='spell-outside-roll-result';rollResult.setAttribute('role','status');rollResult.setAttribute('aria-live','polite');
+    rollType.addEventListener('change',()=>{rollType.dataset.userSelected='true';refreshSpellOutsideRoll(row);rollResult.textContent='';});
+    [manual,rollExtra].forEach(input=>input.addEventListener('input',()=>rollResult.textContent=''));
+    rollButton.addEventListener('click',()=>performSpellOutsideRoll(row));
+    outsideRoll.append(rollTypeLabel,manualLabel,extraLabel,rollNote,rollButton,rollResult);row.appendChild(outsideRoll);
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'remove-attack-row';
@@ -12357,7 +12419,7 @@ const uiTranslationsEn={
 'Játékos neve':'Player Name','Kaland':'Adventure','A jelenlegi kaland címe':'Current adventure title','Méret':'Size','Tapasztalati pont (XP)':'Experience Points (XP)','Passzív Észlelés':'Passive Perception','Passzív észlelés':'Passive Perception','Észlelés egyéb bónusz':'Other Perception Bonus','Páncél típusa':'Armor Type','Pajzs AC bónusz':'Shield AC Bonus','AC egyéb bónusz':'Other AC Bonus','Kezdeményezés egyéb bónusz':'Other Initiative Bonus','Páncél nélkül':'Unarmored','Párnázott':'Padded','Bőr':'Leather','Szegecselt bőr':'Studded Leather','Bőr (közepes)':'Hide','Láncing':'Chain Shirt','Pikkelyvért':'Scale Mail','Mellvért':'Breastplate','Félvért':'Half Plate','Gyűrűs páncél':'Ring Mail','Láncvért':'Chain Mail','Sodronyvért':'Splint','Lemezvért':'Plate',
 'Jelöld a jártasságot; az összeg automatikus, az egyéb bónusz külön megadható.':'Mark proficiency; the total is calculated automatically and other bonuses can be entered separately.','Összesen':'Total','Egyéb':'Other','Kocka típusa':'Hit Die','Összes kocka':'Total Dice','Elhasznált kockák':'Spent Dice','Halálmentő sikerek':'Death Save Successes','Halálmentő kudarcok':'Death Save Failures','Első siker':'First success','Második siker':'Second success','Harmadik siker':'Third success','Első kudarc':'First failure','Második kudarc':'Second failure','Harmadik kudarc':'Third failure','Mesélő utasításai':'Dungeon Master Instructions','Jegyzet':'Note','Írd ide a mesélő utasításait…':'Write the Dungeon Master’s instructions here…',
 'Érmék':'Coins','Réz':'Copper','Ezüst':'Silver','Elektrum':'Electrum','Arany':'Gold','Platina':'Platinum','Drágakövek':'Gems','Tétel':'Item','Darab':'Quantity','Arany / db':'Gold / Item','Új drágakő hozzáadása':'Add New Gem','Érmék összértéke':'Total Coin Value','Drágakövek összértéke':'Total Gem Value','Érmék és drágakövek összértéke':'Total Wealth','0 arany':'0 gp',
-'Varázslás':'Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
+'Varázslás':'Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','Dobás típusa':'Roll Type','Varázstámadás':'Spell Attack','Célpont mentődobása':'Target Saving Throw','Nincs d20 dobás':'No d20 Roll','Kézi d20 érték':'Manual d20 Roll','Egyéb dobásbónusz':'Other Roll Bonus','🎲 Varázslatdobás':'🎲 Spell Roll','✦ Hatás alkalmazása':'✦ Apply Effect','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
 '⚔ Saját kör':'⚔ My Turn','↪ Reakció':'↪ Reaction','🛡 Sebzést szenvedek':'🛡 Take Damage','⚑ Harc lezárása':'⚑ End Combat','1. Kezdés':'1. Start','1. Kezdeményezés':'1. Initiative','2. Műveletek':'2. Actions','A kör lépései':'Turn Steps','Kör':'Round','Kezdeményezés':'Initiative','Kézi d20 eredmény (1–20, üresen automatikus)':'Manual d20 Result (1–20; blank rolls automatically)','🎲 Kezdeményezés dobása':'🎲 Roll Initiative','Akció':'Action','Bónuszakció':'Bonus Action','Reakció':'Reaction','Mozgás':'Movement','Tárgyinterakció':'Object Interaction','Koncentráció':'Concentration','⚔ Támadás / varázslás':'⚔ Attack / Cast a Spell','◆ Más akció':'◆ Other Action','✦ Bónuszakció':'✦ Bonus Action','➶ Mozgás':'➶ Movement','◈ Tárgy / egyéb':'◈ Item / Other','Képesség, segítség…':'Ability, Help…','Tárgy, koncentráció…':'Item, concentration…','Kör befejezése':'End Turn','Befejeztem a körömet':'I Have Finished My Turn','Mégse':'Cancel','Vissza a körhöz':'Back to Turn','Új kör':'New Round','Új támadás':'New Attack','Támadás':'Attack','Sikeres':'Hit','Nem talált':'Miss','Sebzés értéke':'Damage Amount','Sebzés típusa':'Damage Type','Sebzés jóváhagyása':'Apply Damage','Elszenvedett sebzés':'Damage Taken','Korábbi körök':'Previous Rounds','Ebben a körben':'This Round','A kör eseménynaplója':'Turn Log','Esemény rögzítése':'Record Event','Megjegyzés (nem kötelező)':'Note (optional)',
 'Halálmentő dobások':'Death Saving Throws','Az aktuális HP negatív. Jelöld a halálmentődobás eredményét.':'Current HP is negative. Mark the death saving throw result.','Gyógyulás':'Healing','Használd, ha egy társ vagy más hatás gyógyítja a karaktert.':'Use this when an ally or another effect heals the character.','Kocka':'Die','Módosító':'Modifier','🎲 Gyógyítás dobása':'🎲 Roll Healing','Gyógyulás értéke':'Healing Amount','＋ Alkalmazás':'＋ Apply','☠ Meghaltál':'☠ You Died','Három sikertelen halálmentődobást jelöltél.':'You marked three failed death saving throws.','Jegyzet mentése és bezárás':'Save Note and Close',
 'Jegyzetek bezárása':'Close Notes','Jegyzet formázása':'Format Note','Félkövér':'Bold','Dőlt':'Italic','Aláhúzott':'Underline','Cím':'Heading','Címsor':'Heading','Bekezdés':'Paragraph','Felsorolás':'Bulleted List','Számozott lista':'Numbered List','• Lista':'• List','1. Lista':'1. List','Formázás törlése':'Clear Formatting','Törlés':'Clear','Írj ide jegyzeteket a kalandról, küldetésekről, szereplőkről vagy a játék eseményeiről…':'Write notes about the adventure, quests, NPCs, or events here…','A jegyzet automatikusan mentődik.':'Notes are saved automatically.','Mentve.':'Saved.',

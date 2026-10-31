@@ -6634,6 +6634,7 @@ function syncCombatAttackFlow(){
     document.getElementById('combatRollInputs').hidden=finished;
     combatAttackSelect.disabled=!choosing;
     combatSpellSelect.disabled=!choosing;
+    combatSpellCastMode.disabled=!choosing||combatSpellCastMode.options.length<2;
     const title=document.getElementById('combatAttackStageTitle');
     title.hidden=choosing;
     title.textContent=damage?(phase==='complete'?'Sebzés eredménye':'Sebzés'):combatAttackFlow.eventType==='spell'?'Varázslás eredménye':'Támadás eredménye';
@@ -6938,6 +6939,13 @@ function populateSpellUseModes(row,select,hint){
     if(hint)hint.textContent=select.value==='unavailable'?'A varázslat a következő visszatöltésig nem használható újra.':mode.kind==='ritual'?'A rituálé a normál varázslási időn felül 10 percet igényel, és nem fogyaszt varázsrekeszt.':mode.kind==='slot'&&mode.level>baseLevel?`Magasabb szinten használva a skálázódó hatás és sebzés a ${mode.level}. szinthez igazodik.`:baseLevel>0?'A kiválasztott rekesz a használat rögzítésekor levonódik.':'Ez a használat nem fogyaszt varázsrekeszt.';
 }
 function refreshCombatSpellCastModes(){
+    if(combatSpellCastMode&&combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'){
+        const kind=combatAttackFlow.castMode||'default',level=combatAttackFlow.castLevel||0;
+        const label=kind==='ritual'?'Rituáléként (+10 perc, nincs rekesz)':kind==='slot'?`${level}. szintű varázsrekeszből`:'Képesség szerinti használat';
+        combatSpellCastMode.replaceChildren(new Option(label,kind==='slot'?`slot:${level}`:kind));combatSpellCastMode.disabled=true;
+        if(combatSpellCastModeHint)combatSpellCastModeHint.textContent='A találati dobáskor kiválasztott felhasználási mód.';
+        return;
+    }
     populateSpellUseModes(selectedCombatSpellRow(),combatSpellCastMode,combatSpellCastModeHint);
 }
 
@@ -7736,7 +7744,11 @@ function refreshCombatAttackOptions(){
     });
     if(previous==='__unarmed__'&&unarmedRow)combatAttackSelect.value=unarmedRow.dataset.attackRowKey;
     if(!activeForm&&!petMode&&combatRulesUnarmed()&&!unarmedRow){combatAttackSelect.appendChild(new Option('Pusztakezes csapás','__unarmed__'));if(previous==='__unarmed__')combatAttackSelect.value=previous;}
-    const spellPrevious = combatSpellSelect.value;
+    if(combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='attack'&&combatAttackFlow.attackKey){
+        if(![...combatAttackSelect.options].some(option=>option.value===combatAttackFlow.attackKey))combatAttackSelect.add(new Option(combatAttackFlow.sourceSnapshot?.name||'A kiválasztott támadás',combatAttackFlow.attackKey));
+        combatAttackSelect.value=combatAttackFlow.attackKey;
+    }
+    const spellPrevious = combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'?combatAttackFlow.attackKey:combatSpellSelect.value;
     combatSpellSelect.replaceChildren();
     const spellRows = [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')]
         .map(row => ({row, name:row.querySelector('input[id$="_name"]')?.value.trim() || '',damage:row.querySelector('input[id$="_damage"]')?.value.trim()||''}))
@@ -7752,9 +7764,14 @@ function refreshCombatAttackOptions(){
     });
     if(!combatSpellSelect.options.length){const empty=document.createElement('option');empty.value='';empty.textContent='Nincs elérhető varázslat';empty.disabled=true;combatSpellSelect.appendChild(empty);}
     if(spellRows.some(({row}) => row.dataset.spellEntryKey === spellPrevious)) combatSpellSelect.value = spellPrevious;
+    if(combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'&&combatAttackFlow.attackKey){
+        if(![...combatSpellSelect.options].some(option=>option.value===combatAttackFlow.attackKey))combatSpellSelect.add(new Option(combatAttackFlow.sourceSnapshot?.name||'A kiválasztott varázslat',combatAttackFlow.attackKey));
+        combatSpellSelect.value=combatAttackFlow.attackKey;
+    }
     refreshCombatSpellCastModes();
-    combatAttackChoice.hidden = !['attack','damage'].includes(getCombatRollType());
-    combatSpellChoice.hidden = getCombatRollType() !== 'spell';
+    const currentType=getCombatRollType(),damageSource=currentType==='damage'?combatAttackFlow.eventType:currentType;
+    combatAttackChoice.hidden = damageSource!=='attack';
+    combatSpellChoice.hidden = damageSource!=='spell';
     updateCombatRageOption();
     updateCombatClassOptions();
     syncCombatAttackFlow();
@@ -8566,6 +8583,7 @@ function consumeLowestSpellSlot(){
 }
 
 function readCombatAttack(){
+    if(combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='attack'&&combatAttackFlow.sourceSnapshot)return {...combatAttackFlow.sourceSnapshot};
     const petKey=combatAttackFlow.attackKey||combatAttackSelect.value;
     if(String(petKey).startsWith('companion:')){
         const form=rangerCompanionSnapshot(),profile=rangerCompanionAttackProfiles().find(profile=>profile.key===petKey);
@@ -8593,10 +8611,13 @@ function readCombatAttack(){
 }
 
 function readCombatSpell(){
-    const row = [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')]
-        .find(candidate => candidate.dataset.spellEntryKey === combatSpellSelect.value);
-    if(!row) return null;
-    const name = row.querySelector('input[id$="_name"]')?.value.trim();
+    const key=combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'?combatAttackFlow.attackKey:combatSpellSelect.value;
+    const row = [...document.querySelectorAll('#spellEntries .spell-entry-row')]
+        .find(candidate => candidate.dataset.spellEntryKey === key);
+    if(!row&&combatAttackFlow.sourceSnapshot)return {...combatAttackFlow.sourceSnapshot,row:null};
+    if(!row)return null;
+    const snapshot=combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'?combatAttackFlow.sourceSnapshot:null;
+    const name = snapshot?.name||row.querySelector('input[id$="_name"]')?.value.trim();
     if(!name) return null;
     const source=spellCatalogSelection(row);
     const meta=spellCatalogMetadata(row),catalogSpell=spellCatalogData.find(item=>item.id===meta?.spellId);
@@ -8605,11 +8626,11 @@ function readCombatSpell(){
     if(source?.ability){
         const score=Number(document.getElementById(source.ability)?.value)||10,mod=Math.floor((score-10)/2);
         const level=Number(document.getElementById('characterLevel')?.value)||1,prof=2+Math.floor((level-1)/4);
-        return {row,name,damage:combatAttackFlow.damageExpression||scaledDamage,bonus:mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
-            dc:8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level};
+        return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage,bonus:snapshot?.bonus??mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
+            dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level};
     }
-    return {row,name,damage:combatAttackFlow.damageExpression||scaledDamage, bonus:Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0,
-        dc:document.getElementById('spellSaveDC')?.value || '',castMode:savedMode.kind,castLevel:savedMode.level};
+    return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage, bonus:snapshot?.bonus??(Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0),
+        dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level};
 }
 
 function readCombatDamageSource(){return combatAttackFlow.eventType==='spell'?readCombatSpell():readCombatAttack();}
@@ -8825,7 +8846,7 @@ function performCombatRoll(){
         const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:'';
         showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+castText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
         commitRollInspiration(inspiration);
-        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage};
+        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level}};
         const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='ritual'?`${spell.name} (rituálé)`:spell.name;
         recordCombatGuideRoll('spell',spellUseLabel);
         refreshCombatAttackOptions();
@@ -8857,7 +8878,7 @@ function performCombatRoll(){
             showCombatResult(attack.name+': d20 ('+die+d20.detail+') '+(bonus>=0?'+':'−')+' '+Math.abs(bonus)+inspiration.text+note+recklessText+(tidesUsed?' | Tides of Chaos elköltve':''),die+bonus+inspiration.value);
             commitRollInspiration(inspiration);
         }
-        combatAttackFlow={phase:'rolled',attackKey:combatAttackSelect.value,lastNatural:die,eventType:'attack',damageExpression:attack.damage,monkMartialArts:Boolean(document.getElementById('combatMonkMartialArts')?.checked),forcedCritical:Boolean(document.getElementById('combatAssassinateSurprised')?.checked)};
+        combatAttackFlow={phase:'rolled',attackKey:combatAttackSelect.value,lastNatural:die,eventType:'attack',damageExpression:attack.damage,sourceSnapshot:{name:attack.name,damage:attack.damage,bonus:attack.bonus},monkMartialArts:Boolean(document.getElementById('combatMonkMartialArts')?.checked),forcedCritical:Boolean(document.getElementById('combatAssassinateSurprised')?.checked)};
         recordCombatGuideRoll('attack',attack.name);
         syncCombatAttackFlow();
         return;

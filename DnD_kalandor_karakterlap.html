@@ -7533,10 +7533,10 @@ function refreshSpellOutsideRoll(row){
     const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button:not(.spell-outside-damage-button)'),progress=panel.querySelector('.spell-outside-progress'),outcome=panel.querySelector('.spell-outside-attack-outcome'),saveOutcome=panel.querySelector('.spell-outside-save-outcome'),saveRuleInfo=panel.querySelector('.spell-outside-save-rule'),saveRuleSetting=panel.querySelector('.spell-outside-save-rule-setting'),damageButton=panel.querySelector('.spell-outside-damage-button'),damageFields=panel.querySelector('.spell-outside-damage'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
     const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim();
     type.value=['attack','save'].includes(values.inferred)?values.inferred:'utility';type.disabled=Boolean(values.catalogResolution);type.dataset.inferred=values.inferred;
-    const utility=type.value==='utility',save=type.value==='save',damagePhase=panel.dataset.damageReady==='true';
+    const utility=type.value==='utility',save=type.value==='save',damagePhase=panel.dataset.damageReady==='true',saveNoDamage=save&&panel.dataset.saveOutcome==='success'&&spellSaveDamageRule(row,values.spell)==='none';
     if(manualLabel)manualLabel.hidden=utility||save||damagePhase;if(extraLabel)extraLabel.hidden=utility||save||damagePhase;
     manual.disabled=utility||save;extra.disabled=utility||save;
-    if(progress){progress.hidden=utility;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);}
+    if(progress){progress.hidden=utility;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase&&!saveNoDamage);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);steps[1]?.classList.toggle('done',saveNoDamage);}
     if(button){button.hidden=utility||save||damagePhase;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
     const damageSpec=!utility?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=damagePhase;
     if(damageFields){
@@ -7568,9 +7568,14 @@ function resolveSpellOutsideAttack(row,hit){
 }
 function resolveSpellOutsideSave(row,success){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
-    panel.dataset.saveOutcome=success?'success':'failure';panel.dataset.damageReady='true';
     const rule=spellSaveDamageRule(row),effect=success?spellSaveDamageRuleText(rule):'Sikertelen mentődobás: teljes sebzés.';
-    result.textContent=`${panel.dataset.usageText||''} ${success?'Sikeres':'Sikertelen'} mentődobás. ${effect}`.trim();
+    panel.dataset.saveOutcome=success?'success':'failure';panel.dataset.damageReady=success&&rule==='none'?'false':'true';
+    const message=`${panel.dataset.usageText||''} ${success?'Sikeres':'Sikertelen'} mentődobás. ${effect}`.trim();
+    if(success&&rule==='none'){
+        const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=message;
+        const totalDisplay=document.createElement('div');totalDisplay.className='combat-roll-total';totalDisplay.textContent='0';totalDisplay.setAttribute('aria-label','Összes sebzés: 0');
+        result.replaceChildren(breakdown,totalDisplay);
+    }else result.textContent=message;
     refreshSpellOutsideRoll(row);panel.querySelector('[data-spell-damage-die],.spell-outside-damage-button')?.focus({preventScroll:true});
 }
 function performSpellOutsideDamage(row){

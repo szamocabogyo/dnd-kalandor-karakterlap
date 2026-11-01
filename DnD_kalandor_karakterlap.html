@@ -1817,6 +1817,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-catalog-option{padding:10px 12px;min-height:44px;box-sizing:border-box;border-bottom:1px solid var(--border,#665332);cursor:pointer;scroll-margin-block-start:40px}
 .spell-catalog-option:last-child{border-bottom:0}
 .spell-catalog-option:hover,.spell-catalog-option[aria-selected=true]{background:color-mix(in srgb,var(--accent,#cfad60) 18%,var(--card,#211c17))}
+.spell-catalog-option[aria-disabled=true]{opacity:.52;cursor:not-allowed;background:color-mix(in srgb,var(--bg,#17130f) 78%,transparent)}
+.spell-catalog-option[aria-disabled=true]:hover,.spell-catalog-option[aria-disabled=true][aria-selected=true]{background:color-mix(in srgb,var(--bg,#17130f) 78%,transparent)}
 .spell-catalog-option strong{display:block;font-size:.95rem;line-height:1.4;color:var(--accent,#cfad60)}
 .spell-catalog-option small{display:block;font-size:.76rem;line-height:1.4;margin-top:2px}
 .spell-catalog-requirement{opacity:.75}
@@ -4292,8 +4294,25 @@ function spellCatalogWriteChoice(row,choice,mode='manual'){
     if(mode!=='update'&&mode!=='adopt'&&!unchanged&&!choice.resource)field('remaining').value='';
     return changed;
 }
+function spellCatalogDuplicateRow(choice,currentRow){
+    const spell=spellCatalogDataFor(choice);if(!spell)return null;
+    return [...document.querySelectorAll('#spellEntries .spell-entry-row')].find(row=>{
+        if(row===currentRow||row.hidden)return false;
+        const meta=spellCatalogMetadata(row);
+        return meta?.spellId===choice.spellId&&spellCatalogNameMatches(row,spell);
+    })||null;
+}
+function spellCatalogDuplicateMessage(choice,currentRow){
+    const duplicate=spellCatalogDuplicateRow(choice,currentRow);if(!duplicate)return '';
+    const name=duplicate.querySelector('input[id$="_name"]')?.value.trim()||spellCatalogDataFor(choice)?.name||'';
+    return document.documentElement.lang==='en'
+        ?`Already added: ${name}. Remove the existing entry before adding it again.`
+        :`Már felvéve: ${name}. Újabb példány előtt töröld a meglévő bejegyzést.`;
+}
 function spellCatalogSelect(row,choice){
     if(!spellCatalogDataFor(choice))return;
+    const duplicate=spellCatalogDuplicateMessage(choice,row);
+    if(duplicate){const status=row.querySelector('.spell-catalog-source');status.hidden=false;status.textContent=duplicate;status.classList.add('spell-catalog-warning');return;}
     const capacity=spellCatalogCapacityWarning(choice,row);
     if(capacity){const status=row.querySelector('.spell-catalog-source');status.hidden=false;status.textContent=capacity;status.classList.add('spell-catalog-warning');return;}
     spellCatalogWriteChoice(row,choice);
@@ -4420,11 +4439,12 @@ function spellCatalogRender(filter){
         const name=document.createElement('strong');name.textContent=spell.name;
         const damage=spellCatalogScaledDamage(spell,choice.castLevel);
         const detail=document.createElement('small');detail.textContent=(choice.castLevel===0?'Trükk':choice.castLevel+'. szint')+' · '+choice.sourceLabel+' · '+choice.ability+(damage?' · Sebzés: '+damage:'')+(choice.schoolException?' · iskolakivétel':'')+(choice.ritualOnly?' · rituálé':'');
-        const requirement=spellCatalogCapacityWarning(choice,state.active.row)||choice.requirementText;
+        const duplicate=spellCatalogDuplicateMessage(choice,state.active.row),requirement=duplicate||spellCatalogCapacityWarning(choice,state.active.row)||choice.requirementText;
+        if(duplicate){item.setAttribute('aria-disabled','true');item.classList.add('spell-catalog-duplicate');}
         item.append(name,detail);
         if(requirement){const note=document.createElement('small');note.textContent=requirement;note.className='spell-catalog-requirement';item.appendChild(note);}
         item.addEventListener('pointerdown',event=>event.preventDefault());
-        item.addEventListener('click',()=>spellCatalogSelect(state.active.row,choice));
+        item.addEventListener('click',()=>{if(!duplicate)spellCatalogSelect(state.active.row,choice);});
         sourceGroup.appendChild(item);
     });
     spellCatalogPosition();

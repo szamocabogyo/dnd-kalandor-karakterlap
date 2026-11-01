@@ -7480,7 +7480,7 @@ function spellOutsideRollValues(row){
 }
 function refreshSpellOutsideRoll(row){
     const panel=row?.querySelector('.spell-outside-roll');if(!panel)return;
-    const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc');
+    const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
     const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim();
     if(!type.dataset.userSelected||type.dataset.inferred!==values.inferred){type.value=['attack','save'].includes(values.inferred)?values.inferred:'utility';type.dataset.inferred=values.inferred;}
     const utility=type.value==='utility',save=type.value==='save';
@@ -7488,6 +7488,7 @@ function refreshSpellOutsideRoll(row){
     manual.disabled=utility||save;extra.disabled=utility||save;
     if(button){button.hidden=utility||save;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
     if(saveDc){saveDc.hidden=!save;saveDc.textContent=save?`Sikeres mentődobáshoz szükséges érték: DC ${values.dc}`:'';}
+    if(rollOptions){rollOptions.hidden=utility||save;if(rollOptions.hidden)rollOptions.open=false;}
     note.textContent=utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save?'A célpont saját mentődobását a fenti DC ellen végzi el. A karakterlap nem dob helyette.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
 }
 function performSpellOutsideRoll(row,resultOverride=null,usageText=''){

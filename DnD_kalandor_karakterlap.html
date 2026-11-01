@@ -7488,9 +7488,11 @@ function recordSpellUseOutsideCombat(row,select,result){
 function useSpellOutsideCombat(row){
     const select=row?.querySelector('.spell-outside-use-mode'),result=row?.querySelector('.spell-outside-use-result'),panel=row?.querySelector('.spell-outside-roll');
     if(!row||!select||!result||!panel)return;
+    const chosenMode=parseSpellUseMode(select.value);
     if(!recordSpellUseOutsideCombat(row,select,result))return;
     const manualRoll=panel.querySelector('.spell-outside-roll-manual');if(manualRoll)manualRoll.value='';
     panel.querySelectorAll('[data-spell-damage-die]').forEach(input=>{input.value='';});
+    panel.dataset.castLevel=chosenMode.kind==='slot'?String(chosenMode.level):'';
     panel.hidden=false;panel.dataset.usageText=result.textContent;delete panel.dataset.attackResult;delete panel.dataset.lastNatural;delete panel.dataset.attackResolved;delete panel.dataset.saveOutcome;delete panel.dataset.damageReady;
     refreshSpellOutsideRoll(row);
     panel.querySelector('.spell-outside-roll-button:not([hidden]),.spell-roll-options summary')?.focus({preventScroll:true});
@@ -7527,8 +7529,10 @@ function spellOutsideRollValues(row){
     return {attack,dc,inferred,spell:catalogSpell,catalogResolution:catalogSpell?.resolution||''};
 }
 function spellOutsideDamageExpression(row){
-    const selection=spellCatalogSelection(row),ability=selection?.ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(ability)?.value)||10,modifier=Math.floor((score-10)/2);
-    return String(row?.querySelector('input[id$="_damage"]')?.value||'').replace(/\bMOD\b/gi,String(modifier));
+    const selection=spellCatalogSelection(row),meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId),ability=selection?.ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(ability)?.value)||10,modifier=Math.floor((score-10)/2);
+    const panel=row?.querySelector('.spell-outside-roll'),recordedLevel=Number(panel?.dataset.castLevel)||0,currentMode=parseSpellUseMode(row?.querySelector('.spell-outside-use-mode')?.value),castLevel=recordedLevel||(currentMode.kind==='slot'?currentMode.level:selection?.castLevel??spell?.level??0);
+    const catalogDamage=spell&&spellCatalogNameMatches(row,spell)?spellCatalogResolvedDamage(spell,castLevel,ability):'';
+    return String(catalogDamage||row?.querySelector('input[id$="_damage"]')?.value||'').replace(/\bMOD\b/gi,String(modifier));
 }
 function refreshSpellOutsideRoll(row){
     const panel=row?.querySelector('.spell-outside-roll');if(!panel)return;

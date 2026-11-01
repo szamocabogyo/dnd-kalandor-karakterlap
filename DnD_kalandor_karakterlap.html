@@ -7512,10 +7512,10 @@ function refreshSpellOutsideRoll(row){
     manual.disabled=utility||save;extra.disabled=utility||save;
     if(progress){progress.hidden=utility||save;const steps=progress.querySelectorAll('span');steps[0]?.classList.toggle('active',!damagePhase);steps[0]?.classList.toggle('done',Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);}
     if(button){button.hidden=utility||save||damagePhase;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
-    const damageSpec=!utility&&!save?parseDamageExpression(spellOutsideDamageExpression(row)):null;
+    const damageSpec=!utility?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=save||damagePhase;
     if(damageFields){
         const damageSignature=damageSpec?`${damageSpec.expression}|${damageSpec.dice.map(die=>`${die.sign}:${die.sides}`).join(',')}|${damageSpec.modifier}`:'';
-        damageFields.hidden=!damageSpec||panel.dataset.damageReady!=='true';
+        damageFields.hidden=!damageSpec||!damageReady;
         if(damageFields.dataset.damageSignature!==damageSignature){
             damageFields.replaceChildren();damageFields.dataset.damageSignature=damageSignature;
             if(damageSpec){
@@ -7525,7 +7525,7 @@ function refreshSpellOutsideRoll(row){
         }
     }
     if(outcome)outcome.hidden=!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);
-    if(damageButton){damageButton.hidden=!damageSpec||panel.dataset.damageReady!=='true';damageButton.disabled=!name;}
+    if(damageButton){damageButton.hidden=!damageSpec||!damageReady;damageButton.disabled=!name;}
     if(saveDc){saveDc.hidden=!save;saveDc.textContent=save?`Sikeres mentődobáshoz szükséges érték: DC ${values.dc}`:'';}
     if(rollOptions){rollOptions.hidden=utility||save||damagePhase;if(rollOptions.hidden)rollOptions.open=false;}
     note.textContent=utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save?'A célpont saját mentődobását a fenti DC ellen végzi el. A karakterlap nem dob helyette.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;

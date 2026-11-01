@@ -6901,7 +6901,7 @@ function renderCombatGuideLog(container,log){
     if(!container)return;
     container.replaceChildren();
     const names={initiative:'Kezdeményezés',attack:'Támadás',damage:'Sebzés',spell:'Varázslás',incoming:'Elszenvedett sebzés',event:'Esemény'};
-    const outcomeNames={pending:'Találat még nincs megerősítve',unconfirmed:'Találat nincs megerősítve',interrupted:'Félbehagyott támadás',hit:'Talált',miss:'Nem talált','critical-failure':'KRITIKUS HIBA!','damage-cancelled':'Sebzés megszakítva'};
+    const outcomeNames={pending:'Eredmény még nincs megerősítve',unconfirmed:'Eredmény nincs megerősítve',interrupted:'Félbehagyott támadás',hit:'Talált',miss:'Nem talált',saved:'Sikeres mentődobás','critical-failure':'KRITIKUS HIBA!','damage-cancelled':'Sebzés megszakítva'};
     log.forEach(entry=>{
         const item=document.createElement('li');item.className='combat-guide-log-item';item.dataset.kind=entry.kind;
         const content=document.createElement('div');content.className='combat-guide-log-content';
@@ -7070,7 +7070,7 @@ function setupCombatGuide(){
     document.getElementById('combatTurnConfirmCancel').addEventListener('click',closeCombatRoundConfirmation);
     document.getElementById('combatTurnConfirmAccept').addEventListener('click',()=>{closeCombatRoundConfirmation(false);advanceCombatRound();});
     document.getElementById('combatTurnConfirmOverlay').addEventListener('keydown',event=>{if(event.key==='Escape')closeCombatRoundConfirmation();});
-    document.getElementById('combatAttackMissButton').addEventListener('click',finishCombatGuideMiss);
+    document.getElementById('combatAttackMissButton').addEventListener('click',()=>combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='save'?resolveCombatSpellSave(false):finishCombatGuideMiss());
     document.getElementById('combatGuideBackButton').addEventListener('click',()=>{
         const reaction=combatGuideState.panel==='reaction'||combatGuideState.panel==='damage'&&combatActiveFlowPanel==='reaction';
         returnToCombatGuide(reaction?'reaction':'attack');
@@ -7116,11 +7116,11 @@ function syncCombatAttackFlow(){
     document.getElementById('combatAttackFlowActions').hidden=choosing;
     const outcomeChoice=phase==='rolled'&&((combatAttackFlow.eventType==='attack'&&combatAttackFlow.lastNatural!==1)||combatAttackFlow.eventType==='spell');
     const successButton=document.getElementById('combatAttackSuccessButton');
-    successButton.hidden=!outcomeChoice;successButton.textContent=combatAttackFlow.eventType==='spell'?'Sikeres találat':'Sikeres';
+    successButton.hidden=!outcomeChoice;successButton.textContent=combatAttackFlow.eventType==='spell'?(combatAttackFlow.spellResolution==='save'?'Sikeres mentődobás':'Sikeres találat'):'Sikeres';
     const newAttack=document.getElementById('combatNewAttackButton');
     newAttack.hidden=choosing||outcomeChoice;
     const missButton=document.getElementById('combatAttackMissButton');
-    missButton.hidden=!outcomeChoice;missButton.textContent=combatAttackFlow.eventType==='spell'?'Sikertelen találat':'Nem talált';
+    missButton.hidden=!outcomeChoice;missButton.textContent=combatAttackFlow.eventType==='spell'?(combatAttackFlow.spellResolution==='save'?'Sikertelen mentődobás':'Sikertelen találat'):'Nem talált';
     const animalButton=document.getElementById('combatAnimalTriggeredAttackButton');
     const animalState=combatRulesRead(),animalTrigger=animalState?.flags?.animalTriggeredAttack;
     animalButton.hidden=phase!=='complete'||!animalTrigger;
@@ -7169,6 +7169,21 @@ function beginCombatDamage(){
     scrollCombatGuideToTop();
 }
 
+function combatPotentCantripSaveEligible(spell){
+    const {klass,level,subclass}=classFeatureContext(),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row));
+    return klass==='Wizard'&&level>=6&&subclass.includes('evocation')&&combatRulesSpell(spell?.row)?.level===0&&catalog?.resolution==='save';
+}
+function resolveCombatSpellSave(success){
+    if(combatAttackFlow.phase!=='rolled'||combatAttackFlow.eventType!=='spell'||combatAttackFlow.spellResolution!=='save')return;
+    const spell=readCombatSpell();if(!spell)return;
+    combatAttackFlow.saveOutcome=success?'success':'failure';
+    const rule=spell.saveDamageRule||'none',skipDamage=success&&rule==='none'&&!combatPotentCantripSaveEligible(spell);
+    if(!skipDamage){beginCombatDamage();return;}
+    showCombatResult(`${spell.name}: sikeres mentődobás – nincs sebzés.`,0);
+    updateCombatGuideEvent(combatGuideState.pendingAttackId,{outcome:'saved',total:0,detail:`DC ${spell.dc}; sikeres mentődobás, nincs sebzés.`});
+    combatGuideState.pendingAttackId='';combatAttackFlow.phase='complete';syncCombatAttackFlow();
+}
+
 function showCombatCriticalFailure(name,manual){
     showCombatResult(name+': d20 (1'+(manual?', kézi':'')+') — KRITIKUS HIBA!',1);
     combatRollResult.classList.add('combat-critical-failure');
@@ -7176,9 +7191,10 @@ function showCombatCriticalFailure(name,manual){
 
 function updateCombatManualRollLabel(){
     const damageMode = getCombatRollType() === 'damage';
+    const saveSpell=!damageMode&&getCombatRollType()==='spell'&&readCombatSpell()?.resolution==='save';
     combatManualRollLabel.firstChild.nodeValue = damageMode ? 'Sebzéskockák értékei ' : 'Kézi dobott érték ';
     combatManualRollUnit.textContent = damageMode ? '(egy mező/kocka, üresen automatikus)' : '(d20: 1–20, üresen automatikus)';
-    combatManualRoll.hidden = damageMode;
+    combatManualRollLabel.hidden=saveSpell;combatManualRoll.hidden = damageMode||saveSpell;
     combatDamageDiceInputs.hidden = !damageMode;
     combatManualRoll.min = damageMode ? '0' : '1';
     combatManualRoll.max = damageMode ? '' : '20';
@@ -9110,7 +9126,7 @@ function updateCombatClassOptions(preserveSelection=true){
         if(klass==='Wizard'&&level>=10&&subclass.includes('evocation')&&catalog?.school==='evocation')
             options.push(`<label><input id="combatEmpoweredEvocation" type="checkbox"> Empowered Evocation (${classFeatureContext().intMod>=0?'+':''}${classFeatureContext().intMod} egy sebzésdobáshoz)</label>`);
         if(klass==='Wizard'&&level>=2&&subclass.includes('evocation')&&catalog?.school==='evocation')options.push(`<label><input id="combatSculptSpells" type="checkbox"> Sculpt Spells: legfeljebb ${1+(combatRulesSpell(spell?.row)?.level||0)} védett lény automatikusan ment és 0 sebzést kap</label>`);
-        if(klass==='Wizard'&&level>=6&&subclass.includes('evocation')&&combatRulesSpell(spell?.row)?.level===0&&catalog?.resolution==='save')options.push('<label><input id="combatPotentCantripSaved" type="checkbox"> Potent Cantrip: a célpont sikeresen mentett, ezért fél sebzést kap</label>');
+        if(combatAttackFlow.saveOutcome==='success'&&klass==='Wizard'&&level>=6&&subclass.includes('evocation')&&combatRulesSpell(spell?.row)?.level===0&&catalog?.resolution==='save')options.push('<label><input id="combatPotentCantripSaved" type="checkbox" checked> Potent Cantrip: sikeres mentődobásnál fél sebzés</label>');
         if(klass==='Wizard'&&level>=2&&subclass.includes('necromancy')&&combatRulesSpell(spell?.row)?.level>0&&!combatRulesRead()?.used?.grimHarvest)options.push('<label><input id="combatGrimHarvestKill" type="checkbox"> Grim Harvest: ez a varázslat megölt egy nem élőholt, nem szerkezet célpontot</label>');
         if(klass==='Cleric'&&level>=2&&subclass.includes('tempest')&&combatDestructiveWrathEligible(spell?.damage)&&(Number(document.getElementById('classFeature_channelDivinity')?.value)||0)>0)options.push('<label><input id="combatDestructiveWrath" type="checkbox"> Destructive Wrath: a villám- vagy mennydörgéssebzés kockái maximálisak (1 Channel Divinity)</label>');
         if(klass==='Sorcerer'&&level>=6&&subclass.includes('draconic bloodline')){
@@ -9246,16 +9262,18 @@ function readCombatSpell(){
     if(!name) return null;
     const source=spellCatalogSelection(row);
     const meta=spellCatalogMetadata(row),catalogSpell=spellCatalogData.find(item=>item.id===meta?.spellId);
+    const manualResolution=row.querySelector('input[id$="_outsideResolution"]')?.value||'',rawDamage=row.querySelector('input[id$="_damage"]')?.value.trim()||'';
+    const resolution=catalogSpell?.resolution||manualResolution||(/\b(?:sav(?:e|ing)?|mentő(?:dobás)?|dc)\b/i.test(rawDamage)?'save':rawDamage?'attack':'utility'),saveDamageRule=spellSaveDamageRule(row,catalogSpell);
     const liveMode=combatSpellUseMode(),savedMode=combatAttackFlow.eventType==='spell'&&combatAttackFlow.phase!=='choose'?{kind:combatAttackFlow.castMode||'default',level:combatAttackFlow.castLevel||0}:liveMode;
     const scaledDamage=catalogSpell&&savedMode.kind==='slot'?spellCatalogScaledDamage(catalogSpell,savedMode.level):row.querySelector('input[id$="_damage"]')?.value.trim()||'';
     if(source?.ability){
         const score=Number(document.getElementById(source.ability)?.value)||10,mod=Math.floor((score-10)/2);
         const level=Number(document.getElementById('characterLevel')?.value)||1,prof=2+Math.floor((level-1)/4);
         return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage,bonus:snapshot?.bonus??mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
-            dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level};
+            dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule};
     }
     return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage, bonus:snapshot?.bonus??(Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0),
-        dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level};
+        dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule};
 }
 
 function readCombatDamageSource(){return combatAttackFlow.eventType==='spell'?readCombatSpell():readCombatAttack();}
@@ -9437,14 +9455,15 @@ function performCombatRoll(){
     if(combatGuideState.panel==='reaction'&&combatGuideState.category!=='reaction')return;
     if(!['choose','damage'].includes(combatAttackFlow.phase))return;
     const type=getCombatRollType();
-    const manualText=combatManualRoll.value.trim();
+    const selectedSpellPreview=type==='spell'?readCombatSpell():null,saveSpell=selectedSpellPreview?.resolution==='save';
+    const manualText=saveSpell?'':combatManualRoll.value.trim();
     const manualValue=manualText===''?null:Number(manualText);
     if(manualValue!==null&&(!Number.isInteger(manualValue)||(type==='damage'?manualValue<0:manualValue<1||manualValue>20))){
         combatRollResult.textContent=type==='damage'?'A kézi sebzés nemnegatív egész szám legyen.':'A d20 eredménye 1 és 20 közötti egész szám lehet.';
         return;
     }
     if(type==='spell'){
-        const spell=readCombatSpell();
+        const spell=selectedSpellPreview||readCombatSpell();
         if(!spell){combatRollResult.textContent='Adj meg egy varázslatot a Varázslás panelen, majd válaszd ki.';return;}
         const castMode=combatSpellUseMode();
         if(castMode.kind==='ritual'){combatRollResult.textContent='A rituálé a normál varázslási időn felül 10 percet igényel, ezért Combat módban nem hajtható végre egyetlen körműveletként. Nem fogyaszt varázsrekeszt.';return;}
@@ -9453,6 +9472,19 @@ function performCombatRoll(){
             if(!slot||slot.current<1){refreshCombatSpellCastModes();combatRollResult.textContent=`Nincs elérhető ${castMode.level}. szintű varázsrekesz.`;return;}
         }
         if(!spellRowCanCast(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
+        if(spell.resolution==='save'){
+            const rulesIntent=combatRulesCurrentRoll(),rulesPlan=combatRulesPlan(rulesIntent);
+            if(!rulesPlan.ok){combatRollResult.textContent=rulesPlan.error;return;}
+            if(!spendSpellUse(spell.row,castMode)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
+            if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
+            const wardText=applyArcaneWardFromSpell(spell),ambush=document.getElementById('combatMagicalAmbush')?.checked;
+            const metamagicText=rulesIntent.metamagic?' | '+rulesIntent.metamagic+' ('+sorcererMetamagicCost(rulesIntent.metamagic,combatRulesSpell(spell.row)?.level)+' Varázserő-pont)':'';
+            const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:'';
+            showCombatResult(`${spell.name}: célpont mentődobása DC ${spell.dc}${ambush?' (Magical Ambush: hátránnyal)':''}${castText}${metamagicText}${wardText}. Jelöld, hogy a mentődobás sikeres vagy sikertelen.`,Number(spell.dc)||0);
+            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'save',saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'save',saveDamageRule:spell.saveDamageRule}};
+            const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:spell.name;
+            recordCombatGuideRoll('spell',spellUseLabel);refreshCombatAttackOptions();updateCombatClassOptions(false);updateCombatManualRollLabel();syncCombatAttackFlow();return;
+        }
         const tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked),d20=combatResolveD20(manualValue,tides),die=d20.die;
         let inspiration={used:false,value:0,text:''};
         if(die!==1){try{inspiration=readRollInspiration('combatRollInspiration');}catch(error){combatRollResult.textContent=error.message;return;}}
@@ -9471,7 +9503,7 @@ function performCombatRoll(){
         const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:'';
         showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+castText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
         commitRollInspiration(inspiration);
-        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level}};
+        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',spellResolution:spell.resolution,saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:spell.resolution,saveDamageRule:spell.saveDamageRule}};
         const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='ritual'?`${spell.name} (rituálé)`:spell.name;
         recordCombatGuideRoll('spell',spellUseLabel);
         refreshCombatAttackOptions();
@@ -9572,8 +9604,17 @@ function performCombatRoll(){
     const offhandAdjustment=spellDamage?0:combatRulesDamageModifier();
     const baseDamage=Math.max(0,diceTotal+spec.modifier+offhandAdjustment+rageBonus+featureDamage+inspiration.value);
     const naturalTwenty=combatRulesIsNatural20();
-    const potentCantripSaved=spellDamage&&Boolean(document.getElementById('combatPotentCantripSaved')?.checked);
-    const total=potentCantripSaved?Math.floor(baseDamage/2):naturalTwenty?baseDamage*2:baseDamage;
+    const potentCantripSaved=spellDamage&&Boolean(document.getElementById('combatPotentCantripSaved')?.checked),saveSuccess=spellDamage&&combatAttackFlow.saveOutcome==='success';
+    const saveRule=potentCantripSaved?'half':attack.saveDamageRule||combatAttackFlow.saveDamageRule||'full';
+    let total=naturalTwenty?baseDamage*2:baseDamage;
+    if(saveSuccess){
+        if(saveRule==='half')total=Math.floor(baseDamage/2);
+        else if(saveRule==='none')total=0;
+        else if(saveRule==='split-half'){
+            const splitIndex=Math.floor(rolls.length/2),fixedPart=rolls.slice(0,splitIndex).reduce((sum,roll)=>sum+roll.value*roll.sign,0),halvedPart=baseDamage-fixedPart;
+            total=fixedPart+Math.floor(halvedPart/2);
+        }
+    }
     const diceDetail=rolls.length?rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + '):'fix sebzés';
     const flatModifier=spec.modifier+offhandAdjustment;
     const modifierText=flatModifier?' '+(flatModifier>=0?'+':'−')+' '+Math.abs(flatModifier):'';
@@ -9591,7 +9632,8 @@ function performCombatRoll(){
     if(destructiveWrath)featureNotes.push('Destructive Wrath: maximális villám-/mennydörgéskockák; 1 Channel Divinity elköltve');
     if(aasimarDamage)featureNotes.push('Égi átalakulás +'+aasimarDamage);
     if(document.getElementById('combatSculptSpells')?.checked)featureNotes.push('Sculpt Spells: a kijelölt védett lények automatikusan mentenek és 0 sebzést kapnak');
-    if(potentCantripSaved)featureNotes.push('Potent Cantrip: sikeres mentő, fél sebzés');
+    if(saveSuccess)featureNotes.push(saveRule==='half'?'Sikeres mentődobás: fél sebzés':saveRule==='none'?'Sikeres mentődobás: nincs sebzés':saveRule==='split-half'?'Sikeres mentődobás: a savsebzés felezve':'Sikeres mentődobás: a sebzés nem csökken');
+    else if(spellDamage&&combatAttackFlow.saveOutcome==='failure')featureNotes.push('Sikertelen mentődobás: teljes sebzés');
     if(spellDamage&&document.getElementById('combatGrimHarvestKill')?.checked){const spell=readCombatSpell(),rule=combatRulesSpell(spell?.row),catalog=spellCatalogDataFor(spellCatalogSelection(spell?.row)),heal=(catalog?.school==='necromancy'?3:2)*(rule?.level||0),hp=document.getElementById('currentHp'),max=Number(document.getElementById('maxHp').value)||Infinity;if(heal>0){hp.value=String(Math.min(max,Number(hp.value)+heal));hp.dispatchEvent(new Event('input',{bubbles:true}));const state=combatRulesRead();if(state){state.used.grimHarvest=true;state.revision++;combatRulesWrite(state);}featureNotes.push('Grim Harvest: '+heal+' HP gyógyulás');}}
     if(document.getElementById('combatRangerCompanionForce')?.checked)featureNotes.push('Exceptional Training: az alapcsapás sebzése Force');
     selectedAnimalFeatures.forEach(feature=>featureNotes.push(feature.name+': '+feature.condition));
@@ -9667,7 +9709,7 @@ document.addEventListener('input',event=>{if(!combatModeOverlay.hidden&&event.ta
 document.addEventListener('change',event=>{if(!combatModeOverlay.hidden&&event.target.matches('#classFeatureFields input, #spellEntries input, #spellEntries select'))renderCombatTurnChoices();});
 document.getElementById('combatRollButton')?.addEventListener('click', performCombatRoll);
 document.getElementById('combatAnimalTriggeredAttackButton')?.addEventListener('click',combatAnimalTriggeredAttack);
-document.getElementById('combatAttackSuccessButton')?.addEventListener('click', beginCombatDamage);
+document.getElementById('combatAttackSuccessButton')?.addEventListener('click',()=>combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='save'?resolveCombatSpellSave(true):beginCombatDamage());
 document.getElementById('combatNewAttackButton')?.addEventListener('click', startNewCombatAttack);
 document.getElementById('shortRestButton')?.addEventListener('click', () => restoreSpellResources('short'));
 document.getElementById('longRestButton')?.addEventListener('click', () => restoreSpellResources('long'));

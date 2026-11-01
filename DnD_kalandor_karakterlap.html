@@ -1884,6 +1884,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-outside-outcome button:first-child{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 50%,var(--class-surface,var(--card))),color-mix(in srgb,var(--class-secondary,var(--border)) 28%,var(--bg)))}
 .spell-outside-outcome button:hover,.spell-outside-outcome button:focus-visible{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 42%,var(--card)),var(--bg));box-shadow:0 0 0 1px color-mix(in srgb,var(--class-primary,var(--accent)) 20%,transparent),0 0 14px var(--class-glow,rgba(214,181,111,.2));outline:none}
 .spell-outside-outcome button:active{transform:translateY(1px);box-shadow:inset 0 2px 5px rgba(0,0,0,.34)}
+.spell-outside-outcome button.selected{border-color:var(--class-symbol,var(--accent2));box-shadow:0 0 0 2px color-mix(in srgb,var(--class-primary,var(--accent)) 36%,transparent),0 0 16px var(--class-glow,rgba(214,181,111,.25))}
+.spell-outside-save-rule{grid-column:1/-1;padding:8px 10px;border-left:3px solid var(--class-primary,var(--accent));background:color-mix(in srgb,var(--class-surface,var(--card)) 74%,transparent);font-weight:700}
 .spell-outside-roll>.spell-outside-roll-button:not(.spell-outside-damage-button),.spell-outside-damage-button{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .spell-outside-use-result:not(:empty){margin:10px 0 0;padding:10px 11px;border-left:2px solid var(--accent);border-radius:0 6px 6px 0;background:var(--bg);color:var(--text);font-size:.82rem;line-height:1.45}
 .spell-outside-damage-breakdown{font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
@@ -7487,11 +7489,30 @@ function useSpellOutsideCombat(row){
     const select=row?.querySelector('.spell-outside-use-mode'),result=row?.querySelector('.spell-outside-use-result'),panel=row?.querySelector('.spell-outside-roll');
     if(!row||!select||!result||!panel)return;
     if(!recordSpellUseOutsideCombat(row,select,result))return;
-    panel.hidden=false;panel.dataset.usageText=result.textContent;delete panel.dataset.attackResult;delete panel.dataset.lastNatural;delete panel.dataset.attackResolved;delete panel.dataset.damageReady;
+    panel.hidden=false;panel.dataset.usageText=result.textContent;delete panel.dataset.attackResult;delete panel.dataset.lastNatural;delete panel.dataset.attackResolved;delete panel.dataset.saveOutcome;delete panel.dataset.damageReady;
     refreshSpellOutsideRoll(row);
     panel.querySelector('.spell-outside-roll-button:not([hidden]),.spell-roll-options summary')?.focus({preventScroll:true});
 }
 
+const spellSaveDamageRules={
+    'acid-splash':'none','poison-spray':'none','sacred-flame':'none','vicious-mockery':'none',
+    'arms-of-hadar':'half','burning-hands':'half','dissonant-whispers':'half','ensnaring-strike':'none','hail-of-thorns':'half','hellish-rebuke':'half','thunderwave':'half',
+    'cordon-of-arrows':'none','heat-metal':'full','moonbeam':'half','shatter':'half',
+    'conjure-barrage':'half','fireball':'half','hunger-of-hadar':'split-half','lightning-arrow':'half','lightning-bolt':'half','wind-wall':'half',
+    'blight':'half','control-water':'half','black-tentacles':'none','guardian-of-faith':'half','ice-storm':'half','phantasmal-killer':'none','wall-of-fire':'half',
+    'cloudkill':'half','cone-of-cold':'half','conjure-volley':'half','destructive-wave':'half','dream':'none','flame-strike':'half','insect-plague':'half',
+    'blade-barrier':'half','chain-lightning':'half','circle-of-death':'half','disintegrate':'none','harm':'half','freezing-sphere':'half','sunbeam':'half','wall-of-ice':'half','wall-of-thorns':'half',
+    'delayed-blast-fireball':'half','finger-of-death':'half','fire-storm':'half','prismatic-spray':'half','feeblemind':'full','incendiary-cloud':'half','sunburst':'half','tsunami':'half',
+    'meteor-swarm':'half','storm-of-vengeance':'none'
+};
+function spellSaveDamageRule(row,spell=null){
+    const catalogSpell=spell||spellOutsideRollValues(row).spell;
+    if(catalogSpell)return spellSaveDamageRules[catalogSpell.id]||'none';
+    return row?.querySelector('select[id$="_outsideSaveDamageRule"]')?.value||'half';
+}
+function spellSaveDamageRuleText(rule){
+    return rule==='half'?'Sikeres mentődobás: fél sebzés (lefelé kerekítve).':rule==='none'?'Sikeres mentődobás: nincs sebzés.':rule==='full'?'Sikeres mentődobás: a sebzés nem csökken.':'Sikeres mentődobás: a savsebzés feleződik, a hidegsebzés változatlan.';
+}
 function spellOutsideRollValues(row){
     const selection=spellCatalogSelection(row),meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId);
     let ability=selection?.ability||document.getElementById('spellcastingAbility')?.value||'';
@@ -7509,15 +7530,15 @@ function spellOutsideDamageExpression(row){
 }
 function refreshSpellOutsideRoll(row){
     const panel=row?.querySelector('.spell-outside-roll');if(!panel)return;
-    const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button:not(.spell-outside-damage-button)'),progress=panel.querySelector('.spell-outside-progress'),outcome=panel.querySelector('.spell-outside-outcome'),damageButton=panel.querySelector('.spell-outside-damage-button'),damageFields=panel.querySelector('.spell-outside-damage'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
+    const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button:not(.spell-outside-damage-button)'),progress=panel.querySelector('.spell-outside-progress'),outcome=panel.querySelector('.spell-outside-attack-outcome'),saveOutcome=panel.querySelector('.spell-outside-save-outcome'),saveRuleInfo=panel.querySelector('.spell-outside-save-rule'),saveRuleSetting=panel.querySelector('.spell-outside-save-rule-setting'),damageButton=panel.querySelector('.spell-outside-damage-button'),damageFields=panel.querySelector('.spell-outside-damage'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
     const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim();
     type.value=['attack','save'].includes(values.inferred)?values.inferred:'utility';type.disabled=Boolean(values.catalogResolution);type.dataset.inferred=values.inferred;
     const utility=type.value==='utility',save=type.value==='save',damagePhase=panel.dataset.damageReady==='true';
     if(manualLabel)manualLabel.hidden=utility||save||damagePhase;if(extraLabel)extraLabel.hidden=utility||save||damagePhase;
     manual.disabled=utility||save;extra.disabled=utility||save;
-    if(progress){progress.hidden=utility||save;const steps=progress.querySelectorAll('span');steps[0]?.classList.toggle('active',!damagePhase);steps[0]?.classList.toggle('done',Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);}
+    if(progress){progress.hidden=utility;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);}
     if(button){button.hidden=utility||save||damagePhase;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
-    const damageSpec=!utility?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=save||damagePhase;
+    const damageSpec=!utility?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=damagePhase;
     if(damageFields){
         const damageSignature=damageSpec?`${damageSpec.expression}|${damageSpec.dice.map(die=>`${die.sign}:${die.sides}`).join(',')}|${damageSpec.modifier}`:'';
         damageFields.hidden=!damageSpec||!damageReady;
@@ -7529,11 +7550,14 @@ function refreshSpellOutsideRoll(row){
             }
         }
     }
-    if(outcome)outcome.hidden=!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);
+    if(outcome)outcome.hidden=save||!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);
+    if(saveOutcome){saveOutcome.hidden=!save||!damageSpec;saveOutcome.querySelectorAll('button').forEach(button=>{const selected=button.dataset.saveOutcome===panel.dataset.saveOutcome;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});}
+    if(saveRuleInfo){saveRuleInfo.hidden=!save||!damageSpec;saveRuleInfo.textContent=spellSaveDamageRuleText(spellSaveDamageRule(row,values.spell));}
     if(damageButton){damageButton.hidden=!damageSpec||!damageReady;damageButton.disabled=!name;}
     if(saveDc){saveDc.hidden=!save;saveDc.textContent=save?`Sikeres mentődobáshoz szükséges érték: DC ${values.dc}`:'';}
-    if(rollOptions){rollOptions.hidden=utility||save||damagePhase;if(rollOptions.hidden)rollOptions.open=false;}
-    note.textContent=utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save?'A célpont saját mentődobását a fenti DC ellen végzi el. A karakterlap nem dob helyette.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
+    if(saveRuleSetting)saveRuleSetting.hidden=!save||Boolean(values.catalogResolution);
+    if(rollOptions){rollOptions.hidden=utility||damagePhase||(save&&Boolean(values.catalogResolution));if(rollOptions.hidden)rollOptions.open=false;}
+    note.textContent=utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save&&!damagePhase?'A célpont saját mentődobását a fenti DC ellen végzi el. Csak jelöld, hogy sikerült-e; dobott értéket nem kell megadni.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
 }
 function resolveSpellOutsideAttack(row,hit){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
@@ -7541,6 +7565,13 @@ function resolveSpellOutsideAttack(row,hit){
     if(!hit)result.textContent=`${panel.dataset.attackResult||panel.dataset.usageText||''} A támadás nem talált, ezért nincs sebzésdobás.`;
     refreshSpellOutsideRoll(row);
     if(hit)panel.querySelector('[data-spell-damage-die],.spell-outside-damage-button')?.focus({preventScroll:true});
+}
+function resolveSpellOutsideSave(row,success){
+    const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
+    panel.dataset.saveOutcome=success?'success':'failure';panel.dataset.damageReady='true';
+    const rule=spellSaveDamageRule(row),effect=success?spellSaveDamageRuleText(rule):'Sikertelen mentődobás: teljes sebzés.';
+    result.textContent=`${panel.dataset.usageText||''} ${success?'Sikeres':'Sikertelen'} mentődobás. ${effect}`.trim();
+    refreshSpellOutsideRoll(row);panel.querySelector('[data-spell-damage-die],.spell-outside-damage-button')?.focus({preventScroll:true});
 }
 function performSpellOutsideDamage(row){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
@@ -7551,10 +7582,20 @@ function performSpellOutsideDamage(row){
         if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>die.sides)){result.textContent=`A d${die.sides} kézi értéke 1 és ${die.sides} közötti egész szám lehet.`;return;}
         rolls.push(manual??rollDie(die.sides));
     }
-    const diceTotal=rolls.reduce((sum,value,index)=>sum+value*spec.dice[index].sign,0),baseTotal=diceTotal+spec.modifier,critical=panel.dataset.lastNatural==='20',total=critical?baseTotal*2:baseTotal;
+    const diceTotal=rolls.reduce((sum,value,index)=>sum+value*spec.dice[index].sign,0),baseTotal=diceTotal+spec.modifier,critical=panel.dataset.lastNatural==='20';
+    const saveSuccess=panel.dataset.saveOutcome==='success',saveRule=spellSaveDamageRule(row),splitIndex=Math.floor(rolls.length/2);
+    let total=critical?baseTotal*2:baseTotal,saveAdjustment='';
+    if(saveSuccess){
+        if(saveRule==='half'){total=Math.floor(baseTotal/2);saveAdjustment='; sikeres mentődobás, fél sebzés';}
+        else if(saveRule==='none'){total=0;saveAdjustment='; sikeres mentődobás, nincs sebzés';}
+        else if(saveRule==='split-half'){
+            const fixedPart=rolls.slice(0,splitIndex).reduce((sum,value,index)=>sum+value*spec.dice[index].sign,0),halvedPart=rolls.slice(splitIndex).reduce((sum,value,index)=>sum+value*spec.dice[index+splitIndex].sign,0);
+            total=fixedPart+Math.floor((halvedPart+spec.modifier)/2);saveAdjustment='; sikeres mentődobás, a savsebzés felezve';
+        }else saveAdjustment='; sikeres mentődobás, a sebzés nem csökken';
+    }else if(panel.dataset.saveOutcome==='failure')saveAdjustment='; sikertelen mentődobás, teljes sebzés';
     const diceText=rolls.map((value,index)=>`${spec.dice[index].sign<0?'−':index?'+ ':''}${value}`).join(' '),modifierText=spec.modifier?` ${spec.modifier>=0?'+':'−'} ${Math.abs(spec.modifier)}`:'';
     const attackText=panel.dataset.attackResult||panel.dataset.usageText||'';
-    const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?' × 2 (kritikus találat)':''}.`;
+    const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?' × 2 (kritikus találat)':''}${saveAdjustment}.`;
     const totalDisplay=document.createElement('div');totalDisplay.className='combat-roll-total';totalDisplay.textContent=String(total);totalDisplay.setAttribute('aria-label',`Összes sebzés: ${total}`);
     result.replaceChildren(breakdown,totalDisplay);
 }
@@ -10857,21 +10898,30 @@ function createSpellRow(key, extra = false){
     const rollNote=document.createElement('small');rollNote.className='spell-outside-roll-note';
     const saveDc=document.createElement('div');saveDc.className='spell-outside-save-dc';saveDc.hidden=true;
     const rollButton=document.createElement('button');rollButton.type='button';rollButton.className='spell-outside-roll-button';rollButton.textContent='🎲 Varázstámadás dobása';
-    const outcome=document.createElement('div');outcome.className='spell-outside-outcome';outcome.hidden=true;
+    const outcome=document.createElement('div');outcome.className='spell-outside-outcome spell-outside-attack-outcome';outcome.hidden=true;
     const hitButton=document.createElement('button');hitButton.type='button';hitButton.textContent='✓ Talált – sebzésdobás';
     const missButton=document.createElement('button');missButton.type='button';missButton.textContent='× Nem talált';outcome.append(hitButton,missButton);
+    const saveOutcome=document.createElement('div');saveOutcome.className='spell-outside-outcome spell-outside-save-outcome';saveOutcome.hidden=true;
+    const saveSuccessButton=document.createElement('button');saveSuccessButton.type='button';saveSuccessButton.dataset.saveOutcome='success';saveSuccessButton.textContent='✓ Sikeres mentődobás';
+    const saveFailureButton=document.createElement('button');saveFailureButton.type='button';saveFailureButton.dataset.saveOutcome='failure';saveFailureButton.textContent='× Sikertelen mentődobás';saveOutcome.append(saveSuccessButton,saveFailureButton);
+    const saveRuleInfo=document.createElement('div');saveRuleInfo.className='spell-outside-save-rule';saveRuleInfo.hidden=true;
     const damageFields=document.createElement('div');damageFields.className='spell-outside-damage';damageFields.hidden=true;
     const damageButton=document.createElement('button');damageButton.type='button';damageButton.className='spell-outside-roll-button spell-outside-damage-button';damageButton.textContent='🎲 Sebzés kiszámítása';damageButton.hidden=true;
-    rollType.addEventListener('change',()=>{if(!spellOutsideRollValues(row).catalogResolution)outsideResolution.value=rollType.value;delete outsideRoll.dataset.attackResult;delete outsideRoll.dataset.lastNatural;delete outsideRoll.dataset.attackResolved;delete outsideRoll.dataset.damageReady;refreshSpellOutsideRoll(row);outsideResult.textContent='';saveCharacter();});
-    [manual,rollExtra].forEach(input=>input.addEventListener('input',()=>{outsideResult.textContent='';delete outsideRoll.dataset.attackResult;delete outsideRoll.dataset.lastNatural;delete outsideRoll.dataset.attackResolved;delete outsideRoll.dataset.damageReady;refreshSpellOutsideRoll(row);}));
+    rollType.addEventListener('change',()=>{if(!spellOutsideRollValues(row).catalogResolution)outsideResolution.value=rollType.value;delete outsideRoll.dataset.attackResult;delete outsideRoll.dataset.lastNatural;delete outsideRoll.dataset.attackResolved;delete outsideRoll.dataset.saveOutcome;delete outsideRoll.dataset.damageReady;refreshSpellOutsideRoll(row);outsideResult.textContent='';saveCharacter();});
+    [manual,rollExtra].forEach(input=>input.addEventListener('input',()=>{outsideResult.textContent='';delete outsideRoll.dataset.attackResult;delete outsideRoll.dataset.lastNatural;delete outsideRoll.dataset.attackResolved;delete outsideRoll.dataset.saveOutcome;delete outsideRoll.dataset.damageReady;refreshSpellOutsideRoll(row);}));
     rollButton.addEventListener('click',()=>performSpellOutsideRoll(row,outsideResult,outsideRoll.dataset.usageText||''));
     hitButton.addEventListener('click',()=>resolveSpellOutsideAttack(row,true));
     missButton.addEventListener('click',()=>resolveSpellOutsideAttack(row,false));
+    saveSuccessButton.addEventListener('click',()=>resolveSpellOutsideSave(row,true));
+    saveFailureButton.addEventListener('click',()=>resolveSpellOutsideSave(row,false));
     damageButton.addEventListener('click',()=>performSpellOutsideDamage(row));
     const rollOptions=document.createElement('details');rollOptions.className='spell-roll-options';
     const rollOptionsSummary=document.createElement('summary');rollOptionsSummary.textContent='További dobási beállítások';
-    const rollOptionsFields=document.createElement('div');rollOptionsFields.className='spell-roll-options-fields';rollOptionsFields.append(rollTypeLabel,extraLabel);rollOptions.append(rollOptionsSummary,rollOptionsFields,rollNote);
-    outsideRoll.append(rollTitle,rollProgress,saveDc,manualLabel,rollButton,outcome,damageFields,damageButton,rollOptions,outsideResolution);
+    const saveRuleLabel=document.createElement('label');saveRuleLabel.className='spell-outside-save-rule-setting';saveRuleLabel.append(document.createTextNode('Sikeres mentődobás hatása '));
+    const saveRuleSelect=document.createElement('select');saveRuleSelect.id=`${prefix}_outsideSaveDamageRule`;[['half','Fél sebzés'],['none','Nincs sebzés'],['full','Teljes sebzés']].forEach(([value,text])=>saveRuleSelect.add(new Option(text,value)));saveRuleLabel.appendChild(saveRuleSelect);
+    saveRuleSelect.addEventListener('change',()=>{delete outsideRoll.dataset.saveOutcome;delete outsideRoll.dataset.damageReady;outsideResult.textContent='';refreshSpellOutsideRoll(row);saveCharacter();});
+    const rollOptionsFields=document.createElement('div');rollOptionsFields.className='spell-roll-options-fields';rollOptionsFields.append(rollTypeLabel,extraLabel,saveRuleLabel);rollOptions.append(rollOptionsSummary,rollOptionsFields,rollNote);
+    outsideRoll.append(rollTitle,rollProgress,saveDc,saveRuleInfo,manualLabel,rollButton,outcome,saveOutcome,damageFields,damageButton,rollOptions,outsideResolution);
     quickActions.append(outsideUse,outsideRoll);row.insertBefore(quickActions,detailDisclosure);
     const remove = document.createElement('button');
     remove.type = 'button';

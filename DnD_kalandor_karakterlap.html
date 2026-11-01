@@ -7493,10 +7493,14 @@ function refreshSpellOutsideRoll(row){
     if(button){button.hidden=utility||save;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
     const damageSpec=!utility&&!save?parseDamageExpression(row.querySelector('input[id$="_damage"]')?.value||''):null;
     if(damageFields){
-        damageFields.replaceChildren();damageFields.hidden=!damageSpec;
-        if(damageSpec){
-            const title=document.createElement('div');title.className='spell-outside-damage-title';title.textContent=`Sebzéskockák értékei (${damageSpec.expression}; üresen automatikus)`;damageFields.appendChild(title);
-            damageSpec.dice.forEach((die,index)=>{const label=document.createElement('label');label.textContent=`d${die.sides} #${index+1}`;const input=document.createElement('input');input.type='number';input.inputMode='numeric';input.min='1';input.max=String(die.sides);input.step='1';input.dataset.spellDamageDie=String(index);label.appendChild(input);damageFields.appendChild(label);});
+        const damageSignature=damageSpec?`${damageSpec.expression}|${damageSpec.dice.map(die=>`${die.sign}:${die.sides}`).join(',')}|${damageSpec.modifier}`:'';
+        damageFields.hidden=!damageSpec;
+        if(damageFields.dataset.damageSignature!==damageSignature){
+            damageFields.replaceChildren();damageFields.dataset.damageSignature=damageSignature;
+            if(damageSpec){
+                const title=document.createElement('div');title.className='spell-outside-damage-title';title.textContent=`Sebzéskockák értékei (${damageSpec.expression}; üresen automatikus)`;damageFields.appendChild(title);
+                damageSpec.dice.forEach((die,index)=>{const label=document.createElement('label');label.textContent=`d${die.sides} #${index+1}`;const input=document.createElement('input');input.type='number';input.inputMode='numeric';input.min='1';input.max=String(die.sides);input.step='1';input.dataset.spellDamageDie=String(index);label.appendChild(input);damageFields.appendChild(label);});
+            }
         }
     }
     if(damageButton){damageButton.hidden=!damageSpec;damageButton.disabled=!name;}

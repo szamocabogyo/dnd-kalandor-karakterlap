@@ -10793,8 +10793,8 @@ function createSpellRow(key, extra = false){
     rollButton.addEventListener('click',()=>performSpellOutsideRoll(row,outsideResult,outsideRoll.dataset.usageText||''));
     const rollOptions=document.createElement('details');rollOptions.className='spell-roll-options';
     const rollOptionsSummary=document.createElement('summary');rollOptionsSummary.textContent='További dobási beállítások';
-    const rollOptionsFields=document.createElement('div');rollOptionsFields.className='spell-roll-options-fields';rollOptionsFields.append(rollTypeLabel,manualLabel,extraLabel);rollOptions.append(rollOptionsSummary,rollOptionsFields,rollNote);
-    outsideRoll.append(rollTitle,saveDc,rollButton,rollOptions);
+    const rollOptionsFields=document.createElement('div');rollOptionsFields.className='spell-roll-options-fields';rollOptionsFields.append(rollTypeLabel,extraLabel);rollOptions.append(rollOptionsSummary,rollOptionsFields,rollNote);
+    outsideRoll.append(rollTitle,saveDc,manualLabel,rollButton,rollOptions);
     quickActions.append(outsideUse,outsideRoll);row.insertBefore(quickActions,detailDisclosure);
     const remove = document.createElement('button');
     remove.type = 'button';

@@ -1842,6 +1842,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-entry-description{grid-column:1/-1}
 .spell-entry-description textarea{width:100%;min-height:96px;box-sizing:border-box;resize:vertical;padding:9px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);font:inherit;font-weight:400;line-height:1.45;overflow-wrap:anywhere}
 .spell-quick-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);background:color-mix(in srgb,var(--accent) 7%,var(--card))}
+.spell-quick-actions[hidden]{display:none}
 .spell-quick-title{grid-column:1/-1;margin:0;padding:9px 10px;border-bottom:1px solid var(--border);color:var(--accent);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
 .spell-quick-description{grid-column:1/-1;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent)}
 .spell-quick-description>summary{padding:10px;cursor:pointer;color:var(--accent);font-size:.8rem;font-weight:700}
@@ -4108,11 +4109,13 @@ function spellRowInactiveReason(row){
 }
 function updateSpellRowAvailability(row){
     const reason=spellRowInactiveReason(row),inactive=Boolean(reason),badge=row.querySelector('.spell-entry-availability'),detail=row.querySelector('.spell-inactive-reason');
+    const hasSpell=Boolean(row.querySelector('input[id$="_name"]')?.value.trim()),quickActions=row.querySelector('.spell-quick-actions');
+    if(quickActions)quickActions.hidden=!hasSpell;
     row.classList.toggle('spell-entry-inactive',inactive);
     if(badge)badge.hidden=!inactive;
     if(detail){detail.textContent=reason;detail.hidden=!inactive;}
     const toggle=row.querySelector('.spell-entry-toggle');if(toggle)toggle.title=reason;
-    if(row.querySelector('input[id$="_name"]')?.value.trim())row.querySelector('.spell-use-status')?.classList.toggle('spell-use-unavailable',inactive);
+    if(hasSpell)row.querySelector('.spell-use-status')?.classList.toggle('spell-use-unavailable',inactive);
     refreshSpellRowTitle(row);
 }
 function refreshSpellAvailability(){
@@ -10716,7 +10719,7 @@ function createSpellRow(key, extra = false){
     const detailFields=document.createElement('div');detailFields.className='spell-detail-fields';
     while(row.firstChild)detailFields.appendChild(row.firstChild);
     detailDisclosure.append(detailSummary,detailFields);row.appendChild(detailDisclosure);
-    const quickActions=document.createElement('div');quickActions.className='spell-quick-actions';
+    const quickActions=document.createElement('div');quickActions.className='spell-quick-actions';quickActions.hidden=true;
     const quickTitle=document.createElement('h5');quickTitle.className='spell-quick-title';quickTitle.textContent='Gyors használat';quickActions.appendChild(quickTitle);
     const quickDescription=document.createElement('details');quickDescription.className='spell-quick-description';
     const quickDescriptionSummary=document.createElement('summary');quickDescriptionSummary.textContent='Leírás és hatás';

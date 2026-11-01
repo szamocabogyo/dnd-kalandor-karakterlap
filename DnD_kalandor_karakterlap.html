@@ -1883,6 +1883,8 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-outside-outcome button{grid-column:auto}
 .spell-outside-outcome button:first-child,.spell-outside-roll>.spell-outside-roll-button:not(.spell-outside-damage-button),.spell-outside-damage-button{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .spell-outside-use-result:not(:empty){margin:10px 0 0;padding:10px 11px;border-left:2px solid var(--accent);border-radius:0 6px 6px 0;background:var(--bg);color:var(--text);font-size:.82rem;line-height:1.45}
+.spell-outside-damage-breakdown{font-size:.9rem;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+.spell-outside-use-result .combat-roll-total{margin-top:8px;color:var(--accent)}
 .spell-roll-options{grid-column:1/-1;border-top:1px solid var(--border);padding-top:7px}
 .spell-roll-options summary{cursor:pointer;color:var(--accent);font-size:.76rem;font-weight:700}
 .spell-roll-options-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
@@ -7549,7 +7551,9 @@ function performSpellOutsideDamage(row){
     const diceTotal=rolls.reduce((sum,value,index)=>sum+value*spec.dice[index].sign,0),baseTotal=diceTotal+spec.modifier,critical=panel.dataset.lastNatural==='20',total=critical?baseTotal*2:baseTotal;
     const diceText=rolls.map((value,index)=>`${spec.dice[index].sign<0?'−':index?'+ ':''}${value}`).join(' '),modifierText=spec.modifier?` ${spec.modifier>=0?'+':'−'} ${Math.abs(spec.modifier)}`:'';
     const attackText=panel.dataset.attackResult||panel.dataset.usageText||'';
-    result.textContent=`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?` × 2 = ${total} (kritikus találat)`:''}.`;
+    const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?' × 2 (kritikus találat)':''}.`;
+    const totalDisplay=document.createElement('div');totalDisplay.className='combat-roll-total';totalDisplay.textContent=String(total);totalDisplay.setAttribute('aria-label',`Összes sebzés: ${total}`);
+    result.replaceChildren(breakdown,totalDisplay);
 }
 function performSpellOutsideRoll(row,resultOverride=null,usageText=''){
     const panel=row?.querySelector('.spell-outside-roll'),result=resultOverride||row?.querySelector('.spell-outside-use-result')||panel?.querySelector('.spell-outside-roll-result');if(!panel||!result)return;
@@ -10832,7 +10836,7 @@ function createSpellRow(key, extra = false){
     outsideLabel.append(outsideTitle,outsideMode);
     const outsideButton=document.createElement('button');outsideButton.type='button';outsideButton.className='spell-outside-use-button';outsideButton.textContent='3. ✦ Varázslat használata';
     const outsideNote=document.createElement('small');outsideNote.className='spell-outside-use-note';
-    const outsideResult=document.createElement('p');outsideResult.className='spell-outside-use-result';outsideResult.setAttribute('role','status');outsideResult.setAttribute('aria-live','polite');
+    const outsideResult=document.createElement('div');outsideResult.className='spell-outside-use-result';outsideResult.setAttribute('role','status');outsideResult.setAttribute('aria-live','polite');
     outsideMode.addEventListener('change',()=>{populateSpellUseModes(row,outsideMode,outsideNote);outsideResult.textContent='';outsideRoll.hidden=true;});
     outsideButton.addEventListener('click',()=>useSpellOutsideCombat(row));
     outsideUse.append(outsideLabel,outsideButton,outsideNote,outsideResult);

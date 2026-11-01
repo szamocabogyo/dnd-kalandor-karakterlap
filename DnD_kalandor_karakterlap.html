@@ -7489,6 +7489,8 @@ function useSpellOutsideCombat(row){
     const select=row?.querySelector('.spell-outside-use-mode'),result=row?.querySelector('.spell-outside-use-result'),panel=row?.querySelector('.spell-outside-roll');
     if(!row||!select||!result||!panel)return;
     if(!recordSpellUseOutsideCombat(row,select,result))return;
+    const manualRoll=panel.querySelector('.spell-outside-roll-manual');if(manualRoll)manualRoll.value='';
+    panel.querySelectorAll('[data-spell-damage-die]').forEach(input=>{input.value='';});
     panel.hidden=false;panel.dataset.usageText=result.textContent;delete panel.dataset.attackResult;delete panel.dataset.lastNatural;delete panel.dataset.attackResolved;delete panel.dataset.saveOutcome;delete panel.dataset.damageReady;
     refreshSpellOutsideRoll(row);
     panel.querySelector('.spell-outside-roll-button:not([hidden]),.spell-roll-options summary')?.focus({preventScroll:true});

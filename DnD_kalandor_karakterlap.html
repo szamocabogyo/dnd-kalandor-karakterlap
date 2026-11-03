@@ -8386,6 +8386,16 @@ function supplementalSubclassResourceFields(subclass,context){
         'Bladesinging':[[2,'bladesongActive','Bladesong aktív']]
     };
     (activeStates[subclass]||[]).forEach(([minLevel,key,label])=>fields.push({type:'toggle',key:'supplement_'+key,label,minLevel,wide:true,rest:'both'}));
+    const skillChoices={
+        'Peace Domain':[1,'peaceSkill','Implement of Peace – skilljártasság',['Insight','Performance','Persuasion']],
+        'Order Domain':[1,'orderSkill','Voice of Authority – bónusz skilljártasság',['Intimidation','Persuasion']],
+        'Arcane Archer':[3,'arcaneArcherSkill','Arcane Archer Lore – skilljártasság',['Arcana','Nature']],
+        'Cavalier':[3,'cavalierSkill','Bonus Proficiency – skilljártasság',['Animal Handling','History','Insight','Performance','Persuasion']],
+        'Samurai':[3,'samuraiSkill','Bonus Proficiency – skilljártasság',['History','Insight','Performance','Persuasion']],
+        'Fey Wanderer':[3,'feyWandererSkill','Otherworldly Glamour – skilljártasság',['Deception','Performance','Persuasion']]
+    };
+    const skillChoice=skillChoices[subclass];
+    if(skillChoice){const [minLevel,key,label,options]=skillChoice;fields.push({type:'select',key:'supplement_'+key,label,minLevel,options});}
     return fields;
 }
 function supplementalSubclassFields(context){
@@ -8491,8 +8501,8 @@ function renderClassFeatures(){
     fields.dataset.className=context.klass;
     fields.innerHTML=allClassFeatureFields(model,context).map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
-        control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
-        control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();if(control.id==='classFeature_genieKind')refreshSpellCatalog();saveCharacter();});
+        control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(/Expertise|Skill/.test(control.id))updateSkills();saveCharacter();});
+        control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(/Expertise|Skill/.test(control.id))updateSkills();if(control.id==='classFeature_genieKind')refreshSpellCatalog();saveCharacter();});
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
@@ -10317,7 +10327,15 @@ function characterFixedSkillProficiencies(){
     if(klass==='Rogue'&&level>=3&&subclass.includes('scout')){fixed.add('Nature');fixed.add('Survival');}
     if(klass==='Monk'&&level>=3&&subclass.includes('mercy')){fixed.add('Insight');fixed.add('Medicine');}
     if(klass==='Monk'&&level>=3&&subclass.includes('drunken master'))fixed.add('Performance');
+    ['peaceSkill','orderSkill','samuraiSkill','cavalierSkill','feyWandererSkill','arcaneArcherSkill'].forEach(key=>{
+        const selected=document.getElementById('classFeature_supplement_'+key)?.value;if(selected)fixed.add(selected);
+    });
     return fixed;
+}
+function supplementalExpertiseSkills(context=classFeatureContext()){
+    const skills=new Set();
+    if(context.klass==='Rogue'&&context.level>=3&&context.subclass.includes('scout')){skills.add('Nature');skills.add('Survival');}
+    return skills;
 }
 function supplementalSkillRules(skillName,ability,context=classFeatureContext()){
     let bonus=0,minimum=0;const sources=[];
@@ -10727,7 +10745,8 @@ function updateSkills() {
         const trainingBonus=abilityCheckTrainingBonus(ability,proficient);
         const trainingSource=abilityCheckTrainingSource(ability,proficient);
         value += trainingBonus;
-        const hasExpertise=proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName));
+        const supplementalExpertise=supplementalExpertiseSkills().has(skillName);
+        const hasExpertise=proficient&&(bardExpertiseSkills().has(skillName)||rogueExpertiseSkills().has(skillName)||supplementalExpertise);
         skill.classList.toggle('expertise-proficient',hasExpertise||knowledgeExpertise);
         if(hasExpertise)value+=proficiency;
         if(knowledgeExpertise)value+=proficiency;
@@ -10746,7 +10765,7 @@ function updateSkills() {
         const abilityModifier=getModifier(abilityScore);
         const parts=[`Tulajdonság: ${formatModifier(abilityModifier)}`];
         if(trainingBonus)parts.push(`${trainingSource||'Jártasság'}: ${formatModifier(trainingBonus)}`);
-        if(hasExpertise||knowledgeExpertise)parts.push(`Szakértelem: ${formatModifier(proficiency)}`);
+        if(hasExpertise||knowledgeExpertise)parts.push(`${supplementalExpertise?'Survivalist szakértelem':'Szakértelem'}: ${formatModifier(proficiency)}`);
         supplemental.sources.forEach(source=>parts.push(source));
         valueElement.title=`${parts.join('; ')}; összesen: ${formatModifier(value)}`;
         skill.title=valueElement.title;

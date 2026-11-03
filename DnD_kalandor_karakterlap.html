@@ -5708,7 +5708,9 @@ function combatRulesSpeed(){
     const race=document.getElementById('characterRace')?.value||'';
     const base=/faun/i.test(race)?35:/dwarf|halfling|gnome/i.test(race)?25:30,c=classFeatureContext();
     const monkBonus=c.klass==='Monk'&&c.level>=2&&(document.getElementById('armorType')?.value||'unarmored')==='unarmored'&&(Number(document.getElementById('shieldAC')?.value)||0)===0?(c.level>=18?30:c.level>=14?25:c.level>=10?20:c.level>=6?15:10):0;
-    return {speed:base+monkBonus,unit:'ft',fallback:true,source:monkBonus?'race+monk':'race'};
+    const scoutBonus=c.klass==='Rogue'&&c.level>=9&&c.subclass.includes('scout')?10:0;
+    const gloryBonus=c.klass==='Paladin'&&c.level>=7&&c.subclass.includes('glory')?10:0;
+    return {speed:base+monkBonus+scoutBonus+gloryBonus,unit:'ft',fallback:true,source:(monkBonus||scoutBonus||gloryBonus)?'race+class':'race'};
 }
 
 function combatRulesRead(){
@@ -10285,7 +10287,27 @@ function characterFixedSkillProficiencies(){
     if(race==='Half-Orc')fixed.add('Intimidation');
     if(race==='Tabaxi'){fixed.add('Perception');fixed.add('Stealth');}
     clericKnowledgeExpertiseSkills().forEach(skill=>fixed.add(skill));
+    const {klass,level,subclass}=classFeatureContext();
+    if(klass==='Rogue'&&level>=3&&subclass.includes('scout')){fixed.add('Nature');fixed.add('Survival');}
+    if(klass==='Monk'&&level>=3&&subclass.includes('mercy')){fixed.add('Insight');fixed.add('Medicine');}
+    if(klass==='Monk'&&level>=3&&subclass.includes('drunken master'))fixed.add('Performance');
     return fixed;
+}
+function supplementalSkillRules(skillName,ability,context=classFeatureContext()){
+    let bonus=0,minimum=0;const sources=[];
+    if(context.klass==='Ranger'&&context.level>=3&&context.subclass.includes('fey wanderer')&&ability==='CHA'){bonus+=context.wisMod;sources.push(`Otherworldly Glamour: ${formatModifier(context.wisMod)}`);}
+    if(context.klass==='Fighter'&&context.level>=7&&context.subclass.includes('samurai')&&skillName==='Persuasion'){bonus+=context.wisMod;sources.push(`Elegant Courtier: ${formatModifier(context.wisMod)}`);}
+    if(context.klass==='Bard'&&context.level>=3&&context.subclass.includes('eloquence')&&['Deception','Persuasion'].includes(skillName)){minimum=10;sources.push('Silver Tongue: a d20 minimuma 10');}
+    if(context.klass==='Rogue'&&context.level>=3&&context.subclass.includes('inquisitive')&&skillName==='Insight'){minimum=Math.max(minimum,8);sources.push('Ear for Deceit: a d20 minimuma 8');}
+    return {bonus,minimum,sources};
+}
+function supplementalInitiativeRules(context=classFeatureContext()){
+    let bonus=0;const sources=[],add=(value,label)=>{bonus+=value;sources.push(`${label}: ${formatModifier(value)}`);};
+    if(context.klass==='Ranger'&&context.level>=3&&context.subclass.includes('gloom stalker'))add(context.wisMod,'Dread Ambusher');
+    if(context.klass==='Rogue'&&context.level>=3&&context.subclass.includes('swashbuckler'))add(context.chaMod,'Rakish Audacity');
+    if(context.klass==='Wizard'&&context.level>=2&&context.subclass.includes('war magic'))add(context.intMod,'Tactical Wit');
+    if(context.klass==='Paladin'&&context.level>=7&&context.subclass.includes('watchers'))add(context.proficiency,'Aura of the Sentinel');
+    return {bonus,sources};
 }
 function characterSkillChoiceSources(){
     const {klass,level,subclass}=classFeatureContext(),sources=[];
@@ -10377,10 +10399,12 @@ function updateAdvancedBaseDefaults(){
     const race=document.getElementById('characterRace')?.value||'';
     const sizes={Aasimar:'Közepes',Dragonborn:'Közepes',Dwarf:'Közepes',Elf:'Közepes',Faun:'Közepes',Genasi:'Közepes',Gnome:'Kicsi','Half-Elf':'Közepes','Half-Orc':'Közepes',Halfling:'Kicsi',Human:'Közepes',Tabaxi:'Közepes',Tiefling:'Közepes'};
     writeAdvancedBaseDefault('characterSize',sizes[race]||'');
-    writeAdvancedBaseDefault('initiativeBonus',abilityCheckTrainingBonus('DEX'));
+    const initiativeRules=supplementalInitiativeRules();
+    writeAdvancedBaseDefault('initiativeBonus',abilityCheckTrainingBonus('DEX')+initiativeRules.bonus);
     const initiative=document.getElementById('initiativeBonus');
     const initiativeSource=abilityCheckTrainingSource('DEX');
-    if(initiative&&initiativeSource)initiative.title+=` Automatikus kasztbónusz: ${initiativeSource} (${formatModifier(abilityCheckTrainingBonus('DEX'))}).`;
+    const initiativeSources=[initiativeSource&&`${initiativeSource} (${formatModifier(abilityCheckTrainingBonus('DEX'))})`,...initiativeRules.sources].filter(Boolean);
+    if(initiative&&initiativeSources.length)initiative.title+=` Automatikus kasztbónusz: ${initiativeSources.join('; ')}.`;
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10);
     const thresholds=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
     const xp=document.getElementById('experiencePoints');
@@ -10483,6 +10507,7 @@ function automaticSavingThrowSources(ability,context=classFeatureContext()){
     if(classSavingThrowProficiencies[context.klass]?.includes(ability))sources.push('Kasztból jár');
     if(context.klass==='Rogue'&&context.level>=15&&ability==='WIS')sources.push('Slippery Mind');
     if(context.klass==='Monk'&&context.level>=14)sources.push('Diamond Soul');
+    if(context.klass==='Ranger'&&context.level>=7&&context.subclass.includes('gloom stalker')&&ability==='WIS')sources.push('Iron Mind');
     const stone=document.getElementById('classFeature_transmutersStone')?.value||'';
     if(context.klass==='Wizard'&&context.subclass.includes('transmutation')&&ability==='CON'&&stone==='CON saving throw proficiency')sources.push('Transmuter’s Stone');
     return [...new Set(sources)];
@@ -10562,8 +10587,11 @@ function updateDerivedFields(){
                 const shield = parseInt(document.getElementById('shieldAC')?.value, 10) || 0;
                 const other = parseInt(document.getElementById('armorACBonus')?.value, 10) || 0;
                 const defenseStyle=armorType!=='unarmored'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Defense')?1:0;
+                const acContext=classFeatureContext(),heavyArmor=['ringmail','chainmail','splint','plate'].includes(armorType);
+                const soulOfTheForge=acContext.klass==='Cleric'&&acContext.level>=6&&acContext.subclass.includes('forge')&&heavyArmor?1:0;
                 const base=armorType==='unarmored'?unarmoredClassAC(dex,shield):armor.base+dexBonus;
-                armorField.value = base + shield + other + defenseStyle;
+                armorField.value = base + shield + other + defenseStyle + soulOfTheForge;
+                armorField.title=`Alap: ${base}; pajzs: ${formatModifier(shield)}; egyéb: ${formatModifier(other)}${defenseStyle?'; Defense harcmodor: +1':''}${soulOfTheForge?'; Soul of the Forge: +1':''}.`;
             }
             armorField.readOnly = true;
         }
@@ -10630,14 +10658,16 @@ function performSkillRoll(){
     const rolled=manualRoll??rollDie(20),context=classFeatureContext(),naturalOne=rolled===1;
     const proficient=row.classList.contains('proficient')||row.classList.contains('expertise-proficient');
     const reliableTalent=!naturalOne&&context.klass==='Rogue'&&context.level>=11&&proficient&&rolled<10;
-    const effectiveRoll=reliableTalent?10:rolled;
+    const skillName=characterSkillBaseName(row),ability=row.dataset.ability||'',supplemental=supplementalSkillRules(skillName,ability,context);
+    const classMinimum=!naturalOne&&rolled<supplemental.minimum?supplemental.minimum:rolled;
+    const effectiveRoll=reliableTalent?Math.max(10,classMinimum):classMinimum;
     const bonus=Number.parseInt(row.querySelector('.skill-value')?.textContent,10)||0,total=naturalOne?1:effectiveRoll+bonus;
-    const skillName=characterSkillBaseName(row),ability=row.dataset.ability||'';
     result.className='saving-throw-roll-result';result.replaceChildren();
     const card=document.createElement('div');card.className='saving-throw-result-card'+(naturalOne?' is-critical-failure':'');
     const name=document.createElement('span');name.className='saving-throw-result-name';name.textContent=`${skillName} (${ability}) · ${naturalOne?'kritikus hiba':manualRoll===null?'automatikus dobás':'kézi dobás'}`;
     const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
-    const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=naturalOne?'d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.':`d20: ${rolled}${reliableTalent?' → 10 (Reliable Talent)':''} + bónusz: ${formatModifier(bonus)} = ${total}`;
+    const minimumText=effectiveRoll!==rolled?` → ${effectiveRoll} (${reliableTalent?'Reliable Talent':supplemental.sources.find(source=>source.includes('minimuma'))?.split(':')[0]||'kasztjellemző'})`:'';
+    const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=naturalOne?'d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.':`d20: ${rolled}${minimumText} + bónusz: ${formatModifier(bonus)} = ${total}`;
     card.append(name,totalElement,math);result.append(card);
 }
 function updateSkills() {
@@ -10673,6 +10703,8 @@ function updateSkills() {
         skill.classList.toggle('expertise-proficient',hasExpertise||knowledgeExpertise);
         if(hasExpertise)value+=proficiency;
         if(knowledgeExpertise)value+=proficiency;
+        const supplemental=supplementalSkillRules(skillName,ability);
+        value+=supplemental.bonus;
 
         const valueElement=skill.querySelector('.skill-value');
         valueElement.textContent = formatModifier(value);
@@ -10687,6 +10719,7 @@ function updateSkills() {
         const parts=[`Tulajdonság: ${formatModifier(abilityModifier)}`];
         if(trainingBonus)parts.push(`${trainingSource||'Jártasság'}: ${formatModifier(trainingBonus)}`);
         if(hasExpertise||knowledgeExpertise)parts.push(`Szakértelem: ${formatModifier(proficiency)}`);
+        supplemental.sources.forEach(source=>parts.push(source));
         valueElement.title=`${parts.join('; ')}; összesen: ${formatModifier(value)}`;
         skill.title=valueElement.title;
     });

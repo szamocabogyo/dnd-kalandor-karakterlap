@@ -4711,6 +4711,72 @@ const combatManualRollUnit = document.getElementById('combatManualRollUnit');
 const combatManualRollLabel = document.getElementById('combatManualRollLabel');
 const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs');
 
+const supplementalCombatFeatureDefinitions=[
+['ancestral-spirit-shield','Spirit Shield – szövetséges sebzésének csökkentése','reaction','Barbarian',6,'ancestral guardian',null,1,true],
+['zealot-zealous-presence','Zealous Presence – támadási és mentődobási előny','bonus','Barbarian',10,'zealot','supplement_zealousPresence'],
+['beast-infectious-fury','Infectious Fury – pszichikus sebzés vagy kényszertámadás','trigger','Barbarian',10,'beast','supplement_infectiousFury',1,true],
+['wild-magic-awareness','Magic Awareness','action','Barbarian',3,'wild magic','supplement_magicAwareness'],
+['wild-magic-bolstering','Bolstering Magic','action','Barbarian',6,'wild magic','supplement_bolsteringMagic'],
+['glamour-mantle','Mantle of Inspiration','bonus','Bard',3,'glamour','bardicInspiration'],
+['glamour-majesty','Mantle of Majesty','bonus','Bard',6,'glamour','supplement_mantleOfMajesty'],
+['whispers-psychic-blades','Psychic Blades – találat után','trigger','Bard',3,'whispers','bardicInspiration',1,true],
+['eloquence-unsettling','Unsettling Words','bonus','Bard',3,'eloquence','bardicInspiration'],
+['grave-path','Channel Divinity: Path to the Grave','action','Cleric',2,'grave','channelDivinity'],
+['order-demand','Channel Divinity: Order’s Demand','action','Cleric',2,'order','channelDivinity'],
+['peace-balm','Channel Divinity: Balm of Peace','action','Cleric',2,'peace','channelDivinity'],
+['twilight-sanctuary','Channel Divinity: Twilight Sanctuary','action','Cleric',2,'twilight','channelDivinity'],
+['dreams-balm','Balm of the Summer Court – gyógyító d6','bonus','Druid',2,'dreams','supplement_balmOfSummerCourt'],
+['shepherd-totem','Spirit Totem','bonus','Druid',2,'shepherd','supplement_spiritTotem'],
+['spores-symbiotic','Symbiotic Entity','action','Druid',2,'spores','wildShapeUses'],
+['stars-starry-form','Starry Form','bonus','Druid',2,'stars','wildShapeUses'],
+['wildfire-spirit','Summon Wildfire Spirit','action','Druid',2,'wildfire','wildShapeUses'],
+['arcane-shot','Arcane Shot – találat után','trigger','Fighter',3,'arcane archer','supplement_arcaneShotUses',1,true],
+['cavalier-warding','Warding Maneuver','reaction','Fighter',7,'cavalier','supplement_wardingManeuver',1,true],
+['samurai-spirit','Fighting Spirit','bonus','Fighter',3,'samurai','supplement_fightingSpirit'],
+['psi-protective-field','Protective Field','reaction','Fighter',3,'psi warrior','supplement_psionicEnergy',1,true],
+['psi-strike','Psionic Strike – találat után','trigger','Fighter',3,'psi warrior','supplement_psionicEnergy',1,true],
+['psi-telekinetic','Telekinetic Movement','action','Fighter',7,'psi warrior','supplement_telekineticMovement'],
+['rune-giants-might','Giant’s Might','bonus','Fighter',3,'rune knight','supplement_giantsMight'],
+['rune-runic-shield','Runic Shield','reaction','Fighter',7,'rune knight','supplement_runicShield',1,true],
+['mercy-healing','Hand of Healing','trigger','Monk',3,'mercy','kiPoints',1,true],
+['mercy-harm','Hand of Harm – találat után','trigger','Monk',3,'mercy','kiPoints',1,true],
+['astral-arms','Arms of the Astral Self','bonus','Monk',3,'astral self','kiPoints'],
+['conquest-presence','Channel Divinity: Conquering Presence','action','Paladin',3,'conquest','paladinChannelDivinity'],
+['conquest-strike','Channel Divinity: Guided Strike','trigger','Paladin',3,'conquest','paladinChannelDivinity',1,true],
+['redemption-emissary','Channel Divinity: Emissary of Peace','bonus','Paladin',3,'redemption','paladinChannelDivinity'],
+['redemption-rebuke','Channel Divinity: Rebuke the Violent','reaction','Paladin',3,'redemption','paladinChannelDivinity',1,true],
+['glory-athlete','Channel Divinity: Peerless Athlete','bonus','Paladin',3,'glory','paladinChannelDivinity'],
+['glory-smite','Channel Divinity: Inspiring Smite','bonus','Paladin',3,'glory','paladinChannelDivinity'],
+['watchers-will','Channel Divinity: Watcher’s Will','action','Paladin',3,'watchers','paladinChannelDivinity'],
+['watchers-abjure','Channel Divinity: Abjure the Extraplanar','action','Paladin',3,'watchers','paladinChannelDivinity'],
+['gloom-dread-ambusher','Dread Ambusher – első körös extra támadás','trigger','Ranger',3,'gloom stalker',null,1,true],
+['horizon-planar-warrior','Planar Warrior','bonus','Ranger',3,'horizon walker',null],
+['horizon-ethereal','Ethereal Step','bonus','Ranger',7,'horizon walker','supplement_etherealStep'],
+['monster-slayer-prey','Slayer’s Prey','bonus','Ranger',3,'monster slayer',null],
+['fey-beguiling-twist','Beguiling Twist','reaction','Ranger',7,'fey wanderer',null,1,true],
+['swarm-gathered','Gathered Swarm – találat után','trigger','Ranger',3,'swarmkeeper',null,1,true],
+['inquisitive-fighting','Insightful Fighting','bonus','Rogue',3,'inquisitive',null],
+['mastermind-help','Master of Tactics – Help','bonus','Rogue',3,'mastermind',null],
+['scout-skirmisher','Skirmisher','reaction','Rogue',3,'scout',null,1,true],
+['swashbuckler-panache','Panache','action','Rogue',9,'swashbuckler',null],
+['phantom-wails','Wails from the Grave','trigger','Rogue',3,'phantom',null,1,true],
+['soulknife-psi-bolstered','Psi-Bolstered Knack','trigger','Rogue',3,'soulknife','supplement_psionicEnergy',1,true],
+['divine-favored','Favored by the Gods','trigger','Sorcerer',1,'divine soul','supplement_favoredByGods',1,true],
+['shadow-strength','Strength of the Grave','trigger','Sorcerer',1,'shadow magic','supplement_strengthOfGrave',1,true],
+['shadow-hound','Hound of Ill Omen','bonus','Sorcerer',6,'shadow magic','sorceryPoints',3],
+['aberrant-revelation','Revelation in Flesh','bonus','Sorcerer',14,'aberrant mind','sorceryPoints',1],
+['aberrant-implosion','Warping Implosion','action','Sorcerer',18,'aberrant mind','supplement_warpingImplosion'],
+['clockwork-restore','Restore Balance','reaction','Sorcerer',1,'clockwork soul','supplement_restoreBalance',1,true],
+['celestial-healing','Healing Light – 1 d6','bonus','Warlock',1,'celestial','supplement_healingLight'],
+['hexblade-curse','Hexblade’s Curse','bonus','Warlock',1,'hexblade','supplement_hexbladesCurse'],
+['fathomless-tentacle','Tentacle of the Deeps','bonus','Warlock',1,'fathomless','supplement_tentacleOfTheDeeps'],
+['fathomless-coil','Guardian Coil','reaction','Warlock',6,'fathomless',null,1,true],
+['genie-flight','Elemental Gift – repülés','bonus','Warlock',6,'genie','supplement_elementalGift'],
+['war-magic-deflection','Arcane Deflection','reaction','Wizard',2,'war magic',null,1,true],
+['bladesong','Bladesong','bonus','Wizard',2,'bladesinging','supplement_bladesong'],
+['scribes-mind','Manifest Mind','bonus','Wizard',6,'scribes','supplement_manifestMind']
+].map(([id,label,category,klass,level,subclass,resource,cost=1,trigger=false])=>({id,label,category,klass,level,subclass,resource,cost,trigger}));
+
 (function (root) {
     'use strict';
 
@@ -4778,6 +4844,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
         'hellish-rebuke': { category: 'reaction', resource: 'hellishRebuke', trigger: true },
         'relentless-endurance': { category: 'trigger', resource: 'relentlessEndurance', trigger: true }
     };
+    supplementalCombatFeatureDefinitions.forEach(feature=>{RESOURCE_EVENTS[feature.id]={category:feature.category,resource:feature.resource,cost:feature.cost,klass:feature.klass,level:feature.level,subclass:feature.subclass,trigger:feature.trigger};});
 
     function fail(message) { throw new Error(message); }
     function object(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
@@ -5559,7 +5626,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                         if (!truth(intent.otherTurn) && state.spells.bonus) fail('Bónuszakciós varázslás mellett ugyanebben a fordulóban nem használhatsz reakcióvarázslatot.');
                     }
                     if (choice === 'step-wind' && !['dash', 'disengage'].includes(intent.mode)) fail('A Szél lépéséhez válassz Dash vagy Disengage műveletet.');
-                    let amount = feature.amount ? (intent.amount === undefined ? 1 : intent.amount) : 1;
+                    let amount = feature.amount ? (intent.amount === undefined ? 1 : intent.amount) : (feature.cost||1);
                     if (feature.resource === 'wildShapeUses') {
                         if (intent.wildShapeElemental !== undefined && typeof intent.wildShapeElemental !== 'boolean') fail('Érvénytelen Vad Alak típus.');
                         if (intent.wildShapeElemental === true) {
@@ -5568,7 +5635,7 @@ const combatDamageDiceInputs = document.getElementById('combatDamageDiceInputs')
                         }
                     }
                     if (!whole(amount) || amount < 1) fail('A képességhez pozitív egész erőforrásmennyiséget adj meg.');
-                    resource(feature.resource, amount);
+                    if(feature.resource)resource(feature.resource, amount);
                     if (['action', 'bonus', 'reaction'].includes(category)) spend(category);
                     if (choice === 'hellish-rebuke' && !truth(intent.otherTurn)) state.spells.otherSpell = true;
                     if (choice === 'rage') state.flags.rageStarted = true;
@@ -8726,6 +8793,17 @@ function addCombatSpellChoices(options,castingTimePattern){
         if(name&&spellRowCanCast(row)&&castingTimePattern.test(time))options.push([`spell:${row.dataset.spellEntryKey}`,`Varázslat: ${name}`]);
     });
 }
+function addSupplementalCombatChoices(groups,context){
+    supplementalCombatFeatureDefinitions.forEach(feature=>{
+        if(context.klass!==feature.klass||context.level<feature.level||!context.subclass.includes(feature.subclass))return;
+        if(feature.resource){
+            const field=document.getElementById('classFeature_'+feature.resource);
+            if(!field||(Number(field.value)||0)<feature.cost)return;
+        }
+        const target=feature.category==='action'?groups.action:feature.category==='bonus'?groups.bonus:feature.category==='reaction'?groups.reaction:groups.trigger;
+        target.push([feature.id,feature.label]);
+    });
+}
 function renderCombatTurnChoices(){
     const {klass,level,subclass}=classFeatureContext();
     const race=document.getElementById('characterRace')?.value||'';
@@ -8896,6 +8974,7 @@ function renderCombatTurnChoices(){
     if(race==='Half-Orc'&&document.getElementById('combatHalfOrcEnduranceUsed')?.value!=='true')trigger.push(['relentless-endurance','Rendíthetetlen kitartás (0 HP helyett 1 HP; hosszú pihenőnként egyszer)']);
     if(race==='Halfling')trigger.push(['lucky','Szerencsés (Lucky): 1-es d20 újradobása']);
     if(klass==='Bard'&&subclass.includes('college of swords'))trigger.push(['blade-flourish','Blade Flourish (találat után, inspiráció elköltésével)']);
+    addSupplementalCombatChoices({action,bonus,reaction,trigger},{klass,level,subclass});
     addCombatSpellChoices(bonus,/bónusz|bonus/i);
     addCombatSpellChoices(reaction,/reakció|reaction/i);
     addRangerCombatChoices(choices);

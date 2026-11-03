@@ -3767,6 +3767,12 @@ function spellCatalogRuleOptions(context, catalog) {
         'the hexblade': [['Shield','Wrathful Smite'],['Blur','Branding Smite'],['Blink','Elemental Weapon'],['Phantasmal Killer','Staggering Smite'],['Banishing Smite','Cone of Cold']],
         'the fathomless': [['Create or Destroy Water','Thunderwave'],['Gust of Wind','Silence'],['Lightning Bolt','Sleet Storm'],['Control Water','Summon Elemental'],['Bigby\'s Hand','Cone of Cold']]
     };
+    const supplementalGeniePatron = {
+        'dao (föld)': [['Detect Evil and Good','Sanctuary'],['Phantasmal Force','Spike Growth'],['Create Food and Water','Meld into Stone'],['Phantasmal Killer','Stone Shape'],['Creation','Wall of Stone']],
+        'djinni (levegő)': [['Detect Evil and Good','Thunderwave'],['Phantasmal Force','Gust of Wind'],['Create Food and Water','Wind Wall'],['Phantasmal Killer','Greater Invisibility'],['Creation','Seeming']],
+        'efreeti (tűz)': [['Detect Evil and Good','Burning Hands'],['Phantasmal Force','Scorching Ray'],['Create Food and Water','Fireball'],['Phantasmal Killer','Fire Shield'],['Creation','Flame Strike']],
+        'marid (víz)': [['Detect Evil and Good','Fog Cloud'],['Phantasmal Force','Blur'],['Create Food and Water','Sleet Storm'],['Phantasmal Killer','Control Water'],['Creation','Cone of Cold']]
+    };
     const addList = (table, thresholds, prefix, label, ability, alwaysPrepared) => {
         (table || []).forEach((names, index) => {
             if (level < thresholds[index]) return;
@@ -3798,6 +3804,11 @@ function spellCatalogRuleOptions(context, catalog) {
     if (klass === 'Sorcerer' && supplementalSorcerer[sub]) addList(supplementalSorcerer[sub],[1,3,5,7,9],'subclass:'+sub,c.subclass||'Sorcerous Origin','CHA',true);
     if (klass === 'Warlock') addList(patron[sub],[1,3,5,7,9],'patron:' + sub,(c.subclass || 'Patron') + ' – bővített lista','CHA',false);
     if (klass === 'Warlock') addList(supplementalPatron[sub],[1,3,5,7,9],'patron:' + sub,(c.subclass || 'Patron') + ' – bővített lista','CHA',false);
+    if (klass === 'Warlock' && sub === 'the genie') {
+        const genieKind=norm(document.getElementById('classFeature_genieKind')?.value||'');
+        addList(supplementalGeniePatron[genieKind],[1,3,5,7,9],'patron:the-genie:' + genieKind,(c.subclass || 'The Genie') + ' – bővített lista','CHA',false);
+        if(level>=17)named('Wish','patron:the-genie-wish','The Genie – 9. szintű Mystic Arcanum','CHA',{sourceKind:'patron',usage:'long-1',choiceGroup:'arcanum:9',choiceLimit:1,requirementText:'A 9. szintű Mystic Arcanum választásaként vehető fel.'});
+    }
     if (klass === 'Warlock' && sub === 'the celestial') {
         named('Light','subclass:celestial-light','The Celestial – Bonus Cantrips','CHA',{sourceKind:'subclass',alwaysKnown:true});
         named('Sacred Flame','subclass:celestial-sacred-flame','The Celestial – Bonus Cantrips','CHA',{sourceKind:'subclass',alwaysKnown:true});
@@ -8235,6 +8246,60 @@ const supplementalSubclassGuides={
 'Bladesinging':'Könnyűpáncél-, fegyver- és Performance jártasság mellett bónuszakciós Bladesong jár: AC, sebesség, Acrobatics és koncentráció javul, használata jártassági bónuszhoz kötött. Később Extra Attack egyik támadása cantrip lehet, rekesz költhető sebzéscsökkentésre, végül Intelligence kerül közelharci sebzéshez.',
 'Order of Scribes':'A mágikus toll gyorsan ír és tintát készít; az ébredt varázskönyv azonos szintű varázslatok sebzéstípusát cserélheti és rituálét gyorsíthat. Később a könyv szellemi elméje felderít és onnan varázsolhatsz, ingyenes tekercset készítesz, végül a könyv lapjait áldozod sebzés ellen.'
 };
+const supplementalSubclassResourceDefinitions={
+'Path of the Ancestral Guardian':[[10,'consultSpirits','Consult the Spirits – ingyenes használat',1,'both']],
+'Path of the Zealot':[[10,'zealousPresence','Zealous Presence',1,'long']],
+'Path of the Beast':[[10,'infectiousFury','Infectious Fury',c=>c.proficiency,'long'],[14,'callTheHunt','Call the Hunt',c=>c.proficiency,'long']],
+'Path of Wild Magic':[[3,'magicAwareness','Magic Awareness',c=>c.proficiency,'long'],[6,'bolsteringMagic','Bolstering Magic',c=>c.proficiency,'long']],
+'College of Glamour':[[3,'enthrallingPerformance','Enthralling Performance',1,'both'],[6,'mantleOfMajesty','Mantle of Majesty',1,'long']],
+'College of Whispers':[[3,'wordsOfTerror','Words of Terror',1,'both'],[14,'shadowLore','Shadow Lore',1,'long']],
+'College of Creation':[[3,'performanceOfCreation','Performance of Creation – ingyenes használat',1,'long'],[6,'animatingPerformance','Animating Performance – ingyenes használat',1,'long']],
+'College of Eloquence':[[6,'universalSpeech','Universal Speech – ingyenes használat',1,'long'],[14,'infectiousInspiration','Infectious Inspiration',c=>Math.max(1,c.chaMod),'long']],
+'Forge Domain':[[1,'blessingOfTheForge','Blessing of the Forge',1,'long']],
+'Grave Domain':[[1,'eyesOfTheGrave','Eyes of the Grave',c=>Math.max(1,c.wisMod),'long'],[6,'sentinelAtDeathsDoor','Sentinel at Death’s Door',c=>c.proficiency,'long']],
+'Peace Domain':[[1,'emboldeningBond','Emboldening Bond',c=>c.proficiency,'long']],
+'Twilight Domain':[[6,'stepsOfNight','Steps of Night',c=>c.proficiency,'long']],
+'Circle of Dreams':[[2,'balmOfSummerCourt','Balm of the Summer Court – d6 készlet',c=>c.level,'long'],[10,'hiddenPaths','Hidden Paths',c=>Math.max(1,c.wisMod),'long'],[14,'walkerInDreams','Walker in Dreams',1,'long']],
+'Circle of the Shepherd':[[2,'spiritTotem','Spirit Totem',1,'both'],[14,'faithfulSummons','Faithful Summons',1,'long']],
+'Circle of Spores':[[6,'fungalInfestation','Fungal Infestation',c=>Math.max(1,c.wisMod),'long']],
+'Circle of Stars':[[2,'starMapGuidingBolt','Star Map – Guiding Bolt',c=>c.proficiency,'long'],[6,'cosmicOmen','Cosmic Omen',c=>c.proficiency,'long']],
+'Circle of Wildfire':[[10,'cauterizingFlames','Cauterizing Flames',c=>c.proficiency,'long'],[14,'blazingRevival','Blazing Revival',1,'long']],
+'Arcane Archer':[[3,'arcaneShotUses','Arcane Shot',2,'both']],
+'Cavalier':[[3,'unwaveringMarkAttack','Unwavering Mark – bónusztámadás',c=>Math.max(1,c.strMod),'long'],[7,'wardingManeuver','Warding Maneuver',c=>Math.max(1,c.conMod),'long']],
+'Samurai':[[3,'fightingSpirit','Fighting Spirit',3,'long']],
+'Psi Warrior':[[3,'psionicEnergy','Psionic Energy kockák',c=>c.proficiency*2,'long'],[7,'telekineticMovement','Telekinetic Movement – ingyenes használat',1,'both']],
+'Rune Knight':[[3,'giantsMight','Giant’s Might',c=>c.proficiency,'long'],[7,'runicShield','Runic Shield',c=>c.proficiency,'long']],
+'Oath of Glory':[[15,'gloriousDefense','Glorious Defense',c=>Math.max(1,c.chaMod),'long']],
+'Gloom Stalker':[],
+'Horizon Walker':[[7,'etherealStep','Ethereal Step',1,'both']],
+'Monster Slayer':[[3,'huntersSense','Hunter’s Sense',c=>Math.max(1,c.wisMod),'long'],[11,'magicUsersNemesis','Magic-User’s Nemesis',1,'both']],
+'Fey Wanderer':[[15,'mistyWanderer','Misty Wanderer – ingyenes Misty Step',c=>Math.max(1,c.wisMod),'long']],
+'Swarmkeeper':[[15,'swarmingDispersal','Swarming Dispersal',c=>c.proficiency,'long']],
+'Inquisitive':[[13,'unerringEye','Unerring Eye',c=>Math.max(1,c.wisMod),'long']],
+'Swashbuckler':[[17,'masterDuelist','Master Duelist',1,'both']],
+'Phantom':[[13,'ghostWalk','Ghost Walk',c=>c.proficiency,'long']],
+'Soulknife':[[3,'psionicEnergy','Psionic Energy kockák',c=>c.proficiency*2,'long'],[13,'psychicVeil','Psychic Veil – ingyenes használat',c=>c.proficiency,'long'],[17,'rendMind','Rend Mind – ingyenes használat',1,'long']],
+'Divine Soul':[[1,'favoredByGods','Favored by the Gods',1,'both'],[18,'unearthlyRecovery','Unearthly Recovery',1,'long']],
+'Shadow Magic':[[1,'strengthOfGrave','Strength of the Grave',1,'long']],
+'Aberrant Mind':[[18,'warpingImplosion','Warping Implosion',1,'long']],
+'Clockwork Soul':[[1,'restoreBalance','Restore Balance',c=>c.proficiency,'long'],[18,'clockworkCavalcade','Clockwork Cavalcade',1,'long']],
+'The Celestial':[[1,'healingLight','Healing Light – d6 készlet',c=>1+c.level,'long'],[14,'searingVengeance','Searing Vengeance',1,'long']],
+'The Hexblade':[[1,'hexbladesCurse','Hexblade’s Curse',1,'both'],[6,'accursedSpecter','Accursed Specter',1,'long']],
+'The Fathomless':[[1,'tentacleOfTheDeeps','Tentacle of the Deeps',c=>c.proficiency,'long'],[14,'fathomlessPlunge','Fathomless Plunge',1,'both']],
+'The Genie':[[1,'geniesVessel','Genie’s Vessel / Bottled Respite',c=>c.proficiency,'long'],[6,'elementalGift','Elemental Gift – repülés',c=>c.proficiency,'long']],
+'War Magic':[[6,'powerSurges','Power Surge',c=>Math.max(1,c.intMod),'long']],
+'Bladesinging':[[2,'bladesong','Bladesong',c=>c.proficiency,'long']],
+'Order of Scribes':[[6,'manifestMind','Manifest Mind – ingyenes megidézés',1,'long'],[10,'masterScrivener','Master Scrivener',1,'long'],[14,'oneWithTheWord','One with the Word',1,'long']]
+};
+function supplementalSubclassResourceFields(subclass,context){
+    const definitions=supplementalSubclassResourceDefinitions[subclass]||[];
+    const fields=definitions.map(([minLevel,key,label,maximum,rest])=>({
+        type:'counter',key:'supplement_'+key,label,minLevel,wide:true,
+        max:typeof maximum==='function'?maximum:()=>maximum,rest
+    }));
+    if(subclass==='The Genie')fields.unshift({type:'select',key:'genieKind',label:'Genie patrónus fajtája',minLevel:1,options:['Dao (föld)','Djinni (levegő)','Efreeti (tűz)','Marid (víz)']});
+    return fields;
+}
 function supplementalSubclassFields(context){
     const entries=supplementalSubclassCatalog[context.klass]||{};
     const match=Object.entries(entries).find(([name])=>name.toLocaleLowerCase()===context.subclass);
@@ -8257,6 +8322,7 @@ function supplementalSubclassFields(context){
             minLevel:1,
             value:()=>guide||`A ${subclass} alosztály szintenként megnyíló képességei az alábbi mezőkben jelennek meg. Forrás: ${source}.`
         },
+        ...supplementalSubclassResourceFields(subclass,context),
         ...milestones
     ];
 }
@@ -8338,7 +8404,7 @@ function renderClassFeatures(){
     fields.innerHTML=allClassFeatureFields(model,context).map(field=>renderClassFeatureField(field,context,state)).join('');
     fields.querySelectorAll('[data-class-resource]').forEach(control=>{
         control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
-        control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();saveCharacter();});
+        control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(control.id.includes('Expertise'))updateSkills();if(control.id==='classFeature_genieKind')refreshSpellCatalog();saveCharacter();});
     });
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();

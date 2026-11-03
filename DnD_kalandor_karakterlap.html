@@ -4013,7 +4013,7 @@ function spellCatalogItemOptions(){
     return spellCatalogData.map(spell=>({spellId:spell.id,origin:'item:'+spell.id,sourceKind:'item',sourceLabel:'Tárgy vagy tekercs',ability,castLevel:Number(spell.level)||0,usage:'item'}));
 }
 function spellCatalogOptionsForRow(row){return spellRowIsItem(row)?spellCatalogItemOptions():spellCatalogOptions();}
-function spellCatalogHasNonClassMagic(){return spellCatalogOptions().some(choice=>!['class','domain','oath','land','patron','magical-secrets','arcanum'].includes(choice.sourceKind));}
+function spellCatalogHasNonClassMagic(){return [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].some(row=>spellRowIsItem(row)&&row.querySelector('input[id$="_name"]')?.value.trim())||spellCatalogOptions().some(choice=>!['class','domain','oath','land','patron','magical-secrets','arcanum'].includes(choice.sourceKind));}
 function spellCatalogDataFor(choice){return choice?spellCatalogData.find(spell=>spell.id===choice.spellId):null;}
 function spellCatalogMetadata(row){try{return JSON.parse(row?.querySelector('input[id$="_catalogSource"]')?.value||'null');}catch{return null;}}
 function spellCatalogSelection(row){
@@ -6697,7 +6697,7 @@ function combatReactionUsageFromSnapshot(choice,snapshot){
         const levelWarning=spellEntryLevelStatus(row);
         // Read the same live fields as the spell list; this check is read-only.
         sourceAvailable=spellRowCanCast(row);
-        if(!context.canCast)sourceReason=context.spellcastingBlocked?'A karakter jelenlegi állapota nem engedi a varázslást.':'Ehhez a kaszthoz, alosztályhoz és szinthez nem tartozik varázslás.';
+        if(!context.canCast&&!spellRowIsItem(row))sourceReason=context.spellcastingBlocked?'A karakter jelenlegi állapota nem engedi a varázslást.':'Ehhez a kaszthoz, alosztályhoz és szinthez nem tartozik varázslás.';
         else if(levelWarning)sourceReason=levelWarning;
         if(limit!==null){
             profile.maximum=limit;
@@ -7419,6 +7419,7 @@ function characterHighestSpellLevel(){
 
 function spellEntryLevelStatus(row){
     const catalogWarning=spellCatalogWarning(row);if(catalogWarning)return catalogWarning;
+    if(spellRowIsItem(row))return '';
     if(spellCatalogIndependent(row))return '';
     const value=row?.querySelector('select[id$="_level"]')?.value||'';
     if(value==='cantrip')return characterCanCastSpells()?'':'Ehhez a kaszthoz és szinthez nem tartozik varázslás.';
@@ -7457,7 +7458,9 @@ function updateSpellSlotFields(){
     const maximums=characterSpellSlotMaximums();
     const klass=document.getElementById('characterClass')?.value||'';
     const spellCard=document.querySelector('.spell-card');
-    if(spellCard)spellCard.hidden=!characterCanCastSpells();
+    // Every character can carry a spell scroll or a magic item, even without
+    // class spellcasting. Individual class spells remain level-gated below.
+    if(spellCard)spellCard.hidden=false;
     updateCombatSpellTypeOption();
     const usesClassProgression=['Barbarian','Bard','Cleric','Druid','Fighter','Monk','Paladin','Ranger','Rogue','Sorcerer','Warlock','Wizard'].includes(klass);
     maximums.forEach((maximum,index)=>{

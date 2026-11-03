@@ -5710,7 +5710,8 @@ function combatRulesSpeed(){
     const monkBonus=c.klass==='Monk'&&c.level>=2&&(document.getElementById('armorType')?.value||'unarmored')==='unarmored'&&(Number(document.getElementById('shieldAC')?.value)||0)===0?(c.level>=18?30:c.level>=14?25:c.level>=10?20:c.level>=6?15:10):0;
     const scoutBonus=c.klass==='Rogue'&&c.level>=9&&c.subclass.includes('scout')?10:0;
     const gloryBonus=c.klass==='Paladin'&&c.level>=7&&c.subclass.includes('glory')?10:0;
-    return {speed:base+monkBonus+scoutBonus+gloryBonus,unit:'ft',fallback:true,source:(monkBonus||scoutBonus||gloryBonus)?'race+class':'race'};
+    const bladesongBonus=c.klass==='Wizard'&&c.level>=2&&c.subclass.includes('bladesinging')&&document.getElementById('classFeature_supplement_bladesongActive')?.checked?10:0;
+    return {speed:base+monkBonus+scoutBonus+gloryBonus+bladesongBonus,unit:'ft',fallback:true,source:(monkBonus||scoutBonus||gloryBonus||bladesongBonus)?'race+class':'race'};
 }
 
 function combatRulesRead(){
@@ -5938,6 +5939,15 @@ function combatRulesCommit(plan,intent){
         }else{const field=document.getElementById('classFeature_'+key);if(field)field.value=String(Math.max(0,Number(field.value)-amount));}
     }
     rangerClearCamouflage(intent);
+    const activeStateByChoice={'spores-symbiotic':'supplement_symbioticEntityActive','stars-starry-form':'supplement_starryFormActive','samurai-spirit':'supplement_fightingSpiritActive','rune-giants-might':'supplement_giantsMightActive','genie-flight':'supplement_elementalGiftActive','bladesong':'supplement_bladesongActive'};
+    const activeState=activeStateByChoice[intent?.choice];
+    if(activeState){
+        const field=document.getElementById('classFeature_'+activeState);if(field)field.checked=true;
+        const context=classFeatureContext(),temporaryHp=document.getElementById('tempHp');
+        const grantedTemp=intent.choice==='spores-symbiotic'?context.level*4:intent.choice==='samurai-spirit'?(context.level>=15?15:context.level>=10?10:5):0;
+        if(grantedTemp&&temporaryHp){temporaryHp.value=String(Math.max(Number(temporaryHp.value)||0,grantedTemp));temporaryHp.dispatchEvent(new Event('input',{bubbles:true}));}
+        updateDerivedFields();
+    }
     if(intent.kind==='attack')plan.state.pending={weaponKey:intent.weaponKey,choice:intent.choice,category:intent.category,otherTurn:intent.otherTurn,damageDone:false,ability:document.getElementById('combatRulesOffhandAbility').value,fightingStyle:document.getElementById('combatRulesTwoWeaponStyle').checked};
     combatRulesWrite(plan.state);
     saveCharacter();
@@ -8367,6 +8377,15 @@ function supplementalSubclassResourceFields(subclass,context){
         max:typeof maximum==='function'?maximum:()=>maximum,rest
     }));
     if(subclass==='The Genie')fields.unshift({type:'select',key:'genieKind',label:'Genie patrónus fajtája',minLevel:1,options:['Dao (föld)','Djinni (levegő)','Efreeti (tűz)','Marid (víz)']});
+    const activeStates={
+        'Circle of Spores':[[2,'symbioticEntityActive','Symbiotic Entity aktív']],
+        'Circle of Stars':[[2,'starryFormActive','Starry Form aktív']],
+        'Samurai':[[3,'fightingSpiritActive','Fighting Spirit aktív ebben a körben']],
+        'Rune Knight':[[3,'giantsMightActive','Giant’s Might aktív']],
+        'The Genie':[[6,'elementalGiftActive','Elemental Gift aktív']],
+        'Bladesinging':[[2,'bladesongActive','Bladesong aktív']]
+    };
+    (activeStates[subclass]||[]).forEach(([minLevel,key,label])=>fields.push({type:'toggle',key:'supplement_'+key,label,minLevel,wide:true,rest:'both'}));
     return fields;
 }
 function supplementalSubclassFields(context){
@@ -9031,6 +9050,8 @@ function advanceCombatRound(){
     history.push({round,events,note,log:readCombatCurrentLog(),initiative:Number(document.getElementById('combatRoundInitiativeValue').value)});
     document.getElementById('combatRoundHistory').value=JSON.stringify(history);
     document.getElementById('combatRoundNumber').value=String(round+1);
+    const fightingSpirit=document.getElementById('classFeature_supplement_fightingSpiritActive');
+    if(fightingSpirit)fightingSpirit.checked=false;
     clearCompletedDeathSavesForNextRound();
     const rulesSpeed=combatRulesSpeed();
     combatRulesWrite(CombatTurnRules.fresh(round+1,rulesSpeed.speed,rulesSpeed.unit));
@@ -9076,7 +9097,11 @@ function applyIncomingDamage(){
     const race=document.getElementById('characterRace')?.value||'',subrace=(document.getElementById('characterSubrace')?.value||'').toLocaleLowerCase();
     const dragonResistance=Object.entries({black:'acid',blue:'lightning',brass:'fire',bronze:'lightning',copper:'acid',gold:'fire',green:'poison',red:'fire',silver:'cold',white:'cold'}).find(([ancestry])=>subrace.includes(ancestry))?.[1];
     const resistedByRace=(race==='Aasimar'&&['necrotic','radiant'].includes(damageType))||(race==='Dwarf'&&damageType==='poison')||(race==='Tiefling'&&damageType==='fire')||(race==='Dragonborn'&&damageType===dragonResistance)||(race==='Genasi'&&((subrace.includes('fire')&&damageType==='fire')||(subrace.includes('water')&&damageType==='acid')));
-    const damage = resistedByRage||resistedByRace ? Math.floor(enteredDamage / 2) : enteredDamage;
+    const resistanceContext=classFeatureContext(),genieKind=document.getElementById('classFeature_genieKind')?.value||'';
+    const genieResistance=genieKind.startsWith('Dao')?'bludgeoning':genieKind.startsWith('Djinni')?'thunder':genieKind.startsWith('Efreeti')?'fire':genieKind.startsWith('Marid')?'cold':'';
+    const starryResistance=resistanceContext.klass==='Druid'&&resistanceContext.level>=14&&resistanceContext.subclass.includes('stars')&&document.getElementById('classFeature_supplement_starryFormActive')?.checked&&['bludgeoning','piercing','slashing'].includes(damageType);
+    const resistedBySubclass=(resistanceContext.klass==='Sorcerer'&&resistanceContext.level>=6&&resistanceContext.subclass.includes('storm')&&['lightning','thunder'].includes(damageType))||(resistanceContext.klass==='Sorcerer'&&resistanceContext.level>=6&&resistanceContext.subclass.includes('aberrant mind')&&damageType==='psychic')||(resistanceContext.klass==='Warlock'&&resistanceContext.level>=6&&resistanceContext.subclass.includes('fathomless')&&damageType==='cold')||(resistanceContext.klass==='Warlock'&&resistanceContext.level>=6&&resistanceContext.subclass.includes('genie')&&damageType===genieResistance)||starryResistance;
+    const damage = resistedByRage||resistedByRace||resistedBySubclass ? Math.floor(enteredDamage / 2) : enteredDamage;
     const currentHp = document.getElementById('currentHp');
     const temporaryHp = document.getElementById('tempHp');
     if(!Number.isInteger(enteredDamage) || enteredDamage <= 0){incomingDamageResult.textContent = 'Adj meg 1 vagy nagyobb egész sebzésértéket.'; return;}
@@ -9100,7 +9125,7 @@ function applyIncomingDamage(){
     currentHp.value = String(nextHp);
     currentHp.dispatchEvent(new Event('input', {bubbles:true}));
     currentHp.dispatchEvent(new Event('change', {bubbles:true}));
-    const resistanceText=resistedByRage?'harag miatti':resistedByRace?'faji':'';
+    const resistanceText=resistedByRage?'harag miatti':resistedByRace?'faji':resistedBySubclass?'alosztály miatti':'';
     incomingDamageResult.textContent = combatInspirationText+`Bevitt sebzés: ${enteredDamage}${resistanceText ? `, ${resistanceText} ellenállás után ${damage}` : ''}. Ideiglenes HP: −${absorbed}; aktuális HP: −${hpLoss}.`;
     if(shapeDamage)incomingDamageResult.textContent=combatInspirationText+`Bevitt sebzés: ${enteredDamage}${resistanceText ? `, ${resistanceText} ellenállás után ${damage}` : ''}. Ideiglenes HP: −${absorbed}; Vad alak HP: −${shapeDamage.loss}; karakter HP: −${shapeDamage.overflow}.`+(shapeDamage.ended?' Az állati alak megszűnt.':'');
     if(shapeDamage?.ended){
@@ -9741,8 +9766,8 @@ function performCombatRoll(){
     const attack=type==='damage'?readCombatDamageSource():readCombatAttack();
     if(!attack){combatRollResult.textContent='Adj meg vagy válassz egy támadássort.';return;}
     if(type==='attack'){
-        const reckless=Boolean(document.getElementById('combatRecklessAttack')?.checked),assassinateAdvantage=Boolean(document.getElementById('combatAssassinateAdvantage')?.checked),tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked);
-        const d20=combatResolveD20(manualValue,reckless||assassinateAdvantage||tides),die=d20.die;
+        const reckless=Boolean(document.getElementById('combatRecklessAttack')?.checked),assassinateAdvantage=Boolean(document.getElementById('combatAssassinateAdvantage')?.checked),tides=Boolean(document.getElementById('combatTidesOfChaos')?.checked),fightingSpirit=Boolean(document.getElementById('classFeature_supplement_fightingSpiritActive')?.checked);
+        const d20=combatResolveD20(manualValue,reckless||assassinateAdvantage||tides||fightingSpirit),die=d20.die;
         let inspiration={used:false,value:0,text:''};
         if(die!==1){try{inspiration=readRollInspiration('combatRollInspiration');}catch(error){combatRollResult.textContent=error.message;return;}}
         if(!combatRulesTakeRoll())return;
@@ -9758,7 +9783,8 @@ function performCombatRoll(){
             const forcedCritical=Boolean(document.getElementById('combatAssassinateSurprised')?.checked);
             const note=forcedCritical?' — Assassinate: kritikus találat!':die>=criticalThreshold?' — kritikus találat!':'';
             const recklessText=reckless?' | Reckless Attack: ellened előny a következő körödig':'';
-            showCombatResult(attack.name+': d20 ('+die+d20.detail+') '+(bonus>=0?'+':'−')+' '+Math.abs(bonus)+inspiration.text+note+recklessText+(tidesUsed?' | Tides of Chaos elköltve':''),die+bonus+inspiration.value);
+            const fightingSpiritText=fightingSpirit?' | Fighting Spirit: előny':'';
+            showCombatResult(attack.name+': d20 ('+die+d20.detail+') '+(bonus>=0?'+':'−')+' '+Math.abs(bonus)+inspiration.text+note+recklessText+fightingSpiritText+(tidesUsed?' | Tides of Chaos elköltve':''),die+bonus+inspiration.value);
             commitRollInspiration(inspiration);
         }
         combatAttackFlow={phase:'rolled',attackKey:combatAttackSelect.value,lastNatural:die,eventType:'attack',damageExpression:attack.damage,sourceSnapshot:{name:attack.name,damage:attack.damage,bonus:attack.bonus},monkMartialArts:Boolean(document.getElementById('combatMonkMartialArts')?.checked),forcedCritical:Boolean(document.getElementById('combatAssassinateSurprised')?.checked)};
@@ -10589,9 +10615,11 @@ function updateDerivedFields(){
                 const defenseStyle=armorType!=='unarmored'&&[document.getElementById('classFeature_fightingStyle')?.value,document.getElementById('classFeature_additionalFightingStyle')?.value].includes('Defense')?1:0;
                 const acContext=classFeatureContext(),heavyArmor=['ringmail','chainmail','splint','plate'].includes(armorType);
                 const soulOfTheForge=acContext.klass==='Cleric'&&acContext.level>=6&&acContext.subclass.includes('forge')&&heavyArmor?1:0;
+                const lightOrNoArmor=['unarmored','padded','leather','studded'].includes(armorType),noShield=shield===0;
+                const bladesong=acContext.klass==='Wizard'&&acContext.level>=2&&acContext.subclass.includes('bladesinging')&&lightOrNoArmor&&noShield&&document.getElementById('classFeature_supplement_bladesongActive')?.checked?acContext.intMod:0;
                 const base=armorType==='unarmored'?unarmoredClassAC(dex,shield):armor.base+dexBonus;
-                armorField.value = base + shield + other + defenseStyle + soulOfTheForge;
-                armorField.title=`Alap: ${base}; pajzs: ${formatModifier(shield)}; egyéb: ${formatModifier(other)}${defenseStyle?'; Defense harcmodor: +1':''}${soulOfTheForge?'; Soul of the Forge: +1':''}.`;
+                armorField.value = base + shield + other + defenseStyle + soulOfTheForge + bladesong;
+                armorField.title=`Alap: ${base}; pajzs: ${formatModifier(shield)}; egyéb: ${formatModifier(other)}${defenseStyle?'; Defense harcmodor: +1':''}${soulOfTheForge?'; Soul of the Forge: +1':''}${bladesong?`; Bladesong: ${formatModifier(bladesong)}`:''}.`;
             }
             armorField.readOnly = true;
         }

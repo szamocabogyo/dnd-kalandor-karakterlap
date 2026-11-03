@@ -1847,7 +1847,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .spell-quick-actions[hidden]{display:none}
 .spell-quick-title{grid-column:1/-1;margin:0;padding:9px 10px;color:var(--accent);font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;list-style:none}
 .spell-quick-title::-webkit-details-marker{display:none}
-.spell-quick-title::before{content:'▸';display:inline-block;margin-right:7px;transition:transform .15s ease}
+.spell-quick-title::before{content:'▸';display:inline-block;width:11px;margin-right:7px;font-size:11px;line-height:1;text-align:center;transform-origin:center;transition:transform .15s ease}
 .spell-quick-actions[open]>.spell-quick-title{border-bottom:1px solid var(--border)}
 .spell-quick-actions[open]>.spell-quick-title::before{transform:rotate(90deg)}
 .spell-quick-description{grid-column:1/-1;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent)}

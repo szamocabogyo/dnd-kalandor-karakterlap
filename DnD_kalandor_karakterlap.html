@@ -582,6 +582,14 @@ select{
 .view-switcher button:active,.settings-menu>summary:active{
     transform:translateY(0);
 }
+.sheet-mode-switch{display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:3px;border:1px solid var(--border);border-radius:12px;background:var(--bg)}
+.view-switcher .sheet-mode-switch button{min-width:105px;margin:0;padding:7px 12px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:var(--muted)}
+.view-switcher .sheet-mode-switch button:hover{transform:none;box-shadow:none}
+.view-switcher .sheet-mode-switch button[aria-pressed=true]{background:var(--accent)!important;color:var(--bg)!important;box-shadow:inset 0 0 10px rgba(0,0,0,.22)!important}
+.sheet[data-sheet-mode=play] [data-mode-locked=true]{opacity:1;color:var(--text);cursor:default}
+.sheet[data-sheet-mode=play] select[data-mode-locked=true],.sheet[data-sheet-mode=play] input[data-mode-locked=true],.sheet[data-sheet-mode=play] textarea[data-mode-locked=true]{border-color:color-mix(in srgb,var(--border) 65%,transparent);background:color-mix(in srgb,var(--bg) 76%,var(--card));-webkit-text-fill-color:var(--text)}
+.sheet[data-sheet-mode=play] #addAttackRow,.sheet[data-sheet-mode=play] .attacks .remove-attack-row,.sheet[data-sheet-mode=play] #addSpellRow,.sheet[data-sheet-mode=play] #addItemSpellRow,.sheet[data-sheet-mode=play] .spell-entry-delete,.sheet[data-sheet-mode=play] .spell-detail-disclosure,.sheet[data-sheet-mode=play] #addGemInventoryRow,.sheet[data-sheet-mode=play] .gem-remove-button,.sheet[data-sheet-mode=play] #portraitSettingsButton,.sheet[data-sheet-mode=play] #importCharacter,.sheet[data-sheet-mode=play] #clearCharacter{display:none!important}
+.sheet[data-sheet-mode=play] .skill-row[data-skill-selectable=true]{cursor:default}
 .rest-status{margin:-14px 0 20px;color:var(--accent);text-align:center;font-size:.9rem;font-weight:bold}
 .settings-menu{position:relative;z-index:20}
 .settings-menu>summary{display:inline-flex;align-items:center;box-sizing:border-box;list-style:none;background:linear-gradient(180deg,#5c4630,#3a2d20);color:#f4e8cf;border:1px solid #a68658;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;font-family:inherit;line-height:normal;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
@@ -2114,6 +2122,8 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 </style>
 <style id="compactCharacterToolbarStyles">
 .sheet.mobile-mode>.view-switcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:start;justify-content:stretch;margin:0 0 12px;max-width:100%}
+.sheet.mobile-mode>.view-switcher>.sheet-mode-switch{grid-column:1/-1;width:100%}
+.sheet.mobile-mode>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:40px;padding:6px 8px;font-size:.75rem}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:44px;width:100%;margin:0;padding:6px 8px;font-size:.75rem;font-weight:600;line-height:1.2;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]{grid-column:1/-1}
@@ -2390,6 +2400,10 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 </section>
 
 <div class="view-switcher">
+    <div class="sheet-mode-switch" role="group" aria-label="Karakterlap használati módja">
+      <button id="sheetPlayModeButton" type="button" aria-pressed="true">⚔ Játék</button>
+      <button id="sheetEditModeButton" type="button" aria-pressed="false">✎ Szerkesztés</button>
+    </div>
     <details id="settingsMenu" class="settings-menu">
       <summary>⚙ Beállítások</summary>
       <div class="settings-menu-panel">
@@ -10894,6 +10908,7 @@ document
 .forEach((skill,index) => {
 
     skill.addEventListener('click', () => {
+        if(document.querySelector('.sheet')?.dataset.sheetMode==='play')return;
         if(skill.dataset.skillSelectable!=='true')return;
         const manuallyProficient=!skill.classList.contains('manual-proficient');
         skill.classList.toggle('manual-proficient',manuallyProficient);
@@ -11624,6 +11639,41 @@ function setupGemInventory(){
     restoreGemInventory();
 }
 
+let activeSheetMode='play';
+const sheetModeOriginalDisabled=new WeakMap();
+const sheetModeEditControlSelector=[
+    '#mobileNavCharacter input','#mobileNavCharacter select','.abilities .score','[data-character-speed]','#proficiencyBonus','#maxHp',
+    '.attacks input','#equipment','#mobileNavMore input','#mobileNavMore select','[id^="saveProf"]','[id^="saveExtra"]',
+    '#otherProficiencies','#personality','#feats','#spellcastingAbility','#spellSaveDC','#spellAttackBonus',
+    '.spell-detail-fields input','.spell-detail-fields select','.spell-detail-fields textarea',
+    '#classFeatureFields select','#classFeatureFields textarea','#classFeatureFields input[type="text"]'
+].join(',');
+function storedSheetMode(){
+    try{return JSON.parse(localStorage.getItem('dndCharacter')||'{}')._sheetMode==='edit'||localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}catch{return localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}
+}
+function syncSheetModeControls(){
+    const play=activeSheetMode==='play';
+    document.querySelectorAll(sheetModeEditControlSelector).forEach(control=>{
+        if(play){
+            if(!sheetModeOriginalDisabled.has(control))sheetModeOriginalDisabled.set(control,control.disabled);
+            control.disabled=true;control.dataset.modeLocked='true';
+        }else if(sheetModeOriginalDisabled.has(control)){
+            control.disabled=sheetModeOriginalDisabled.get(control);sheetModeOriginalDisabled.delete(control);delete control.dataset.modeLocked;
+        }
+    });
+}
+function setSheetMode(mode,{persist=true}={}){
+    activeSheetMode=mode==='edit'?'edit':'play';
+    const sheet=document.querySelector('.sheet');if(sheet)sheet.dataset.sheetMode=activeSheetMode;
+    const playButton=document.getElementById('sheetPlayModeButton'),editButton=document.getElementById('sheetEditModeButton');
+    playButton?.setAttribute('aria-pressed',String(activeSheetMode==='play'));editButton?.setAttribute('aria-pressed',String(activeSheetMode==='edit'));
+    syncSheetModeControls();
+    if(persist){
+        localStorage.setItem('dndSheetMode',activeSheetMode);
+        try{const saved=JSON.parse(localStorage.getItem('dndCharacter')||'{}');saved._sheetMode=activeSheetMode;localStorage.setItem('dndCharacter',JSON.stringify(saved));}catch{}
+    }
+}
+
 function saveCharacter() {
 
     refreshSpellAvailability();
@@ -11653,6 +11703,7 @@ function saveCharacter() {
     characterData._characterPortraitData = characterPortraitData;
     characterData._backgroundGeneratedEquipment = backgroundGeneratedEquipment;
     characterData._backgroundGeneratedFeature = backgroundGeneratedFeature;
+    characterData._sheetMode = activeSheetMode;
 
     // Preserve resource values and notes for each class when switching classes.
     try {
@@ -11974,6 +12025,10 @@ setupAdvancedBaseData();
 setupMoneyInventory();
 setupGemInventory();
 loadCharacter();
+document.getElementById('sheetPlayModeButton')?.addEventListener('click',()=>setSheetMode('play'));
+document.getElementById('sheetEditModeButton')?.addEventListener('click',()=>setSheetMode('edit'));
+setSheetMode(storedSheetMode(),{persist:false});
+new MutationObserver(()=>queueMicrotask(syncSheetModeControls)).observe(document.querySelector('.sheet'),{childList:true,subtree:true});
 syncDeathSaveMarks();
 updateRollInspirationControls(true);
 consolidateLegacyFreeText();
@@ -12188,6 +12243,7 @@ document
     characterData._extraSpellRowCountSpells = extraSpellRowCount;
     characterData._deletedSpellRows = deletedSpellRows;
     characterData._characterPortraitData = characterPortraitData;
+    characterData._sheetMode = activeSheetMode;
 
     const blob = new Blob(
         [JSON.stringify(characterData,null,2)],
@@ -12306,6 +12362,8 @@ document
         });
 
         syncNotesEditorFromField();
+
+        setSheetMode(data._sheetMode==='edit'?'edit':'play');
 
         saveCharacter();
 
@@ -13621,7 +13679,7 @@ setupRangerCombat();
 applyClassVisualTheme();
 
 const uiTranslationsEn={
-'Nyelv':'Language','Magyar':'Hungarian','⚙ Beállítások':'⚙ Settings','🖼 Portré':'🖼 Portrait','📝 Jegyzetek':'📝 Notes','♲ Karakterlap ürítése':'♲ Clear Character Sheet','🌤 Rövid pihenő':'🌤 Short Rest','🌙 Hosszú pihenő':'🌙 Long Rest','Kalandori heraldika':'Adventurer Heraldry','Válassz kasztot':'Choose a Class','Válassz kasztot...':'Choose a class…','A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.':'The selected class crest, ornamentation, and arcane glow come to life here.','Kasztspecifikus heraldikai fejléc':'Class-themed heraldic banner',
+'Nyelv':'Language','Magyar':'Hungarian','⚔ Játék':'⚔ Play','✎ Szerkesztés':'✎ Edit','Karakterlap használati módja':'Character sheet mode','⚙ Beállítások':'⚙ Settings','🖼 Portré':'🖼 Portrait','📝 Jegyzetek':'📝 Notes','♲ Karakterlap ürítése':'♲ Clear Character Sheet','🌤 Rövid pihenő':'🌤 Short Rest','🌙 Hosszú pihenő':'🌙 Long Rest','Kalandori heraldika':'Adventurer Heraldry','Válassz kasztot':'Choose a Class','Válassz kasztot...':'Choose a class…','A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.':'The selected class crest, ornamentation, and arcane glow come to life here.','Kasztspecifikus heraldikai fejléc':'Class-themed heraldic banner',
 '✦ Karakter adatok':'✦ Character Details','Karakter adatok':'Character Details','Karakter neve':'Character Name','Kaszt':'Class','Alosztály':'Subclass','Szint':'Level','Faj':'Race','Háttér':'Background','Válassz fajt...':'Choose a race…','Válassz jellemet...':'Choose an alignment…','Válassz vagy írj egyéni hátteret…':'Choose or enter a custom background…','Választható hátterek':'Available Backgrounds','Előbb válassz kasztot…':'Choose a class first…','Karakter portré':'Character Portrait','Karakter portré előnézete':'Character portrait preview','Kép kiválasztása':'Choose Image','Portré eltávolítása':'Remove Portrait','Bezárás':'Close',
 'Tulajdonságpontok':'Ability Scores','ERŐ':'STRENGTH','ÜGYESSÉG':'DEXTERITY','ÁLLÓKÉPESSÉG':'CONSTITUTION','INTELLIGENCIA':'INTELLIGENCE','BÖLCSESSÉG':'WISDOM','KARIZMA':'CHARISMA','Erő':'Strength','Ügyesség':'Dexterity','Állóképesség':'Constitution','Intelligencia':'Intelligence','Bölcsesség':'Wisdom','Karizma':'Charisma','Harci értékek':'Combat Statistics','Aktuális HP':'Current Hit Points','Maximális HP':'Hit Point Maximum','Inspiráció':'Inspiration','Inspiráció aktív':'Inspiration Active','Nincs aktív inspiráció':'No Active Inspiration','Kockaérték':'Die Size',
 'Fegyverek':'Weapons','＋ Új sor':'＋ Add Row','Név':'Name','Bónusz':'Bonus','Sebzés / típus':'Damage / Type','Sor törlése':'Delete row','Felszerelés':'Equipment','Fegyverek, páncélok, tárgyak, készletek és egyéb felszerelés…':'Weapons, armor, items, kits, and other equipment…','Képzettségek':'Skills','Kasztjellemzők':'Class Features','Pénz':'Currency','Mentődobások':'Saving Throws','Egyéb jártasságok és nyelvek':'Other Proficiencies & Languages','Életerőkockák és halálmentők':'Hit Dice & Death Saves','Haladó alapadatok':'Advanced Character Details',

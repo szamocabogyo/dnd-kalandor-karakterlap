@@ -1728,6 +1728,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode .attacks>.attacks-heading h3::before{content:"⚔";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
 .sheet.mobile-mode .abilities>.mobile-generated-section-heading h3::before{content:"✣";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
 .sheet.mobile-mode .combat>.mobile-generated-section-heading h3::before{content:"⚔";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
+.sheet.mobile-mode .inspiration-card>.mobile-generated-section-heading h3::before{content:"✦";display:inline-block;margin-right:.45em;color:var(--accent);font-size:.9em}
 .sheet.mobile-mode .abilities,
 .sheet.mobile-mode .combat{
   position:relative;
@@ -11085,7 +11086,7 @@ function setupSupplementalCollapsiblePanels(){
 }
 setupSupplementalCollapsiblePanels();
 function setupMobileSectionFolding(){
-    const targets=document.querySelectorAll('.sheet .extra-sheet-grid>.extra-card:not(.collapsible),.sheet .attacks:not(.collapsible),.sheet .abilities,.sheet .combat,.sheet .hp-card:not(.collapsible)');
+    const targets=document.querySelectorAll('.sheet .extra-sheet-grid>.extra-card:not(.collapsible),.sheet .attacks:not(.collapsible),.sheet .abilities,.sheet .combat,.sheet .hp-card:not(.collapsible),.sheet .inspiration-card:not(.collapsible)');
     targets.forEach(section=>{
         panelFoldKey(section);if(section.dataset.mobileFoldReady==='true')return;
         let heading=section.matches('.abilities,.combat')?null:section.querySelector(':scope > .attacks-heading, :scope > h3');
@@ -11093,7 +11094,7 @@ function setupMobileSectionFolding(){
             heading=document.createElement('div');
             heading.className='mobile-section-heading mobile-generated-section-heading';
             const title=document.createElement('h3');
-            title.textContent=section.classList.contains('abilities')?'Tulajdonságok':section.classList.contains('combat')?'Harci értékek':'Szekció';
+            title.textContent=section.classList.contains('abilities')?'Tulajdonságok':section.classList.contains('combat')?'Harci értékek':section.classList.contains('inspiration-card')?'Inspiráció':'Szekció';
             heading.appendChild(title);
             section.prepend(heading);
         } else heading.classList.add('mobile-section-heading');

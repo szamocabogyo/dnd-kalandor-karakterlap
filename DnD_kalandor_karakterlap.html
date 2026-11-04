@@ -1622,6 +1622,12 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-result{margin-top:12px}
 .mobile-roll-result:empty{display:none}
 .mobile-roll-result .saving-throw-result-card{margin:0}
+.mobile-roll-dice-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin:7px 0}
+.mobile-roll-dice-summary.is-single{grid-template-columns:1fr}
+.mobile-roll-die{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--muted);font-size:.74rem;line-height:1.2}
+.mobile-roll-die strong{color:var(--text);font-size:1.15rem}
+.mobile-roll-die.is-selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent);box-shadow:inset 0 0 10px color-mix(in srgb,var(--accent) 8%,transparent)}
+.mobile-roll-die.is-selected strong{color:var(--accent)}
 body:has(.mobile-roll-panel-overlay:not([hidden])){overflow:hidden}
 body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:none}
 @media(max-width:420px){.mobile-roll-fields{grid-template-columns:1fr}.mobile-roll-panel-overlay{padding-left:0;padding-right:0}.mobile-roll-panel-dialog{border-left:0;border-right:0}}
@@ -12072,11 +12078,18 @@ function performMobileUnifiedRoll(){
     result.className='mobile-roll-result';result.replaceChildren();
     const card=document.createElement('div');card.className='saving-throw-result-card'+(naturalOne?' is-critical-failure':'');
     const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${name} · ${naturalOne?mobileRollText('kritikus hiba','critical failure'):manual===null?mode==='advantage'?mobileRollText('előny','advantage'):mode==='disadvantage'?mobileRollText('hátrány','disadvantage'):mobileRollText('automatikus dobás','automatic roll'):mobileRollText('kézi dobás','manual roll')}`;
+    const diceSummary=document.createElement('div');diceSummary.className='mobile-roll-dice-summary'+(rolls.length===1?' is-single':'');
+    rolls.forEach((value,index)=>{
+        const selected=value===rolled&&(rolls.length===1||index===rolls.findIndex(item=>item===rolled));
+        const die=document.createElement('span');die.className='mobile-roll-die'+(selected?' is-selected':'');
+        const label=document.createElement('span');label.textContent=rolls.length===1?(manual===null?mobileRollText('Dobás','Roll'):mobileRollText('Kézi dobás','Manual roll')):`${index+1}. ${mobileRollText('dobás','roll')}${selected?' · '+mobileRollText('felhasznált','used'):''}`;
+        const number=document.createElement('strong');number.textContent=String(value);die.append(label,number);diceSummary.appendChild(die);
+    });
     const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
     const math=document.createElement('span');math.className='saving-throw-result-math';
     const rollText=rolls.length>1?`${rolls.join(', ')} → ${rolled}`:String(rolled);
     math.textContent=naturalOne?mobileRollText('d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.','d20: 1 · Critical failure · No bonus is added.'):`d20: ${rollText}${minimumText} + ${mobileRollText('számított bónusz','calculated bonus')}: ${formatModifier(baseBonus)} + ${mobileRollText('egyéb','other')}: ${formatModifier(extra)} = ${total}`;
-    card.append(title,totalElement,math);result.append(card);
+    card.append(title,diceSummary,totalElement,math);result.append(card);
 }
 document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.addEventListener('click',()=>setMobileRollKind(button.dataset.mobileRollKind)));
 mobileRollChoice?.addEventListener('change',()=>refreshMobileRollPreview(true));

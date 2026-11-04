@@ -1595,6 +1595,16 @@ input:focus, textarea:focus, select:focus {
    and keep fields readable without wasting vertical space. */
 body:has(.sheet.mobile-mode){padding:0;overflow-x:hidden}
 body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;padding:0;overflow-x:clip}
+.mobile-bottom-nav{display:none}
+body:has(.sheet.mobile-mode) #previewFrame{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
+.mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
+.mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
+.mobile-bottom-nav button>strong{max-width:100%;overflow:hidden;font-size:.65rem;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
+.mobile-bottom-nav button[aria-current="page"]{border-color:color-mix(in srgb,var(--accent) 58%,transparent);background:color-mix(in srgb,var(--accent) 16%,var(--card));color:var(--accent);box-shadow:inset 0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)}
+.mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
+#mobileNavCharacter,#mobileNavRolls,#mobileNavSpells,#mobileNavMore{scroll-margin-top:10px}
 .mobile-preview:has(.sheet.mobile-mode){width:100%;max-width:100%;margin:0;border:0;border-radius:0;overflow:visible}
 .sheet.mobile-mode{width:100%;max-width:100%;margin:0;padding:12px;box-sizing:border-box;gap:10px;overflow-x:clip}
 .sheet.mobile-mode .main{width:100%;gap:10px}
@@ -2350,7 +2360,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 <p id="restStatus" class="rest-status" aria-live="polite" hidden></p>
 <p id="combatEncounterStatus" class="combat-encounter-status" role="status" hidden><span id="combatEncounterStatusText"></span><button id="combatEncounterDismiss" type="button" aria-label="Értesítés bezárása" title="Bezárás">×</button></p>
 
-<div class="card collapsible character-info">
+<div id="mobileNavCharacter" class="card collapsible character-info">
 
     <div class="section-header">
 	<h3 id="characterInfoTitle">
@@ -2664,7 +2674,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
     <!-- JOBB OLDAL -->
 <div class="right-column">
 
-<div class="card collapsible">
+<div id="mobileNavRolls" class="card collapsible">
 
     <div class="section-header">
         <h3><span class="dnd-mark" aria-hidden="true">✧</span> Skills</h3>
@@ -2756,7 +2766,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 </div>
 
 <div class="extra-sheet-grid" aria-label="További karakteradatok">
-  <div class="card extra-card">
+  <div id="mobileNavMore" class="card extra-card">
     <h3><span class="dnd-mark" aria-hidden="true">✦</span> Haladó alapadatok</h3>
     <div class="extra-field-grid">
       <label>Játékos neve<input id="playerName" type="text" autocomplete="off"></label>
@@ -2883,7 +2893,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
       </div>
     </div>
   </div>
-  <div class="card extra-card spell-card collapsible">
+  <div id="mobileNavSpells" class="card extra-card spell-card collapsible">
     <div class="section-header"><h3><span class="dnd-mark" aria-hidden="true">✧</span> Varázslás</h3><span class="toggle-icon" aria-hidden="true">◀</span></div>
     <div class="section-content"><div class="extra-field-grid">
       <label class="spell-ability-field">Varázslási képesség<select id="spellcastingAbility"><option value="">Nincs</option><option>STR</option><option>DEX</option><option>CON</option><option>INT</option><option>WIS</option><option>CHA</option></select></label>
@@ -2907,6 +2917,14 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
   </div>
 </div>
 </div>
+
+<nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
+  <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavRolls"><span aria-hidden="true">🎲</span><strong>Dobások</strong></button>
+  <button type="button" data-mobile-nav-action="combat"><span aria-hidden="true">⚔</span><strong>Combat</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
+</nav>
 
 <div id="combatModeOverlay" class="combat-mode-overlay combat-guided" hidden role="dialog" aria-modal="true" aria-labelledby="combatModeTitle">
   <div class="combat-mode-dialog">
@@ -11951,6 +11969,38 @@ function syncResponsiveSheetMode(){
 responsiveSheetMedia.addEventListener?.('change',syncResponsiveSheetMode);
 syncResponsiveSheetMode();
 
+const mobileBottomNav=document.getElementById('mobileBottomNav');
+const mobileBottomNavButtons=[...(mobileBottomNav?.querySelectorAll('button')||[])];
+function setMobileBottomNavCurrent(button){
+    mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
+    if(button)button.setAttribute('aria-current','page');
+}
+function revealMobileNavigationTarget(target){
+    if(target.classList.contains('collapsed'))target.querySelector(':scope > .section-header')?.click();
+    if(target.classList.contains('mobile-section-collapsed'))target.querySelector(':scope > .mobile-section-heading .mobile-section-fold-toggle,:scope > .attacks-heading .mobile-section-fold-toggle')?.click();
+}
+mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
+    if(button.dataset.mobileNavAction==='combat'){
+        setMobileBottomNavCurrent(button);document.getElementById('combatModeButton')?.click();return;
+    }
+    const target=document.getElementById(button.dataset.mobileNavTarget||'');if(!target)return;
+    revealMobileNavigationTarget(target);setMobileBottomNavCurrent(button);
+    target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}));
+let mobileBottomNavFrame=0;
+function syncMobileBottomNavCurrent(){
+    mobileBottomNavFrame=0;if(!sheet.classList.contains('mobile-mode')||!combatModeOverlay.hidden)return;
+    const targets=mobileBottomNavButtons.map(button=>({button,target:document.getElementById(button.dataset.mobileNavTarget||'')})).filter(item=>item.target&&!item.target.hidden).sort((a,b)=>a.target.getBoundingClientRect().top-b.target.getBoundingClientRect().top);
+    if(!targets.length)return;
+    const reference=24,reached=targets.filter(item=>item.target.getBoundingClientRect().top<=reference);
+    const current=reached.at(-1)||targets[0];
+    setMobileBottomNavCurrent(current.button);
+}
+window.addEventListener('scroll',()=>{if(!mobileBottomNavFrame)mobileBottomNavFrame=requestAnimationFrame(syncMobileBottomNavCurrent);},{passive:true});
+responsiveSheetMedia.addEventListener?.('change',()=>requestAnimationFrame(syncMobileBottomNavCurrent));
+document.getElementById('combatCloseButton')?.addEventListener('click',()=>requestAnimationFrame(syncMobileBottomNavCurrent));
+requestAnimationFrame(syncMobileBottomNavCurrent);
+
 document
 .getElementById('exportCharacter')
 .addEventListener('click', () => {
@@ -13430,7 +13480,7 @@ const uiTranslationsEn={
 'Játékos neve':'Player Name','Kaland':'Adventure','A jelenlegi kaland címe':'Current adventure title','Méret':'Size','Tapasztalati pont (XP)':'Experience Points (XP)','Passzív Észlelés':'Passive Perception','Passzív észlelés':'Passive Perception','Észlelés egyéb bónusz':'Other Perception Bonus','Páncél típusa':'Armor Type','Pajzs AC bónusz':'Shield AC Bonus','AC egyéb bónusz':'Other AC Bonus','Kezdeményezés egyéb bónusz':'Other Initiative Bonus','Páncél nélkül':'Unarmored','Párnázott':'Padded','Bőr':'Leather','Szegecselt bőr':'Studded Leather','Bőr (közepes)':'Hide','Láncing':'Chain Shirt','Pikkelyvért':'Scale Mail','Mellvért':'Breastplate','Félvért':'Half Plate','Gyűrűs páncél':'Ring Mail','Láncvért':'Chain Mail','Sodronyvért':'Splint','Lemezvért':'Plate',
 'Jelöld a jártasságot; az összeg automatikus, az egyéb bónusz külön megadható.':'Mark proficiency; the total is calculated automatically and other bonuses can be entered separately.','Összesen':'Total','Egyéb':'Other','Kocka típusa':'Hit Die','Összes kocka':'Total Dice','Elhasznált kockák':'Spent Dice','Halálmentő sikerek':'Death Save Successes','Halálmentő kudarcok':'Death Save Failures','Első siker':'First success','Második siker':'Second success','Harmadik siker':'Third success','Első kudarc':'First failure','Második kudarc':'Second failure','Harmadik kudarc':'Third failure','Mesélő utasításai':'Dungeon Master Instructions','Jegyzet':'Note','Írd ide a mesélő utasításait…':'Write the Dungeon Master’s instructions here…',
 'Érmék':'Coins','Réz':'Copper','Ezüst':'Silver','Elektrum':'Electrum','Arany':'Gold','Platina':'Platinum','Drágakövek':'Gems','Tétel':'Item','Darab':'Quantity','Arany / db':'Gold / Item','Új drágakő hozzáadása':'Add New Gem','Érmék összértéke':'Total Coin Value','Drágakövek összértéke':'Total Gem Value','Érmék és drágakövek összértéke':'Total Wealth','0 arany':'0 gp',
-'Varázslás':'Spellcasting','✦ Varázslás':'✦ Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','＋ Tárgy / tekercs varázslata':'＋ Item / Scroll Spell','Tárgyak és tekercsek':'Items and Scrolls','Tárgyból / tekercsből':'From Item / Scroll','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Gyors használat':'Quick Use','Leírás':'Description','Használat':'Use','Leírás és hatás':'Description and Effect','1. Leírás és hatás':'1. Description and Effect','2. Felhasználás módja':'2. Casting Method','3. ✦ Varázslat használata':'3. ✦ Use Spell','Ehhez a varázslathoz még nincs szöveges leírás.':'No description has been added for this spell yet.','Varázslat kiválasztása és részletei':'Spell Selection and Details','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','✦ Varázslat használata':'✦ Use Spell','Dobási értékek':'Roll Values','1. Találati dobás':'1. Attack Roll','2. Sebzésdobás':'2. Damage Roll','🎲 Varázstámadás dobása':'🎲 Roll Spell Attack','🎲 Sebzés kiszámítása':'🎲 Calculate Damage','✓ Talált – sebzésdobás':'✓ Hit – Roll Damage','× Nem talált':'× Miss','Dobás típusa':'Roll Type','Varázstámadás':'Spell Attack','Célpont mentődobása':'Target Saving Throw','Nincs d20 dobás':'No d20 Roll','Kézi d20 érték':'Manual d20 Roll','Egyéb dobásbónusz':'Other Roll Bonus','További dobási beállítások':'Additional Roll Settings','🎲 Varázslatdobás':'🎲 Spell Roll','✦ Hatás alkalmazása':'✦ Apply Effect','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
+'Mobil gyorsnavigáció':'Mobile quick navigation','Karakter':'Character','Dobások':'Rolls','Combat':'Combat','Varázslatok':'Spells','Továbbiak':'More','Varázslás':'Spellcasting','✦ Varázslás':'✦ Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','＋ Tárgy / tekercs varázslata':'＋ Item / Scroll Spell','Tárgyak és tekercsek':'Items and Scrolls','Tárgyból / tekercsből':'From Item / Scroll','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Gyors használat':'Quick Use','Leírás':'Description','Használat':'Use','Leírás és hatás':'Description and Effect','1. Leírás és hatás':'1. Description and Effect','2. Felhasználás módja':'2. Casting Method','3. ✦ Varázslat használata':'3. ✦ Use Spell','Ehhez a varázslathoz még nincs szöveges leírás.':'No description has been added for this spell yet.','Varázslat kiválasztása és részletei':'Spell Selection and Details','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','✦ Varázslat használata':'✦ Use Spell','Dobási értékek':'Roll Values','1. Találati dobás':'1. Attack Roll','2. Sebzésdobás':'2. Damage Roll','🎲 Varázstámadás dobása':'🎲 Roll Spell Attack','🎲 Sebzés kiszámítása':'🎲 Calculate Damage','✓ Talált – sebzésdobás':'✓ Hit – Roll Damage','× Nem talált':'× Miss','Dobás típusa':'Roll Type','Varázstámadás':'Spell Attack','Célpont mentődobása':'Target Saving Throw','Nincs d20 dobás':'No d20 Roll','Kézi d20 érték':'Manual d20 Roll','Egyéb dobásbónusz':'Other Roll Bonus','További dobási beállítások':'Additional Roll Settings','🎲 Varázslatdobás':'🎲 Spell Roll','✦ Hatás alkalmazása':'✦ Apply Effect','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
 '⚔ Saját kör':'⚔ My Turn','↪ Reakció':'↪ Reaction','🛡 Sebzést szenvedek':'🛡 Take Damage','⚑ Harc lezárása':'⚑ End Combat','1. Kezdés':'1. Start','1. Kezdeményezés':'1. Initiative','2. Műveletek':'2. Actions','A kör lépései':'Turn Steps','Kör':'Round','Kezdeményezés':'Initiative','Kézi d20 eredmény (1–20, üresen automatikus)':'Manual d20 Result (1–20; blank rolls automatically)','🎲 Kezdeményezés dobása':'🎲 Roll Initiative','Akció':'Action','Bónuszakció':'Bonus Action','Reakció':'Reaction','Mozgás':'Movement','Tárgyinterakció':'Object Interaction','Koncentráció':'Concentration','⚔ Támadás / varázslás':'⚔ Attack / Cast a Spell','◆ Más akció':'◆ Other Action','✦ Bónuszakció':'✦ Bonus Action','➶ Mozgás':'➶ Movement','◈ Tárgy / egyéb':'◈ Item / Other','Képesség, segítség…':'Ability, Help…','Tárgy, koncentráció…':'Item, concentration…','Kör befejezése':'End Turn','Befejeztem a körömet':'I Have Finished My Turn','Mégse':'Cancel','Vissza a körhöz':'Back to Turn','Új kör':'New Round','Új támadás':'New Attack','Támadás':'Attack','Sikeres':'Hit','Nem talált':'Miss','Sebzés értéke':'Damage Amount','Sebzés típusa':'Damage Type','Sebzés jóváhagyása':'Apply Damage','Elszenvedett sebzés':'Damage Taken','Korábbi körök':'Previous Rounds','Ebben a körben':'This Round','A kör eseménynaplója':'Turn Log','Esemény rögzítése':'Record Event','Megjegyzés (nem kötelező)':'Note (optional)',
 'Halálmentő dobások':'Death Saving Throws','Az aktuális HP negatív. Jelöld a halálmentődobás eredményét.':'Current HP is negative. Mark the death saving throw result.','Gyógyulás':'Healing','Használd, ha egy társ vagy más hatás gyógyítja a karaktert.':'Use this when an ally or another effect heals the character.','Kocka':'Die','Módosító':'Modifier','🎲 Gyógyítás dobása':'🎲 Roll Healing','Gyógyulás értéke':'Healing Amount','＋ Alkalmazás':'＋ Apply','☠ Meghaltál':'☠ You Died','Három sikertelen halálmentődobást jelöltél.':'You marked three failed death saving throws.','Jegyzet mentése és bezárás':'Save Note and Close',
 'Jegyzetek bezárása':'Close Notes','Jegyzet formázása':'Format Note','Félkövér':'Bold','Dőlt':'Italic','Aláhúzott':'Underline','Cím':'Heading','Címsor':'Heading','Bekezdés':'Paragraph','Felsorolás':'Bulleted List','Számozott lista':'Numbered List','• Lista':'• List','1. Lista':'1. List','Formázás törlése':'Clear Formatting','Törlés':'Clear','Írj ide jegyzeteket a kalandról, küldetésekről, szereplőkről vagy a játék eseményeiről…':'Write notes about the adventure, quests, NPCs, or events here…','A jegyzet automatikusan mentődik.':'Notes are saved automatically.','Mentve.':'Saved.',

@@ -2396,6 +2396,10 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 <style id="mobilePrimaryStatusPanelStyles">
 .sheet.mobile-mode .card.hp-card,.sheet.mobile-mode .card.inspiration-card{position:relative;width:100%;min-width:0;max-width:100%;box-sizing:border-box;padding:10px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 78%,#4b3929);border-radius:var(--class-radius,4px);background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary,var(--accent)) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface,var(--card)),color-mix(in srgb,var(--class-surface,var(--card)) 88%,#000));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border,var(--border)) 16%,transparent),inset 0 0 24px rgba(0,0,0,.24),0 8px 22px rgba(0,0,0,.22);overflow:visible;text-align:left}
 .sheet.mobile-mode .card.hp-card::before,.sheet.mobile-mode .card.inspiration-card::before{content:"";display:block;position:absolute;inset:4px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 30%,transparent);border-radius:calc(var(--class-radius,4px) * .65);pointer-events:none}
+.sheet.mobile-mode[data-class] .hp-card>h3.mobile-section-heading{border-color:color-mix(in srgb,var(--class-border) 64%,transparent);background:linear-gradient(110deg,color-mix(in srgb,var(--class-primary) 11%,transparent),transparent 72%);color:var(--class-symbol)!important;text-shadow:0 0 10px var(--class-glow)!important}
+.sheet.mobile-mode[data-class] .hp-card>h3.mobile-section-heading>.dnd-mark{color:var(--class-primary)!important}
+.sheet.mobile-mode #mobileNavCharacter.collapsed>.section-header{height:auto;min-height:48px;max-height:none;padding-top:8px;padding-bottom:8px}
+.sheet.mobile-mode #mobileNavCharacter.collapsed>.section-header h3{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.25}
 </style>
 </head>
 <body>

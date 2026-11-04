@@ -1685,7 +1685,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode .mobile-section-fold-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sheet.mobile-mode .mobile-section-collapsed>.mobile-section-heading~*,.sheet.mobile-mode .mobile-section-collapsed>.attacks-heading~*{display:none!important}
 .sheet.mobile-mode .mobile-section-foldable.collapsible>.section-header{padding:6px 0;margin-bottom:4px}
-.sheet.mobile-mode .mobile-generated-section-heading,
+.sheet.mobile-mode .mobile-section-heading,
 .sheet.mobile-mode .collapsible>.section-header,
 .sheet.mobile-mode .attacks>.attacks-heading{
   display:flex;
@@ -1700,7 +1700,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
   box-sizing:border-box;
 }
 .sheet.mobile-mode .collapsible:not(.collapsed)>.section-header,
-.sheet.mobile-mode .mobile-section-foldable:not(.mobile-section-collapsed)>.mobile-generated-section-heading,
+.sheet.mobile-mode .mobile-section-foldable:not(.mobile-section-collapsed)>.mobile-section-heading,
 .sheet.mobile-mode .attacks:not(.mobile-section-collapsed)>.attacks-heading{margin-bottom:9px}
 .sheet.mobile-mode .collapsible.collapsed>.section-header,
 .sheet.mobile-mode .mobile-section-foldable.mobile-section-collapsed>.mobile-section-heading,
@@ -1709,6 +1709,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode .mobile-section-foldable.mobile-section-collapsed>.mobile-section-heading h3,
 .sheet.mobile-mode .attacks.mobile-section-collapsed>.attacks-heading h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 .sheet.mobile-mode .mobile-generated-section-heading h3,
+.sheet.mobile-mode h3.mobile-section-heading,
 .sheet.mobile-mode .collapsible>.section-header h3,
 .sheet.mobile-mode .attacks>.attacks-heading h3{
   flex:1 1 auto;
@@ -2391,6 +2392,10 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 }
 @media(max-width:420px){.class-fantasy-banner{grid-template-columns:58px minmax(0,1fr);padding:10px}.class-crest-wrap{width:54px;height:54px}.class-crest{width:34px;height:34px}.class-banner-copy p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.class-banner-kicker{letter-spacing:.12em}}
 @media(prefers-reduced-motion:reduce){.class-crest-wrap::after,.sheet[data-class] .class-crest{animation:none!important}.sheet[data-class],.sheet[data-class] .card{transition:none!important}}
+</style>
+<style id="mobilePrimaryStatusPanelStyles">
+.sheet.mobile-mode .card.hp-card,.sheet.mobile-mode .card.inspiration-card{position:relative;width:100%;min-width:0;max-width:100%;box-sizing:border-box;padding:10px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 78%,#4b3929);border-radius:var(--class-radius,4px);background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary,var(--accent)) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface,var(--card)),color-mix(in srgb,var(--class-surface,var(--card)) 88%,#000));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border,var(--border)) 16%,transparent),inset 0 0 24px rgba(0,0,0,.24),0 8px 22px rgba(0,0,0,.22);overflow:visible;text-align:left}
+.sheet.mobile-mode .card.hp-card::before,.sheet.mobile-mode .card.inspiration-card::before{content:"";display:block;position:absolute;inset:4px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 30%,transparent);border-radius:calc(var(--class-radius,4px) * .65);pointer-events:none}
 </style>
 </head>
 <body>

@@ -1605,6 +1605,27 @@ body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bo
 .mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
 #mobileNavCharacter,#mobileNavRolls,#mobileNavSpells,#mobileNavMore{scroll-margin-top:10px}
+.mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:grid;align-items:end;padding:12px 12px 0;background:rgba(0,0,0,.76);box-sizing:border-box}
+.mobile-roll-panel-overlay[hidden]{display:none!important}
+.mobile-roll-panel-dialog{width:min(620px,100%);max-height:calc(100dvh - 24px);margin:0 auto;padding:14px 14px calc(16px + env(safe-area-inset-bottom));overflow:auto;border:1px solid var(--accent);border-bottom:0;border-radius:14px 14px 0 0;background:var(--card);box-shadow:0 -12px 36px rgba(0,0,0,.55)}
+.mobile-roll-panel-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.mobile-roll-panel-dialog>header h2{margin:0;color:var(--accent);font-size:1.1rem;letter-spacing:.03em}
+.mobile-roll-panel-dialog>header button{flex:0 0 42px;min-height:42px;padding:0;border:1px solid var(--border);background:var(--bg);color:var(--accent);font-size:1.25rem}
+.mobile-roll-kind{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.mobile-roll-kind button{min-height:44px;padding:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-weight:700}
+.mobile-roll-kind button[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mobile-roll-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:700}
+.mobile-roll-fields select,.mobile-roll-fields input{width:100%;min-height:46px;box-sizing:border-box;font-size:1rem}
+.mobile-roll-bonus-preview{min-height:42px;margin-top:11px;padding:10px;border-left:3px solid var(--accent);background:var(--bg);color:var(--text);font-size:.82rem;line-height:1.4}
+.mobile-roll-execute{width:100%;min-height:48px;margin-top:12px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:var(--bg);font:inherit;font-weight:800}
+.mobile-roll-result{margin-top:12px}
+.mobile-roll-result:empty{display:none}
+.mobile-roll-result .saving-throw-result-card{margin:0}
+body:has(.mobile-roll-panel-overlay:not([hidden])){overflow:hidden}
+body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:none}
+@media(max-width:420px){.mobile-roll-fields{grid-template-columns:1fr}.mobile-roll-panel-overlay{padding-left:0;padding-right:0}.mobile-roll-panel-dialog{border-left:0;border-right:0}}
+.sheet.mobile-mode #mobileNavRolls .saving-throw-roller,.sheet.mobile-mode #savingThrowsCard>.saving-throw-roller{display:none}
 .mobile-preview:has(.sheet.mobile-mode){width:100%;max-width:100%;margin:0;border:0;border-radius:0;overflow:visible}
 .sheet.mobile-mode{width:100%;max-width:100%;margin:0;padding:12px;box-sizing:border-box;gap:10px;overflow-x:clip}
 .sheet.mobile-mode .main{width:100%;gap:10px}
@@ -2920,11 +2941,30 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 
 <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
   <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
-  <button type="button" data-mobile-nav-target="mobileNavRolls"><span aria-hidden="true">🎲</span><strong>Dobások</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span aria-hidden="true">🎲</span><strong>Dobások</strong></button>
   <button type="button" data-mobile-nav-action="combat"><span aria-hidden="true">⚔</span><strong>Combat</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
 </nav>
+
+<div id="mobileRollPanelOverlay" class="mobile-roll-panel-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mobileRollPanelTitle">
+  <section class="mobile-roll-panel-dialog">
+    <header><h2 id="mobileRollPanelTitle">🎲 Dobópanel</h2><button id="mobileRollPanelClose" type="button" aria-label="Dobópanel bezárása">×</button></header>
+    <div class="mobile-roll-kind" role="tablist" aria-label="Dobás típusa">
+      <button type="button" role="tab" data-mobile-roll-kind="skill" aria-selected="true">Skillpróba</button>
+      <button type="button" role="tab" data-mobile-roll-kind="save" aria-selected="false">Mentődobás</button>
+    </div>
+    <div class="mobile-roll-fields">
+      <label><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
+      <label>Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
+      <label>Kézi d20 érték<input id="mobileRollManual" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
+      <label>Egyéb bónusz<input id="mobileRollExtra" type="number" inputmode="numeric" step="1" value="0"></label>
+    </div>
+    <div id="mobileRollBonusPreview" class="mobile-roll-bonus-preview" aria-live="polite"></div>
+    <button id="mobileRollExecute" class="mobile-roll-execute" type="button">🎲 Dobás</button>
+    <div id="mobileRollResult" class="mobile-roll-result" aria-live="polite"></div>
+  </section>
+</div>
 
 <div id="combatModeOverlay" class="combat-mode-overlay combat-guided" hidden role="dialog" aria-modal="true" aria-labelledby="combatModeTitle">
   <div class="combat-mode-dialog">
@@ -11971,6 +12011,82 @@ syncResponsiveSheetMode();
 
 const mobileBottomNav=document.getElementById('mobileBottomNav');
 const mobileBottomNavButtons=[...(mobileBottomNav?.querySelectorAll('button')||[])];
+const mobileRollPanelOverlay=document.getElementById('mobileRollPanelOverlay');
+const mobileRollChoice=document.getElementById('mobileRollChoice');
+let mobileRollKind='skill';
+const mobileRollAbilityNames={STR:'Erő',DEX:'Ügyesség',CON:'Állóképesség',INT:'Intelligencia',WIS:'Bölcsesség',CHA:'Karizma'};
+const mobileRollAbilityNamesEn={STR:'Strength',DEX:'Dexterity',CON:'Constitution',INT:'Intelligence',WIS:'Wisdom',CHA:'Charisma'};
+function mobileRollText(hu,en){return document.documentElement.lang==='en'?en:hu;}
+function mobileRollSelectedSkill(){
+    return [...document.querySelectorAll('.skill-row')].find(row=>characterSkillBaseName(row)===mobileRollChoice?.value)||null;
+}
+function mobileRollCurrentBonus(){
+    if(mobileRollKind==='save')return Number.parseInt(document.getElementById('saveValue'+mobileRollChoice?.value)?.value,10)||0;
+    return Number.parseInt(mobileRollSelectedSkill()?.querySelector('.skill-value')?.textContent,10)||0;
+}
+function refreshMobileRollPreview(clearResult=false){
+    const preview=document.getElementById('mobileRollBonusPreview'),extra=Number(document.getElementById('mobileRollExtra')?.value)||0,base=mobileRollCurrentBonus();
+    if(preview)preview.textContent=`${mobileRollText('Számított bónusz','Calculated bonus')}: ${formatModifier(base)} · ${mobileRollText('Egyéb bónusz','Other bonus')}: ${formatModifier(extra)} · ${mobileRollText('Összesen','Total')}: ${formatModifier(base+extra)}`;
+    if(clearResult)document.getElementById('mobileRollResult')?.replaceChildren();
+}
+function populateMobileRollChoices(){
+    if(!mobileRollChoice)return;const previous=mobileRollChoice.value;
+    if(mobileRollKind==='save')mobileRollChoice.replaceChildren(...Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value)));
+    else mobileRollChoice.replaceChildren(...[...document.querySelectorAll('.skill-row')].map(row=>new Option(characterSkillBaseName(row),characterSkillBaseName(row))));
+    if([...mobileRollChoice.options].some(option=>option.value===previous))mobileRollChoice.value=previous;
+    const label=document.getElementById('mobileRollChoiceLabel');if(label)label.textContent=mobileRollKind==='save'?mobileRollText('Mentődobás','Saving Throw'):'Skill';
+    refreshMobileRollPreview(true);
+}
+function setMobileRollKind(kind){
+    mobileRollKind=kind==='save'?'save':'skill';
+    document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.mobileRollKind===mobileRollKind)));
+    populateMobileRollChoices();
+}
+function openMobileRollPanel(){
+    updateSkills();updateDerivedFields();populateMobileRollChoices();mobileRollPanelOverlay.hidden=false;
+    document.getElementById('mobileRollManual').value='';document.getElementById('mobileRollResult').replaceChildren();refreshMobileRollPreview();
+    requestAnimationFrame(()=>mobileRollChoice?.focus());
+}
+function closeMobileRollPanel(){mobileRollPanelOverlay.hidden=true;mobileBottomNavButtons.find(button=>button.dataset.mobileNavAction==='rolls')?.focus({preventScroll:true});}
+function performMobileUnifiedRoll(){
+    const manualField=document.getElementById('mobileRollManual'),result=document.getElementById('mobileRollResult'),mode=document.getElementById('mobileRollMode')?.value||'normal';
+    if(!manualField||!result||!mobileRollChoice?.value)return;
+    updateSkills();updateDerivedFields();
+    const manualText=manualField.value.trim(),manual=manualText===''?null:Number(manualText);
+    if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>20)){
+        result.className='mobile-roll-result saving-throw-roll-result is-error';result.textContent=mobileRollText('A kézi d20 érték 1 és 20 közötti egész szám lehet.','The manual d20 roll must be a whole number from 1 to 20.');manualField.focus();return;
+    }
+    const rolls=manual===null?(mode==='normal'?[rollDie(20)]:[rollDie(20),rollDie(20)]):[manual];
+    const rolled=mode==='advantage'&&rolls.length>1?Math.max(...rolls):mode==='disadvantage'&&rolls.length>1?Math.min(...rolls):rolls[0];
+    const naturalOne=rolled===1,baseBonus=mobileRollCurrentBonus(),extra=Number(document.getElementById('mobileRollExtra')?.value)||0,bonus=baseBonus+extra;
+    let effectiveRoll=rolled,minimumText='';
+    if(mobileRollKind==='skill'&&!naturalOne){
+        const row=mobileRollSelectedSkill(),context=classFeatureContext(),proficient=row?.classList.contains('proficient')||row?.classList.contains('expertise-proficient');
+        const reliableTalent=context.klass==='Rogue'&&context.level>=11&&proficient&&rolled<10;
+        const supplemental=supplementalSkillRules(characterSkillBaseName(row),row?.dataset.ability||'',context);
+        effectiveRoll=Math.max(reliableTalent?10:rolled,rolled<supplemental.minimum?supplemental.minimum:rolled);
+        if(effectiveRoll!==rolled)minimumText=` → ${effectiveRoll} (${reliableTalent?'Reliable Talent':mobileRollText('kasztjellemző','class feature')})`;
+    }
+    const abilityLabels=document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames;
+    const total=naturalOne?1:effectiveRoll+bonus,name=mobileRollKind==='save'?`${abilityLabels[mobileRollChoice.value]} ${mobileRollText('mentődobás','saving throw')}`:`${mobileRollChoice.value} (${mobileRollSelectedSkill()?.dataset.ability||''})`;
+    result.className='mobile-roll-result';result.replaceChildren();
+    const card=document.createElement('div');card.className='saving-throw-result-card'+(naturalOne?' is-critical-failure':'');
+    const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${name} · ${naturalOne?mobileRollText('kritikus hiba','critical failure'):manual===null?mode==='advantage'?mobileRollText('előny','advantage'):mode==='disadvantage'?mobileRollText('hátrány','disadvantage'):mobileRollText('automatikus dobás','automatic roll'):mobileRollText('kézi dobás','manual roll')}`;
+    const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
+    const math=document.createElement('span');math.className='saving-throw-result-math';
+    const rollText=rolls.length>1?`${rolls.join(', ')} → ${rolled}`:String(rolled);
+    math.textContent=naturalOne?mobileRollText('d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.','d20: 1 · Critical failure · No bonus is added.'):`d20: ${rollText}${minimumText} + ${mobileRollText('számított bónusz','calculated bonus')}: ${formatModifier(baseBonus)} + ${mobileRollText('egyéb','other')}: ${formatModifier(extra)} = ${total}`;
+    card.append(title,totalElement,math);result.append(card);
+}
+document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.addEventListener('click',()=>setMobileRollKind(button.dataset.mobileRollKind)));
+mobileRollChoice?.addEventListener('change',()=>refreshMobileRollPreview(true));
+document.getElementById('mobileRollExtra')?.addEventListener('input',()=>refreshMobileRollPreview(true));
+document.getElementById('mobileRollMode')?.addEventListener('change',()=>document.getElementById('mobileRollResult')?.replaceChildren());
+document.getElementById('mobileRollExecute')?.addEventListener('click',performMobileUnifiedRoll);
+document.getElementById('mobileRollManual')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();performMobileUnifiedRoll();}});
+document.getElementById('mobileRollPanelClose')?.addEventListener('click',closeMobileRollPanel);
+mobileRollPanelOverlay?.addEventListener('click',event=>{if(event.target===mobileRollPanelOverlay)closeMobileRollPanel();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileRollPanelOverlay&&!mobileRollPanelOverlay.hidden)closeMobileRollPanel();});
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');
@@ -11980,6 +12096,9 @@ function revealMobileNavigationTarget(target){
     if(target.classList.contains('mobile-section-collapsed'))target.querySelector(':scope > .mobile-section-heading .mobile-section-fold-toggle,:scope > .attacks-heading .mobile-section-fold-toggle')?.click();
 }
 mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
+    if(button.dataset.mobileNavAction==='rolls'){
+        setMobileBottomNavCurrent(button);openMobileRollPanel();return;
+    }
     if(button.dataset.mobileNavAction==='combat'){
         setMobileBottomNavCurrent(button);document.getElementById('combatModeButton')?.click();return;
     }
@@ -13480,7 +13599,7 @@ const uiTranslationsEn={
 'Játékos neve':'Player Name','Kaland':'Adventure','A jelenlegi kaland címe':'Current adventure title','Méret':'Size','Tapasztalati pont (XP)':'Experience Points (XP)','Passzív Észlelés':'Passive Perception','Passzív észlelés':'Passive Perception','Észlelés egyéb bónusz':'Other Perception Bonus','Páncél típusa':'Armor Type','Pajzs AC bónusz':'Shield AC Bonus','AC egyéb bónusz':'Other AC Bonus','Kezdeményezés egyéb bónusz':'Other Initiative Bonus','Páncél nélkül':'Unarmored','Párnázott':'Padded','Bőr':'Leather','Szegecselt bőr':'Studded Leather','Bőr (közepes)':'Hide','Láncing':'Chain Shirt','Pikkelyvért':'Scale Mail','Mellvért':'Breastplate','Félvért':'Half Plate','Gyűrűs páncél':'Ring Mail','Láncvért':'Chain Mail','Sodronyvért':'Splint','Lemezvért':'Plate',
 'Jelöld a jártasságot; az összeg automatikus, az egyéb bónusz külön megadható.':'Mark proficiency; the total is calculated automatically and other bonuses can be entered separately.','Összesen':'Total','Egyéb':'Other','Kocka típusa':'Hit Die','Összes kocka':'Total Dice','Elhasznált kockák':'Spent Dice','Halálmentő sikerek':'Death Save Successes','Halálmentő kudarcok':'Death Save Failures','Első siker':'First success','Második siker':'Second success','Harmadik siker':'Third success','Első kudarc':'First failure','Második kudarc':'Second failure','Harmadik kudarc':'Third failure','Mesélő utasításai':'Dungeon Master Instructions','Jegyzet':'Note','Írd ide a mesélő utasításait…':'Write the Dungeon Master’s instructions here…',
 'Érmék':'Coins','Réz':'Copper','Ezüst':'Silver','Elektrum':'Electrum','Arany':'Gold','Platina':'Platinum','Drágakövek':'Gems','Tétel':'Item','Darab':'Quantity','Arany / db':'Gold / Item','Új drágakő hozzáadása':'Add New Gem','Érmék összértéke':'Total Coin Value','Drágakövek összértéke':'Total Gem Value','Érmék és drágakövek összértéke':'Total Wealth','0 arany':'0 gp',
-'Mobil gyorsnavigáció':'Mobile quick navigation','Karakter':'Character','Dobások':'Rolls','Combat':'Combat','Varázslatok':'Spells','Továbbiak':'More','Varázslás':'Spellcasting','✦ Varázslás':'✦ Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','＋ Tárgy / tekercs varázslata':'＋ Item / Scroll Spell','Tárgyak és tekercsek':'Items and Scrolls','Tárgyból / tekercsből':'From Item / Scroll','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Gyors használat':'Quick Use','Leírás':'Description','Használat':'Use','Leírás és hatás':'Description and Effect','1. Leírás és hatás':'1. Description and Effect','2. Felhasználás módja':'2. Casting Method','3. ✦ Varázslat használata':'3. ✦ Use Spell','Ehhez a varázslathoz még nincs szöveges leírás.':'No description has been added for this spell yet.','Varázslat kiválasztása és részletei':'Spell Selection and Details','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','✦ Varázslat használata':'✦ Use Spell','Dobási értékek':'Roll Values','1. Találati dobás':'1. Attack Roll','2. Sebzésdobás':'2. Damage Roll','🎲 Varázstámadás dobása':'🎲 Roll Spell Attack','🎲 Sebzés kiszámítása':'🎲 Calculate Damage','✓ Talált – sebzésdobás':'✓ Hit – Roll Damage','× Nem talált':'× Miss','Dobás típusa':'Roll Type','Varázstámadás':'Spell Attack','Célpont mentődobása':'Target Saving Throw','Nincs d20 dobás':'No d20 Roll','Kézi d20 érték':'Manual d20 Roll','Egyéb dobásbónusz':'Other Roll Bonus','További dobási beállítások':'Additional Roll Settings','🎲 Varázslatdobás':'🎲 Spell Roll','✦ Hatás alkalmazása':'✦ Apply Effect','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
+'Mobil gyorsnavigáció':'Mobile quick navigation','Dobópanel':'Roll Panel','Dobópanel bezárása':'Close Roll Panel','Dobás módja':'Roll Mode','Normál':'Normal','Előny':'Advantage','Hátrány':'Disadvantage','Skillpróba':'Skill Check','🎲 Dobás':'🎲 Roll','Karakter':'Character','Dobások':'Rolls','Combat':'Combat','Varázslatok':'Spells','Továbbiak':'More','Varázslás':'Spellcasting','✦ Varázslás':'✦ Spellcasting','Varázslási képesség':'Spellcasting Ability','Mentődobás DC':'Spell Save DC','Támadási bónusz':'Spell Attack Bonus','Varázslathelyek szintenként':'Spell Slots by Level','Varázslatok / előkészített varázslatok':'Spells / Prepared Spells','＋ Új varázslat':'＋ Add Spell','＋ Tárgy / tekercs varázslata':'＋ Item / Scroll Spell','Tárgyak és tekercsek':'Items and Scrolls','Tárgyból / tekercsből':'From Item / Scroll','Elköltött varázsrekesz':'Expended Spell Slot','Varázslat neve':'Spell Name','Szint':'Level','Varázslási idő':'Casting Time','Hatótáv':'Range','Komponensek':'Components','Időtartam / megjegyzés':'Duration / Notes','Sebzés':'Damage','Használat / visszatöltés':'Usage / Recharge','Gyors használat':'Quick Use','Leírás':'Description','Használat':'Use','Leírás és hatás':'Description and Effect','1. Leírás és hatás':'1. Description and Effect','2. Felhasználás módja':'2. Casting Method','3. ✦ Varázslat használata':'3. ✦ Use Spell','Ehhez a varázslathoz még nincs szöveges leírás.':'No description has been added for this spell yet.','Varázslat kiválasztása és részletei':'Spell Selection and Details','Combaton kívüli használat':'Use Outside Combat','✓ Használat rögzítése':'✓ Record Use','✦ Varázslat használata':'✦ Use Spell','Dobási értékek':'Roll Values','1. Találati dobás':'1. Attack Roll','2. Sebzésdobás':'2. Damage Roll','🎲 Varázstámadás dobása':'🎲 Roll Spell Attack','🎲 Sebzés kiszámítása':'🎲 Calculate Damage','✓ Talált – sebzésdobás':'✓ Hit – Roll Damage','× Nem talált':'× Miss','Dobás típusa':'Roll Type','Varázstámadás':'Spell Attack','Célpont mentődobása':'Target Saving Throw','Nincs d20 dobás':'No d20 Roll','Kézi d20 érték':'Manual d20 Roll','Egyéb dobásbónusz':'Other Roll Bonus','További dobási beállítások':'Additional Roll Settings','🎲 Varázslatdobás':'🎲 Spell Roll','✦ Hatás alkalmazása':'✦ Apply Effect','Szöveges leírás':'Description','A varázslat rövid hatásleírása…':'A short description of the spell’s effect…','Nincs':'None','Válassz…':'Choose…','1. szint':'1st Level','2. szint':'2nd Level','3. szint':'3rd Level','4. szint':'4th Level','5. szint':'5th Level','6. szint':'6th Level','7. szint':'7th Level','8. szint':'8th Level','9. szint':'9th Level',
 '⚔ Saját kör':'⚔ My Turn','↪ Reakció':'↪ Reaction','🛡 Sebzést szenvedek':'🛡 Take Damage','⚑ Harc lezárása':'⚑ End Combat','1. Kezdés':'1. Start','1. Kezdeményezés':'1. Initiative','2. Műveletek':'2. Actions','A kör lépései':'Turn Steps','Kör':'Round','Kezdeményezés':'Initiative','Kézi d20 eredmény (1–20, üresen automatikus)':'Manual d20 Result (1–20; blank rolls automatically)','🎲 Kezdeményezés dobása':'🎲 Roll Initiative','Akció':'Action','Bónuszakció':'Bonus Action','Reakció':'Reaction','Mozgás':'Movement','Tárgyinterakció':'Object Interaction','Koncentráció':'Concentration','⚔ Támadás / varázslás':'⚔ Attack / Cast a Spell','◆ Más akció':'◆ Other Action','✦ Bónuszakció':'✦ Bonus Action','➶ Mozgás':'➶ Movement','◈ Tárgy / egyéb':'◈ Item / Other','Képesség, segítség…':'Ability, Help…','Tárgy, koncentráció…':'Item, concentration…','Kör befejezése':'End Turn','Befejeztem a körömet':'I Have Finished My Turn','Mégse':'Cancel','Vissza a körhöz':'Back to Turn','Új kör':'New Round','Új támadás':'New Attack','Támadás':'Attack','Sikeres':'Hit','Nem talált':'Miss','Sebzés értéke':'Damage Amount','Sebzés típusa':'Damage Type','Sebzés jóváhagyása':'Apply Damage','Elszenvedett sebzés':'Damage Taken','Korábbi körök':'Previous Rounds','Ebben a körben':'This Round','A kör eseménynaplója':'Turn Log','Esemény rögzítése':'Record Event','Megjegyzés (nem kötelező)':'Note (optional)',
 'Halálmentő dobások':'Death Saving Throws','Az aktuális HP negatív. Jelöld a halálmentődobás eredményét.':'Current HP is negative. Mark the death saving throw result.','Gyógyulás':'Healing','Használd, ha egy társ vagy más hatás gyógyítja a karaktert.':'Use this when an ally or another effect heals the character.','Kocka':'Die','Módosító':'Modifier','🎲 Gyógyítás dobása':'🎲 Roll Healing','Gyógyulás értéke':'Healing Amount','＋ Alkalmazás':'＋ Apply','☠ Meghaltál':'☠ You Died','Három sikertelen halálmentődobást jelöltél.':'You marked three failed death saving throws.','Jegyzet mentése és bezárás':'Save Note and Close',
 'Jegyzetek bezárása':'Close Notes','Jegyzet formázása':'Format Note','Félkövér':'Bold','Dőlt':'Italic','Aláhúzott':'Underline','Cím':'Heading','Címsor':'Heading','Bekezdés':'Paragraph','Felsorolás':'Bulleted List','Számozott lista':'Numbered List','• Lista':'• List','1. Lista':'1. List','Formázás törlése':'Clear Formatting','Törlés':'Clear','Írj ide jegyzeteket a kalandról, küldetésekről, szereplőkről vagy a játék eseményeiről…':'Write notes about the adventure, quests, NPCs, or events here…','A jegyzet automatikusan mentődik.':'Notes are saved automatically.','Mentve.':'Saved.',

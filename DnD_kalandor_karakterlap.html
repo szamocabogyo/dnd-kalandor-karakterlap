@@ -2129,6 +2129,24 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:36px!important;width:100%;margin:0;padding:4px 5px!important;border-radius:8px;font-size:.64rem!important;font-weight:600;line-height:1.15;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]{grid-column:1/-1}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]>.settings-menu-panel{margin-top:6px;width:100%}
+/* Compact, consistent mobile form rhythm without shrinking touch targets. */
+.sheet.mobile-mode input:not([type=checkbox]):not([type=radio]):not([type=hidden]),.sheet.mobile-mode select{height:40px;min-height:40px;padding:6px 8px;font-size:16px;line-height:1.25;border-radius:6px}
+.sheet.mobile-mode textarea{min-height:72px;padding:7px 8px;font-size:16px;line-height:1.4;border-radius:6px}
+.sheet.mobile-mode #equipment,.sheet.mobile-mode #otherProficiencies,.sheet.mobile-mode #deathSaveDmNote{min-height:84px}
+.sheet.mobile-mode label,.sheet.mobile-mode .field-label{margin-bottom:0;line-height:1.15}
+.sheet.mobile-mode .extra-field-grid,.sheet.mobile-mode .spell-settings-grid,.sheet.mobile-mode .spell-detail-fields,.sheet.mobile-mode .spell-roll-options-fields{gap:7px}
+.sheet.mobile-mode .extra-field-grid>label,.sheet.mobile-mode .extra-field-grid>.field,.sheet.mobile-mode .spell-settings-grid>label{gap:3px}
+.sheet.mobile-mode .grid-top label,.sheet.mobile-mode .combat label{min-height:1.7em}
+.sheet.mobile-mode .spell-main-fold-content{padding:8px}
+.sheet.mobile-mode .spell-list-fold-content{padding:3px 8px 8px}
+.sheet.mobile-mode .spell-slots-grid{gap:5px}
+.sheet.mobile-mode .spell-slots-grid label{gap:3px;font-size:.68rem}
+.sheet.mobile-mode .save-throw-row{grid-template-columns:minmax(0,1fr) 70px 70px;gap:6px;padding:4px 0}
+.sheet.mobile-mode .money-card .currency-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.sheet.mobile-mode .money-card .currency-grid label{gap:3px;font-size:.68rem}
+.sheet.mobile-mode .mod-circle{width:62px;height:62px;margin:0 auto 8px;border-width:3px}
+.sheet.mobile-mode .mod-circle input{width:44px;height:36px;min-height:36px;padding:4px;font-size:15px}
+@media(max-width:380px){.sheet.mobile-mode .money-card .currency-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sheet.mobile-mode .save-throw-row{grid-template-columns:minmax(0,1fr) 64px 64px}}
 .combat-guided .combat-encounter-archive{margin:14px 0 0;padding:0 10px}
 .combat-guided .combat-encounter-archive>summary{min-height:44px;padding:12px 0;box-sizing:border-box}
 .combat-guided .combat-encounter-archive>ol{margin:0 0 10px}
@@ -2154,7 +2172,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode .attacks table td:nth-child(3){grid-column:2/4;grid-row:2}
 .sheet.mobile-mode .attacks table td:nth-child(4){grid-column:3;grid-row:1;justify-self:end}
 .sheet.mobile-mode .attacks table td[data-weapon-label]::before{content:attr(data-weapon-label);display:block;margin-bottom:4px;color:var(--accent);font-size:.76rem;line-height:1.25;font-weight:600;overflow-wrap:anywhere}
-.sheet.mobile-mode .attacks table td>input{display:block;width:100%;min-width:0;max-width:100%;min-height:44px;margin:0;padding:8px;box-sizing:border-box;font-size:16px;line-height:1.25}
+.sheet.mobile-mode .attacks table td>input{display:block;width:100%;min-width:0;max-width:100%;height:40px;min-height:40px;margin:0;padding:6px 8px;box-sizing:border-box;font-size:16px;line-height:1.25}
 .sheet.mobile-mode .attacks .remove-attack-row{display:flex;align-items:center;justify-content:center;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;padding:0;margin:0;font-size:20px;line-height:1}
 .sheet.mobile-mode .attacks .attacks-heading .attacks-rule{min-width:0;flex-basis:12px}
 
@@ -2201,7 +2219,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .sheet.mobile-mode .inspiration-row .inspiration-label{grid-column:2;grid-row:1;align-self:end}
 .sheet.mobile-mode .inspiration-row .inspiration-state{grid-column:2;grid-row:2}
 .sheet.mobile-mode .inspiration-die{grid-column:1/-1;grid-row:3;margin-top:8px}
-.sheet.mobile-mode .inspiration-die select{height:42px;margin-top:5px}
+.sheet.mobile-mode .inspiration-die select{height:40px;margin-top:4px}
 .sheet .inspiration-row:focus-within{outline:2px solid var(--accent);outline-offset:3px}
 </style>
 <style id="standaloneInspirationStyles">

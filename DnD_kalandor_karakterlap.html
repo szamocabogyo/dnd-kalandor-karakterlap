@@ -2121,11 +2121,12 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .combat-encounter-status[hidden],.combat-encounter-archive[hidden]{display:none!important}
 </style>
 <style id="compactCharacterToolbarStyles">
-.sheet.mobile-mode>.view-switcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:start;justify-content:stretch;margin:0 0 12px;max-width:100%}
-.sheet.mobile-mode>.view-switcher>.sheet-mode-switch{grid-column:1/-1;width:100%}
-.sheet.mobile-mode>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:40px;padding:6px 8px;font-size:.75rem}
+.sheet.mobile-mode>.view-switcher{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;align-items:start;justify-content:stretch;margin:0 0 8px;max-width:100%}
+.sheet.mobile-mode>.view-switcher>.sheet-mode-switch{grid-column:1/-1;width:100%;padding:2px;border-radius:9px}
+.sheet.mobile-mode>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:32px!important;padding:4px 7px;font-size:.69rem;border-radius:7px}
+.sheet.mobile-mode>.view-switcher>#combatModeButton{display:none!important}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
-.sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:44px;width:100%;margin:0;padding:6px 8px;font-size:.75rem;font-weight:600;line-height:1.2;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
+.sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:36px!important;width:100%;margin:0;padding:4px 5px!important;border-radius:8px;font-size:.64rem!important;font-weight:600;line-height:1.15;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]{grid-column:1/-1}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]>.settings-menu-panel{margin-top:6px;width:100%}
 .combat-guided .combat-encounter-archive{margin:14px 0 0;padding:0 10px}

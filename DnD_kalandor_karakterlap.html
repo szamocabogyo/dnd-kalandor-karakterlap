@@ -1606,7 +1606,7 @@ body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;pa
 .mobile-bottom-nav{display:none}
 body:has(.sheet.mobile-mode) #previewFrame{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
 .mobile-play-status{display:none}
-.sheet.mobile-mode[data-sheet-mode=play] .mobile-play-status{position:sticky;top:0;z-index:110;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;margin:8px 0 10px;padding:5px;border:1px solid var(--accent);border-radius:9px;background:color-mix(in srgb,var(--card) 95%,#000);box-shadow:0 5px 16px rgba(0,0,0,.38);backdrop-filter:blur(10px)}
+.sheet.mobile-mode[data-sheet-mode=play] .mobile-play-status{position:sticky;top:0;z-index:110;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:8px 0 10px;padding:5px;border:1px solid var(--accent);border-radius:9px;background:color-mix(in srgb,var(--card) 95%,#000);box-shadow:0 5px 16px rgba(0,0,0,.38);backdrop-filter:blur(10px)}
 .mobile-play-status button{display:flex;min-width:0;min-height:44px;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:4px 2px;border:1px solid color-mix(in srgb,var(--border) 72%,transparent);border-radius:6px;background:color-mix(in srgb,var(--bg) 78%,transparent);color:var(--text);font:inherit;cursor:pointer}
 .mobile-play-status button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .mobile-play-status small{max-width:100%;overflow:hidden;color:var(--muted);font-size:.55rem;font-weight:700;letter-spacing:.045em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
@@ -2470,8 +2470,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
   <button type="button" data-mobile-status-target="hp" aria-label="Életerő panel megnyitása"><small>HP</small><output id="mobileStatusHp">—</output></button>
   <button type="button" data-mobile-status-target="combat" aria-label="Páncélosztály megnyitása"><small>AC</small><output id="mobileStatusAc">—</output></button>
   <button type="button" data-mobile-status-target="combat" aria-label="Kezdeményezés megnyitása"><small>Kezd.</small><output id="mobileStatusInitiative">—</output></button>
-  <button type="button" data-mobile-status-target="combat" aria-label="Mozgás megnyitása"><small>Mozgás</small><output id="mobileStatusSpeed">—</output></button>
-  <button type="button" data-mobile-status-target="inspiration" aria-label="Aktív állapot megnyitása"><small>Állapot</small><output id="mobileStatusState">Nincs</output></button>
+  <button type="button" data-mobile-status-target="inspiration" aria-label="Inspiráció panel megnyitása"><small>Inspiráció</small><output id="mobileStatusState">Nincs</output></button>
 </nav>
 
 <div id="mobileNavCharacter" class="card collapsible character-info">
@@ -11151,7 +11150,6 @@ function updateMobilePlayStatus(){
     const hp=document.getElementById('mobileStatusHp');if(hp)hp.value=(Number.isFinite(current)?current:0)+'/'+(Number.isFinite(maximum)?maximum:0)+(temporary>0?' +'+temporary:'');
     const ac=document.getElementById('mobileStatusAc');if(ac)ac.value=document.getElementById('armorClass')?.value||'—';
     const initiative=document.getElementById('mobileStatusInitiative');if(initiative){const raw=document.getElementById('characterInitiativeModifier')?.value||'';initiative.value=raw&&Number(raw)>0&&!String(raw).startsWith('+')?('+'+raw):(raw||'—');}
-    const speed=document.getElementById('mobileStatusSpeed');if(speed)speed.value=document.querySelector('[data-character-speed]')?.value?.trim()||'—';
     const inspiration=document.getElementById('inspiration'),die=document.getElementById('inspirationDie')?.value;
     const state=document.getElementById('mobileStatusState');if(state)state.value=inspiration?.checked?('Insp.'+(die?' '+die:'')):'Nincs';
 }
@@ -11169,8 +11167,8 @@ function openMobileStatusPanel(kind){
 function setupMobilePlayStatus(){
     const status=document.getElementById('mobilePlayStatus');if(!status||status.dataset.ready==='true')return;
     status.dataset.ready='true';status.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-status-target]');if(button)openMobileStatusPanel(button.dataset.mobileStatusTarget);});
-    document.addEventListener('input',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,[data-character-speed],#inspiration,#inspirationDie'))updateMobilePlayStatus();});
-    document.addEventListener('change',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,[data-character-speed],#inspiration,#inspirationDie'))updateMobilePlayStatus();});
+    document.addEventListener('input',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
+    document.addEventListener('change',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
     updateMobilePlayStatus();
 }
 setupMobilePlayStatus();

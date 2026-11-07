@@ -1859,6 +1859,8 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .combat-guide-other-kinds button[aria-pressed=true]{background:var(--accent);color:var(--bg)}
 .combat-guide-event-status{color:var(--accent);font-size:.82rem;line-height:1.4}
 .combat-guide-roll-hint{margin:0 0 14px;padding:10px 11px;border-left:2px solid var(--accent);border-radius:0 6px 6px 0;background:var(--bg);color:var(--muted);font-size:.82rem;line-height:1.45}
+.context-instruction{margin:8px 0 12px;padding:9px 11px;border-left:3px solid var(--class-primary,var(--accent));border-radius:0 7px 7px 0;background:color-mix(in srgb,var(--class-primary,var(--accent)) 9%,var(--bg));color:var(--text);font-size:.8rem;line-height:1.45}.context-instruction::before{content:'Következő lépés: ';color:var(--class-symbol,var(--accent));font-weight:800}.context-instruction[hidden]{display:none!important}
+html[lang="en"] .context-instruction::before{content:'Next step: '}
 .combat-guided .combat-attack-panel{scroll-margin-top:0}
 .combat-guided .combat-mode-actions{position:static!important;bottom:auto!important;padding:0!important;background:transparent!important;margin-top:14px;z-index:auto}
 .combat-guided .combat-mode-actions button{flex:1 1 130px;border-radius:7px;min-height:46px;padding:9px 12px}
@@ -2880,7 +2882,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
             <label>Kézi d20 érték<input data-skill-roll-manual type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
           </div>
           <div class="skill-roll-bonus-preview"><span data-skill-roll-formula>Válassz skillt.</span><strong data-skill-roll-bonus>+0</strong></div>
-          <small class="saving-throw-roll-hint">Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.</small>
+          <p class="saving-throw-roll-hint context-instruction">Válaszd ki a skillt. Ha valódi kockával dobtál, írd be az eredményt; különben hagyd üresen, és a lap dob helyetted.</p>
           <button data-skill-roll-button type="button">🎲 Skillpróba</button>
           <div class="saving-throw-roll-result" data-skill-roll-result aria-live="polite"></div>
         </div>
@@ -2943,7 +2945,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
         <label>Mentődobás<select data-save-roll-ability aria-label="Mentődobás kiválasztása"><option value="STR">Erő</option><option value="DEX">Ügyesség</option><option value="CON">Állóképesség</option><option value="INT">Intelligencia</option><option value="WIS">Bölcsesség</option><option value="CHA">Karizma</option></select></label>
         <label>Kézi d20 érték<input data-save-roll-manual type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
       </div>
-      <small class="saving-throw-roll-hint">Hagyd üresen a kézi mezőt az automatikus d20 dobáshoz.</small>
+      <p class="saving-throw-roll-hint context-instruction">Válaszd ki a mesélő által kért mentődobást. Ha valódi kockával dobtál, írd be az eredményt; különben hagyd üresen.</p>
       <button data-save-roll-button type="button">🎲 Mentődobás</button>
       <div class="saving-throw-roll-result" data-save-roll-result aria-live="polite"></div>
     </div>
@@ -3093,6 +3095,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
       <button type="button" role="tab" data-mobile-roll-kind="skill" aria-selected="true">Skillpróba</button>
       <button type="button" role="tab" data-mobile-roll-kind="save" aria-selected="false">Mentődobás</button>
     </div>
+    <p id="mobileRollInstruction" class="context-instruction" aria-live="polite"></p>
     <div class="mobile-roll-fields">
       <label><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
       <label>Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
@@ -3187,7 +3190,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
           </section>
           <section id="combatGuideEventPanel" hidden>
             <h3 id="combatGuideEventTitle">Művelet</h3>
-            <p class="combat-guide-intro">Válaszd ki a történést, majd rögzítsd a kör naplójába.</p>
+            <p id="combatGuideEventInstruction" class="combat-guide-intro context-instruction">Válaszd ki, mit csinál a karakter. A lap csak az adott művelethez tartozó lehetőségeket mutatja.</p>
             <div id="combatGuideOtherKinds" class="combat-guide-other-kinds" hidden>
               <button type="button" data-combat-guide-other="item">Tárgy</button>
               <button type="button" data-combat-guide-other="concentration">Koncentráció</button>
@@ -3257,6 +3260,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
         </section>
       </div>
 <div id="combatDamagePanel" class="combat-damage-panel" hidden>
+      <p id="combatDamageInstruction" class="context-instruction">Írd be a kapott sebzést és válaszd ki a típusát. A lap automatikusan kezeli az ellenállást és az ideiglenes HP-t.</p>
       <label for="incomingDamage">Elszenvedett sebzés</label>
       <input id="incomingDamage" type="number" inputmode="numeric" min="1" step="1" placeholder="Sebzés értéke">
       <label id="combatRangerDamageTargetWrap" hidden>Sebzés célpontja<select id="combatRangerDamageTarget"><option value="character">Karakter</option><option value="companion">Állati társ</option></select></label>
@@ -7417,9 +7421,24 @@ function renderCombatGuide(){
     combatDamagePanel.hidden=!damage;
     document.getElementById('combatGuideJournal').hidden=!own||!ready||stage!=='choose';
     document.getElementById('combatGuideRollHint').hidden=damage||stage!=='roll';
-    const phase=combatAttackFlow.phase;
-    const hints={choose:'Válassz fegyvert vagy varázslatot, majd dobd ki az eredményt.',rolled:combatAttackFlow.lastNatural===1?'Kritikus hiba: nincs sebzés. Indíts új támadást, vagy térj vissza a körhöz.':'Jelöld, hogy a támadás sikeres volt vagy nem talált.',damage:'Add meg a fegyver és a választott képességek sebzéskockáit.',complete:'Az eredmény bekerült a kör naplójába. Folytathatod a kör többi műveletét.'};
-    document.getElementById('combatGuideRollHint').textContent=hints[phase]||hints.choose;
+    const phase=combatAttackFlow.phase,rollType=getCombatRollType(),spell=rollType==='spell'||combatAttackFlow.eventType==='spell'?readCombatSpell():null,resolution=spell?.resolution||combatAttackFlow.spellResolution||'';
+    let contextualHint='Válassz fegyvert vagy varázslatot. A kézi d20 mezőt üresen hagyva a lap dob helyetted.';
+    if(phase==='choose'&&rollType==='spell'){
+        if(resolution==='save')contextualHint=`${spell?.name||'A varázslat'} esetén a célpont dob mentődobást. Használd a varázslatot, majd csak jelöld, hogy a mentődobás sikerült-e.`;
+        else if(resolution==='healing')contextualHint=`${spell?.name||'A varázslat'} gyógyít. Használd, majd add meg a gyógyítási kockákat, vagy hagyd őket üresen az automatikus dobáshoz.`;
+        else if(['direct-damage','effect-pool'].includes(resolution))contextualHint=`${spell?.name||'A varázslat'} nem igényel találati dobást. A használat után közvetlenül a ${resolution==='effect-pool'?'hatásértéket':'sebzést'} kell kidobni.`;
+        else if(['effect','utility'].includes(resolution))contextualHint=`${spell?.name||'A varázslat'} nem igényel d20 dobást. Rögzítsd a használatot, majd alkalmazd a leírásában szereplő hatást.`;
+        else contextualHint=`${spell?.name||'A varázslat'} varázstámadást igényel. Írj be kézi d20-at, vagy hagyd üresen az automatikus dobáshoz.`;
+    }else if(phase==='rolled'){
+        if(combatAttackFlow.lastNatural===1)contextualHint='Természetes 1: a támadás automatikusan sikertelen, ezért nincs sebzésdobás. Indíts új támadást vagy térj vissza a körhöz.';
+        else if(resolution==='save')contextualHint='A célpont dobja a mentődobást a kijelzett DC ellen. Értéket nem kell beírnod; jelöld, hogy sikeres vagy sikertelen lett.';
+        else contextualHint='Hasonlítsd össze az eredményt a célpont AC-jával, majd válaszd a Talált vagy Nem talált gombot.';
+    }else if(phase==='damage'){
+        if(resolution==='healing')contextualHint='Add meg minden gyógyítási kocka eredményét, vagy hagyd mindet üresen az automatikus dobáshoz.';
+        else if(resolution==='effect-pool')contextualHint='Add meg a hatáskockákat, vagy hagyd őket üresen. Az eredmény HP-keret, nem okozott sebzés.';
+        else contextualHint='Add meg minden sebzéskocka eredményét, vagy hagyd mindet üresen az automatikus dobáshoz.';
+    }else if(phase==='complete')contextualHint='Az eredmény bekerült a kör naplójába. Válassz további műveletet, vagy fejezd be a körödet.';
+    document.getElementById('combatGuideRollHint').textContent=contextualHint;
     const progressStage=stage==='initiative'?0:1;
     document.querySelectorAll('[data-combat-guide-step]').forEach(button=>{
         const index=Number(button.dataset.combatGuideStep);
@@ -7455,6 +7474,8 @@ function renderCombatGuide(){
         button.disabled=document.getElementById(combatGuideCategories[button.dataset.combatGuideOther].choice).options.length<=1;
     });
     const choice=document.getElementById(config.choice),selected=choice?.selectedOptions[0];
+    const eventInstruction=document.getElementById('combatGuideEventInstruction');
+    if(eventInstruction)eventInstruction.textContent=selected?.value?`${selected.textContent}: ellenőrizd a feltételeket, adj meg megjegyzést vagy célpontot, majd ${['spell','attack'].includes(combatRulesEventKind(selected.value,combatGuideState.category))?'lépj tovább a dobáshoz':'rögzítsd az eseményt'}.`:'Válassz egy elérhető műveletet. A szürkén megjelenő lehetőségekhez jelenleg nincs elegendő akció vagy erőforrás.';
     document.getElementById('combatGuideRecordEvent').disabled=!selected?.value;
     document.getElementById('combatGuideRecordEvent').textContent=['spell','attack'].includes(combatRulesEventKind(selected?.value||'',combatGuideState.category))?'Tovább a dobáshoz':'Esemény rögzítése';
     renderCombatGuideLog(document.getElementById('combatGuideEventLog'),log);
@@ -12408,10 +12429,18 @@ function mobileRollCurrentBonus(){
     if(mobileRollKind==='save')return Number.parseInt(document.getElementById('saveValue'+mobileRollChoice?.value)?.value,10)||0;
     return Number.parseInt(mobileRollSelectedSkill()?.querySelector('.skill-value')?.textContent,10)||0;
 }
+function refreshMobileRollInstruction(){
+    const instruction=document.getElementById('mobileRollInstruction');if(!instruction)return;
+    const mode=document.getElementById('mobileRollMode')?.value||'normal',manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());
+    const subject=mobileRollKind==='save'?mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'):mobileRollText('a helyzethez illő skillt','the skill that fits the situation');
+    if(manual)instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. A lap a beírt d20-hoz hozzáadja a bónuszokat.`,`Choose ${subject}, then press Roll. The sheet adds the bonuses to your entered d20.`);
+    else if(mode==='advantage'||mode==='disadvantage')instruction.textContent=mobileRollText(`Válaszd ki ${subject}. A lap két d20-at dob, és ${mode==='advantage'?'a magasabb':'az alacsonyabb'} eredményt használja.`,`Choose ${subject}. The sheet rolls two d20s and uses the ${mode==='advantage'?'higher':'lower'} result.`);
+    else instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. Az üres kézi mező automatikus d20 dobást jelent.`,`Choose ${subject}, then press Roll. A blank manual field means an automatic d20 roll.`);
+}
 function refreshMobileRollPreview(clearResult=false){
     const preview=document.getElementById('mobileRollBonusPreview'),extra=Number(document.getElementById('mobileRollExtra')?.value)||0,base=mobileRollCurrentBonus();
     if(preview)preview.textContent=`${mobileRollText('Számított bónusz','Calculated bonus')}: ${formatModifier(base)} · ${mobileRollText('Egyéb bónusz','Other bonus')}: ${formatModifier(extra)} · ${mobileRollText('Összesen','Total')}: ${formatModifier(base+extra)}`;
-    if(clearResult)document.getElementById('mobileRollResult')?.replaceChildren();
+    if(clearResult)document.getElementById('mobileRollResult')?.replaceChildren();refreshMobileRollInstruction();
 }
 function populateMobileRollChoices(){
     if(!mobileRollChoice)return;const previous=mobileRollChoice.value;
@@ -12467,12 +12496,13 @@ function performMobileUnifiedRoll(){
     const math=document.createElement('span');math.className='saving-throw-result-math';
     const rollText=rolls.length>1?`${rolls.join(', ')} → ${rolled}`:String(rolled);
     math.textContent=naturalOne?mobileRollText('d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.','d20: 1 · Critical failure · No bonus is added.'):`d20: ${rollText}${minimumText} + ${mobileRollText('számított bónusz','calculated bonus')}: ${formatModifier(baseBonus)} + ${mobileRollText('egyéb','other')}: ${formatModifier(extra)} = ${total}`;
-    card.append(title,diceSummary,totalElement,math);result.append(card);
+    card.append(title,diceSummary,totalElement,math);result.append(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`Az eredmény ${total}. Mondd meg a mesélőnek; ő dönti el, hogy sikerült-e a próba.`,`The result is ${total}. Tell the GM; they decide whether the check succeeds.`);
 }
 document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.addEventListener('click',()=>setMobileRollKind(button.dataset.mobileRollKind)));
 mobileRollChoice?.addEventListener('change',()=>refreshMobileRollPreview(true));
 document.getElementById('mobileRollExtra')?.addEventListener('input',()=>refreshMobileRollPreview(true));
-document.getElementById('mobileRollMode')?.addEventListener('change',()=>document.getElementById('mobileRollResult')?.replaceChildren());
+document.getElementById('mobileRollMode')?.addEventListener('change',()=>{document.getElementById('mobileRollResult')?.replaceChildren();refreshMobileRollInstruction();});
+document.getElementById('mobileRollManual')?.addEventListener('input',refreshMobileRollInstruction);
 document.getElementById('mobileRollExecute')?.addEventListener('click',performMobileUnifiedRoll);
 document.getElementById('mobileRollManual')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();performMobileUnifiedRoll();}});
 document.getElementById('mobileRollPanelClose')?.addEventListener('click',closeMobileRollPanel);

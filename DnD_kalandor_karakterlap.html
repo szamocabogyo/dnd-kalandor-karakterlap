@@ -1611,6 +1611,12 @@ body:has(.sheet.mobile-mode) #previewFrame{padding-bottom:calc(74px + env(safe-a
 .mobile-play-status button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .mobile-play-status small{max-width:100%;overflow:hidden;color:var(--muted);font-size:.55rem;font-weight:700;letter-spacing:.045em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
 .mobile-play-status output{max-width:100%;overflow:hidden;color:var(--accent);font-size:.8rem;font-weight:800;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.mobile-context-notices{display:none}
+.sheet.mobile-mode[data-sheet-mode=play] .mobile-context-notices:not([hidden]){display:grid;gap:5px;margin:-4px 0 10px}
+.mobile-context-notices button{display:flex;min-height:42px;align-items:center;gap:9px;margin:0;padding:8px 11px;border:1px solid color-mix(in srgb,var(--accent) 65%,var(--border));border-radius:7px;background:color-mix(in srgb,var(--accent) 8%,var(--bg));color:var(--text);font:inherit;font-size:.74rem;font-weight:700;line-height:1.3;text-align:left;cursor:pointer}
+.mobile-context-notices button::after{content:"›";margin-left:auto;color:var(--accent);font-size:1.25rem;line-height:1}
+.mobile-context-notices button[data-severity="critical"]{border-color:#c66b62;background:color-mix(in srgb,#8f352f 24%,var(--bg));color:#ffd8d2}
+.mobile-context-notices button[data-severity="warning"]{border-color:#c99a46;background:color-mix(in srgb,#8b641f 18%,var(--bg))}
 body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
 .mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
 .mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
@@ -2473,6 +2479,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
   <button type="button" data-mobile-status-target="inspiration" aria-label="Inspiráció panel megnyitása"><small>Inspiráció</small><output id="mobileStatusState">Nincs</output></button>
   <button type="button" data-mobile-status-target="features" aria-label="Kasztjellemzők megnyitása"><small id="mobileStatusClassLabel">Kaszt</small><output id="mobileStatusClassResource">—</output></button>
 </nav>
+<aside id="mobileContextNotices" class="mobile-context-notices" role="status" aria-live="polite" hidden data-i18n-ignore></aside>
 
 <div id="mobileNavCharacter" class="card collapsible character-info">
 
@@ -11154,6 +11161,7 @@ function updateMobilePlayStatus(){
     const inspiration=document.getElementById('inspiration'),die=document.getElementById('inspirationDie')?.value;
     const state=document.getElementById('mobileStatusState');if(state)state.value=inspiration?.checked?('Insp.'+(die?' '+die:'')):'Nincs';
     updateMobileClassResourceStatus();
+    renderMobileContextNotices();
 }
 function updateMobileClassResourceStatus(){
     const label=document.getElementById('mobileStatusClassLabel'),value=document.getElementById('mobileStatusClassResource');if(!label||!value)return;
@@ -11169,8 +11177,31 @@ function updateMobileClassResourceStatus(){
     }
     label.textContent=classVisualThemes[klass]?.name||'Kaszt';label.title='Kasztjellemzők';value.value=klass?'Részl.':'—';
 }
+function renderMobileContextNotices(){
+    const container=document.getElementById('mobileContextNotices');if(!container)return;
+    const notices=[],current=Number(document.getElementById('currentHp')?.value),maximum=Number(document.getElementById('maxHp')?.value);
+    if(maximum>0&&current<=0)notices.push({icon:'☠',text:'0 HP – halálmentő dobások szükségesek.',target:'death',severity:'critical'});
+    else if(maximum>0&&current<=Math.max(1,Math.floor(maximum/4)))notices.push({icon:'♥',text:'Kritikusan alacsony életerő: '+current+' / '+maximum+' HP.',target:'hp',severity:'critical'});
+    else if(maximum>0&&current<=Math.floor(maximum/2))notices.push({icon:'♥',text:'Alacsony életerő: '+current+' / '+maximum+' HP.',target:'hp',severity:'warning'});
+    const slotMaximums=characterSpellSlotMaximums(),slotLevels=slotMaximums.map((max,index)=>({level:index+1,max})).filter(slot=>slot.max>0);
+    if(slotLevels.length){
+        const remaining=slotLevels.reduce((sum,slot)=>sum+(parseSpellSlotValue(document.getElementById('spellSlots'+slot.level))?.current||0),0);
+        if(remaining===0)notices.push({icon:'✧',text:'Minden varázsrekesz elfogyott. A trükkök és rituálék továbbra is használhatók.',target:'spells',severity:'warning'});
+    }
+    const resource=document.querySelector('#classFeatureFields .class-feature-resource input[data-class-resource]');
+    if(resource&&Number(resource.max)>0&&Number(resource.value)<=0){
+        const name=document.getElementById('mobileStatusClassLabel')?.textContent||'Kasztképesség';
+        notices.push({icon:'◆',text:name+' készlete elfogyott.',target:'features',severity:'warning'});
+    }
+    container.replaceChildren(...notices.map(notice=>{
+        const button=document.createElement('button');button.type='button';button.dataset.contextTarget=notice.target;button.dataset.severity=notice.severity;
+        const icon=document.createElement('span');icon.setAttribute('aria-hidden','true');icon.textContent=notice.icon;
+        const text=document.createElement('span');text.textContent=notice.text;button.append(icon,text);return button;
+    }));
+    container.hidden=!notices.length;
+}
 function openMobileStatusPanel(kind){
-    const section=kind==='hp'?document.querySelector('.hp-card'):kind==='inspiration'?document.getElementById('inspirationCard'):kind==='spells'?document.getElementById('mobileNavSpells'):kind==='features'?document.getElementById('classFeaturesCard'):document.querySelector('.combat');
+    const section=kind==='hp'?document.querySelector('.hp-card'):kind==='death'?document.getElementById('deathSaveHome')?.closest('.card'):kind==='inspiration'?document.getElementById('inspirationCard'):kind==='spells'?document.getElementById('mobileNavSpells'):kind==='features'?document.getElementById('classFeaturesCard'):document.querySelector('.combat');
     if(!section)return;
     section.classList.remove('collapsed','mobile-section-collapsed');
     section.querySelector(':scope > .section-header')?.setAttribute('aria-expanded','true');
@@ -11183,10 +11214,11 @@ function openMobileStatusPanel(kind){
 function setupMobilePlayStatus(){
     const status=document.getElementById('mobilePlayStatus');if(!status||status.dataset.ready==='true')return;
     status.dataset.ready='true';status.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-status-target]');if(button)openMobileStatusPanel(button.dataset.mobileStatusTarget);});
+    document.getElementById('mobileContextNotices')?.addEventListener('click',event=>{const button=event.target.closest('[data-context-target]');if(button)openMobileStatusPanel(button.dataset.contextTarget);});
     document.addEventListener('input',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
     document.addEventListener('change',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
-    document.addEventListener('input',event=>{if(event.target.matches('[id^="spellSlots"],[data-class-resource]'))updateMobileClassResourceStatus();});
-    document.addEventListener('change',event=>{if(event.target.matches('[id^="spellSlots"],[data-class-resource],#characterClass,#characterSubclass,#characterLevel'))requestAnimationFrame(updateMobileClassResourceStatus);});
+    document.addEventListener('input',event=>{if(event.target.matches('[id^="spellSlots"],[data-class-resource]'))updateMobilePlayStatus();});
+    document.addEventListener('change',event=>{if(event.target.matches('[id^="spellSlots"],[data-class-resource],#characterClass,#characterSubclass,#characterLevel'))requestAnimationFrame(updateMobilePlayStatus);});
     updateMobilePlayStatus();
 }
 setupMobilePlayStatus();

@@ -11182,8 +11182,7 @@ function mobileResourceButton(label,value,recovery,target){
 }
 function renderMobileResourceSummary(){
     const list=document.getElementById('mobileResourceList');if(!list)return;
-    const fragment=document.createDocumentFragment(),inspiration=document.getElementById('inspiration'),die=document.getElementById('inspirationDie')?.value;
-    fragment.append(mobileResourceButton('Inspiráció',inspiration?.checked?(die||'Aktív'):'Nincs','Felhasználásig','inspiration'));
+    const fragment=document.createDocumentFragment();
     for(let level=1;level<=9;level++){
         const field=document.getElementById('spellSlots'+level);if(!field)continue;
         const slot=parseSpellSlotValue(field);if(!slot||!slot.maximum)continue;

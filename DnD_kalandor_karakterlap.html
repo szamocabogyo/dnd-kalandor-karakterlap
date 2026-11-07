@@ -1605,6 +1605,12 @@ body:has(.sheet.mobile-mode){padding:0;overflow-x:hidden}
 body:has(.sheet.mobile-mode) #previewFrame{width:100%;max-width:100%;margin:0;padding:0;overflow-x:clip}
 .mobile-bottom-nav{display:none}
 body:has(.sheet.mobile-mode) #previewFrame{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+.mobile-play-status{display:none}
+.sheet.mobile-mode[data-sheet-mode=play] .mobile-play-status{position:sticky;top:0;z-index:110;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;margin:8px 0 10px;padding:5px;border:1px solid var(--accent);border-radius:9px;background:color-mix(in srgb,var(--card) 95%,#000);box-shadow:0 5px 16px rgba(0,0,0,.38);backdrop-filter:blur(10px)}
+.mobile-play-status button{display:flex;min-width:0;min-height:44px;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:4px 2px;border:1px solid color-mix(in srgb,var(--border) 72%,transparent);border-radius:6px;background:color-mix(in srgb,var(--bg) 78%,transparent);color:var(--text);font:inherit;cursor:pointer}
+.mobile-play-status button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.mobile-play-status small{max-width:100%;overflow:hidden;color:var(--muted);font-size:.55rem;font-weight:700;letter-spacing:.045em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+.mobile-play-status output{max-width:100%;overflow:hidden;color:var(--accent);font-size:.8rem;font-weight:800;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
 body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
 .mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
 .mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
@@ -2459,6 +2465,14 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 </div>
 <p id="restStatus" class="rest-status" aria-live="polite" hidden></p>
 <p id="combatEncounterStatus" class="combat-encounter-status" role="status" hidden><span id="combatEncounterStatusText"></span><button id="combatEncounterDismiss" type="button" aria-label="Értesítés bezárása" title="Bezárás">×</button></p>
+
+<nav id="mobilePlayStatus" class="mobile-play-status" aria-label="Játék közbeni állapot" data-i18n-ignore>
+  <button type="button" data-mobile-status-target="hp" aria-label="Életerő panel megnyitása"><small>HP</small><output id="mobileStatusHp">—</output></button>
+  <button type="button" data-mobile-status-target="combat" aria-label="Páncélosztály megnyitása"><small>AC</small><output id="mobileStatusAc">—</output></button>
+  <button type="button" data-mobile-status-target="combat" aria-label="Kezdeményezés megnyitása"><small>Kezd.</small><output id="mobileStatusInitiative">—</output></button>
+  <button type="button" data-mobile-status-target="combat" aria-label="Mozgás megnyitása"><small>Mozgás</small><output id="mobileStatusSpeed">—</output></button>
+  <button type="button" data-mobile-status-target="inspiration" aria-label="Aktív állapot megnyitása"><small>Állapot</small><output id="mobileStatusState">Nincs</output></button>
+</nav>
 
 <div id="mobileNavCharacter" class="card collapsible character-info">
 
@@ -11132,6 +11146,34 @@ function setupMobileSectionFolding(){
     });
 }
 setupMobileSectionFolding();
+function updateMobilePlayStatus(){
+    const current=Number(document.getElementById('currentHp')?.value),maximum=Number(document.getElementById('maxHp')?.value),temporary=Number(document.getElementById('tempHp')?.value);
+    const hp=document.getElementById('mobileStatusHp');if(hp)hp.value=(Number.isFinite(current)?current:0)+'/'+(Number.isFinite(maximum)?maximum:0)+(temporary>0?' +'+temporary:'');
+    const ac=document.getElementById('mobileStatusAc');if(ac)ac.value=document.getElementById('armorClass')?.value||'—';
+    const initiative=document.getElementById('mobileStatusInitiative');if(initiative){const raw=document.getElementById('characterInitiativeModifier')?.value||'';initiative.value=raw&&Number(raw)>0&&!String(raw).startsWith('+')?('+'+raw):(raw||'—');}
+    const speed=document.getElementById('mobileStatusSpeed');if(speed)speed.value=document.querySelector('[data-character-speed]')?.value?.trim()||'—';
+    const inspiration=document.getElementById('inspiration'),die=document.getElementById('inspirationDie')?.value;
+    const state=document.getElementById('mobileStatusState');if(state)state.value=inspiration?.checked?('Insp.'+(die?' '+die:'')):'Nincs';
+}
+function openMobileStatusPanel(kind){
+    const section=kind==='hp'?document.querySelector('.hp-card'):kind==='inspiration'?document.getElementById('inspirationCard'):document.querySelector('.combat');
+    if(!section)return;
+    section.classList.remove('collapsed','mobile-section-collapsed');
+    section.querySelector(':scope > .section-header')?.setAttribute('aria-expanded','true');
+    const fold=section.querySelector(':scope > .mobile-section-heading .mobile-section-fold-toggle,:scope > .attacks-heading .mobile-section-fold-toggle');
+    if(fold){fold.setAttribute('aria-expanded','true');fold.setAttribute('aria-label','Szekció összecsukása');}
+    savePanelFoldState(section);
+    section.scrollIntoView({behavior:'smooth',block:'start'});
+    window.setTimeout(()=>window.scrollBy({top:-(document.getElementById('mobilePlayStatus')?.offsetHeight||0)-10,behavior:'smooth'}),260);
+}
+function setupMobilePlayStatus(){
+    const status=document.getElementById('mobilePlayStatus');if(!status||status.dataset.ready==='true')return;
+    status.dataset.ready='true';status.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-status-target]');if(button)openMobileStatusPanel(button.dataset.mobileStatusTarget);});
+    document.addEventListener('input',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,[data-character-speed],#inspiration,#inspirationDie'))updateMobilePlayStatus();});
+    document.addEventListener('change',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,[data-character-speed],#inspiration,#inspirationDie'))updateMobilePlayStatus();});
+    updateMobilePlayStatus();
+}
+setupMobilePlayStatus();
 setupDesktopExtraCardPacking();
 
 document
@@ -11709,6 +11751,7 @@ function setSheetMode(mode,{persist=true}={}){
         localStorage.setItem('dndSheetMode',activeSheetMode);
         try{const saved=JSON.parse(localStorage.getItem('dndCharacter')||'{}');saved._sheetMode=activeSheetMode;localStorage.setItem('dndCharacter',JSON.stringify(saved));}catch{}
     }
+    updateMobilePlayStatus();
 }
 
 function saveCharacter() {
@@ -11716,6 +11759,7 @@ function saveCharacter() {
     refreshSpellAvailability();
     refreshDruidWildShapeUsage();
     renderRangerCompanion();
+    updateMobilePlayStatus();
 
     const characterData = {};
 

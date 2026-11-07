@@ -4387,6 +4387,7 @@ function spellCatalogRefreshDamage(row){
     const meta=spellCatalogMetadata(row),input=row?.querySelector('input[id$="_damage"]');
     if(!meta||!input)return;
     const spell=spellCatalogData.find(value=>value.id===meta.spellId);if(!spell)return;
+    const label=row.querySelector('input[id$="_damage"]')?.closest('label')?.querySelector('.spell-entry-label');if(label)label.textContent=spellIsHealingSpell(spell)?'Gyógyítás':'Sebzés';
     const levelValue=row.querySelector('select[id$="_level"]')?.value,choice=spellCatalogSelection(row);
     const next=spellCatalogResolvedDamage(spell,levelValue==='cantrip'?0:Number(levelValue)||spell.level,choice?.ability||'');
     if(input.value===(meta.damageAuto??''))input.value=next;
@@ -4545,6 +4546,30 @@ function spellCatalogDuration(spell){
     const value=(spell.duration||'').replace(/^Instantaneous$/i,'Azonnali').replace(/^Up to /i,'Legfeljebb ').replace(/\bminutes?\b/gi,'perc').replace(/\bhours?\b/gi,'óra').replace(/\brounds?\b/gi,'kör').replace(/\bdays?\b/gi,'nap');
     return (spell.concentration?'Koncentráció; ':'')+value;
 }
+const spellHealingRules={
+    'cure-wounds':{level:1,formula:level=>`${level}d8+MOD`},
+    'goodberry':{level:1,formula:()=>`1`},
+    'healing-word':{level:1,formula:level=>`${level}d4+MOD`},
+    'aid':{level:2,formula:level=>String(5+5*Math.max(0,level-2))},
+    'prayer-of-healing':{level:2,formula:level=>`${level}d8+MOD`},
+    'aura-of-vitality':{level:3,formula:()=>`2d6`},
+    'revivify':{level:3,formula:()=>`1`},
+    'mass-healing-word':{level:3,formula:level=>`${Math.max(1,level-2)}d4+MOD`},
+    'mass-cure-wounds':{level:5,formula:level=>`${Math.max(3,level-2)}d8+MOD`},
+    'raise-dead':{level:5,formula:()=>`1`},
+    'heal':{level:6,formula:level=>String(70+10*Math.max(0,level-6))},
+    'heroes-feast':{level:6,formula:()=>`2d10`},
+    'regenerate':{level:7,formula:()=>`4d8+15`},
+    'resurrection':{level:7,formula:()=>`1`},
+    'mass-heal':{level:9,formula:()=>`700`}
+};
+const spellHealingIds=new Set([...Object.keys(spellHealingRules),'aura-of-life','power-word-heal','true-resurrection']);
+function spellIsHealingSpell(spell){return Boolean(spell&&spellHealingIds.has(spell.id));}
+function spellCatalogHealingExpression(spell,castLevel,ability=''){
+    const rule=spellHealingRules[spell?.id];if(!rule)return '';
+    const level=Math.max(Number(castLevel)||spell.level||rule.level,rule.level),abilityId=ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(abilityId)?.value)||10,modifier=Math.floor((score-10)/2);
+    return rule.formula(level).replace(/\bMOD\b/gi,String(modifier));
+}
 function spellCatalogScaledDamage(spell,castLevel){
     if(!spell)return '';
     const characterLevel=Math.max(1,Number.parseInt(document.getElementById('characterLevel')?.value,10)||1);
@@ -4555,7 +4580,7 @@ function spellCatalogScaledDamage(spell,castLevel){
     return levels.length?table[levels[0]]:'';
 }
 function spellCatalogResolvedDamage(spell,castLevel,ability=''){
-    const formula=spellCatalogScaledDamage(spell,castLevel),abilityId=ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(abilityId)?.value)||10,modifier=Math.floor((score-10)/2);
+    const formula=spellCatalogScaledDamage(spell,castLevel)||spellCatalogHealingExpression(spell,castLevel,ability),abilityId=ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(abilityId)?.value)||10,modifier=Math.floor((score-10)/2);
     return formula.replace(/\bMOD\b/gi,String(modifier));
 }
 function spellCatalogHungarianEffect(value){
@@ -4567,10 +4592,12 @@ function spellCatalogTextDescription(spell,choice){
     const level=choice?.castLevel??spell.level,damage=spellCatalogResolvedDamage(spell,level,choice?.ability||'');
     const english=document.documentElement.lang==='en';
     const schoolNames={abjuration:'védőmágia',conjuration:'idézőmágia',divination:'jóslás',enchantment:'bűbáj',evocation:'energiavarázslat',illusion:'illúzió',necromancy:'nekromancia',transmutation:'átalakítás'};
+    const healing=spellIsHealingSpell(spell);
     if(english){
         const parts=[`${spell.name} is ${level===0?'a cantrip':`a level ${level} spell`} from the ${spell.school||'unspecified'} school.`];
         const effect=spellEffectSummariesEnglish[spell.id];if(effect)parts.push(`Effect: ${effect}`);
-        if(spell.resolution==='attack')parts.push(`Requires a spell attack${damage?`; current damage: ${damage}`:''}.`);
+        if(healing&&damage)parts.push(`Current healing value: ${damage}.`);
+        else if(spell.resolution==='attack')parts.push(`Requires a spell attack${damage?`; current damage: ${damage}`:''}.`);
         else if(spell.resolution==='save')parts.push(`The target makes a saving throw${damage?`; current damage: ${damage}`:''}. Apply the exact result of a successful save according to the spell.`);
         else if(damage)parts.push(`Current damage: ${damage}.`);
         else if(!effect)parts.push('This spell primarily creates a utility, defensive, movement, summoning, healing, or condition effect rather than direct damage.');
@@ -4579,7 +4606,8 @@ function spellCatalogTextDescription(spell,choice){
     const parts=[`${spell.name} ${level===0?'egy trükk':`${level}. szintű varázslat`}, a mágiaiskolája ${schoolNames[spell.school]||spell.school||'nincs megadva'}.`];
     const effect=spellCatalogHungarianEffect(spellEffectSummariesHu[spell.id]);
     if(effect)parts.push(`Hatás röviden: ${effect}`);
-    if(spell.resolution==='attack')parts.push(`Varázstámadást igényel; sikeres találatkor fejti ki a hatását${damage?`, az aktuális sebzésképlete ${damage}`:''}.`);
+    if(healing&&damage)parts.push(`A varázslat aktuális gyógyítási értéke ${damage}.`);
+    else if(spell.resolution==='attack')parts.push(`Varázstámadást igényel; sikeres találatkor fejti ki a hatását${damage?`, az aktuális sebzésképlete ${damage}`:''}.`);
     else if(spell.resolution==='save')parts.push(`A célpont mentődobással védekezik${damage?`; az aktuális sebzésképlet ${damage}`:''}. A sikeres mentő pontos következményét a varázslat szabálya határozza meg.`);
     else if(damage)parts.push(`A varázslat aktuális sebzésképlete ${damage}.`);
     else if(!effect)parts.push('A varázslat fő hatása nem közvetlen sebzés; a célpontokra, területre vagy állapotra gyakorolt hatást a varázslat szabálya szerint kell alkalmazni.');
@@ -7494,6 +7522,7 @@ function syncCombatAttackFlow(){
     const choosing=phase==='choose';
     const finished=phase==='rolled'||phase==='complete';
     const damage=getCombatRollType()==='damage';
+    const healing=damage&&combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='healing';
     combatAttackPanel.dataset.attackPhase=phase;
     document.getElementById('combatRollTypeChoice').hidden=!choosing;
     document.getElementById('combatRollInputs').hidden=finished;
@@ -7502,10 +7531,10 @@ function syncCombatAttackFlow(){
     combatSpellCastMode.disabled=!choosing||combatSpellCastMode.options.length<2;
     const title=document.getElementById('combatAttackStageTitle');
     title.hidden=choosing;
-    title.textContent=damage?(phase==='complete'?'Sebzés eredménye':'Sebzés'):combatAttackFlow.eventType==='spell'?'Varázslás eredménye':'Támadás eredménye';
+    title.textContent=damage?(healing?(phase==='complete'?'Gyógyítás eredménye':'Gyógyítás'):(phase==='complete'?'Sebzés eredménye':'Sebzés')):combatAttackFlow.eventType==='spell'?'Varázslás eredménye':'Támadás eredménye';
     const rollButton=document.getElementById('combatRollButton');
     rollButton.closest('.combat-mode-actions').hidden=finished;
-    rollButton.textContent=damage?'🎲 Sebzés dobása':'🎲 Dobás';
+    rollButton.textContent=damage?(healing?'🎲 Gyógyítás dobása':'🎲 Sebzés dobása'):'🎲 Dobás';
     document.getElementById('combatAttackFlowActions').hidden=choosing;
     const outcomeChoice=phase==='rolled'&&((combatAttackFlow.eventType==='attack'&&combatAttackFlow.lastNatural!==1)||combatAttackFlow.eventType==='spell');
     const successButton=document.getElementById('combatAttackSuccessButton');
@@ -7584,8 +7613,9 @@ function showCombatCriticalFailure(name,manual){
 
 function updateCombatManualRollLabel(){
     const damageMode = getCombatRollType() === 'damage';
+    const healingMode=damageMode&&combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='healing';
     const saveSpell=!damageMode&&getCombatRollType()==='spell'&&readCombatSpell()?.resolution==='save';
-    combatManualRollLabel.firstChild.nodeValue = damageMode ? 'Sebzéskockák értékei ' : 'Kézi dobott érték ';
+    combatManualRollLabel.firstChild.nodeValue = damageMode ? (healingMode?'Gyógyítási kockák értékei ':'Sebzéskockák értékei ') : 'Kézi dobott érték ';
     combatManualRollUnit.textContent = damageMode ? '(egy mező/kocka, üresen automatikus)' : '(d20: 1–20, üresen automatikus)';
     combatManualRollLabel.hidden=saveSpell;combatManualRoll.hidden = damageMode||saveSpell;
     combatDamageDiceInputs.hidden = !damageMode;
@@ -7915,6 +7945,7 @@ function useSpellOutsideCombat(row){
     panel.querySelectorAll('[data-spell-damage-die]').forEach(input=>{input.value='';});
     panel.dataset.castLevel=chosenMode.kind==='slot'?String(chosenMode.level):'';
     panel.hidden=false;panel.dataset.usageText=result.textContent;delete panel.dataset.attackResult;delete panel.dataset.lastNatural;delete panel.dataset.attackResolved;delete panel.dataset.saveOutcome;delete panel.dataset.damageReady;
+    if(spellOutsideRollValues(row).healing)panel.dataset.damageReady='true';
     refreshSpellOutsideRoll(row);
     panel.querySelector('.spell-outside-roll-button:not([hidden]),.spell-roll-options summary')?.focus({preventScroll:true});
 }
@@ -7947,7 +7978,7 @@ function spellOutsideRollValues(row){
     const dc=selection?.ability?8+modifier+proficiency+(Number(document.getElementById('spellSaveDCBonus')?.value)||0):(Number(document.getElementById('spellSaveDC')?.value)||0);
     const catalogSpell=spell&&spellCatalogNameMatches(row,spell)?spell:null,damage=row.querySelector('input[id$="_damage"]')?.value||'',manualResolution=row.querySelector('input[id$="_outsideResolution"]')?.value||'';
     const inferred=catalogSpell?.resolution||manualResolution||(/\b(?:sav(?:e|ing)?|mentő(?:dobás)?|dc)\b/i.test(damage)?'save':damage.trim()?'attack':'utility');
-    return {attack,dc,inferred,spell:catalogSpell,catalogResolution:catalogSpell?.resolution||''};
+    return {attack,dc,inferred,spell:catalogSpell,catalogResolution:catalogSpell?.resolution||'',healing:spellIsHealingSpell(catalogSpell)};
 }
 function spellOutsideDamageExpression(row){
     const selection=spellCatalogSelection(row),meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId),ability=selection?.ability||document.getElementById('spellcastingAbility')?.value||'',score=Number(document.getElementById(ability)?.value)||10,modifier=Math.floor((score-10)/2);
@@ -7958,21 +7989,21 @@ function spellOutsideDamageExpression(row){
 function refreshSpellOutsideRoll(row){
     const panel=row?.querySelector('.spell-outside-roll');if(!panel)return;
     const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button:not(.spell-outside-damage-button)'),progress=panel.querySelector('.spell-outside-progress'),outcome=panel.querySelector('.spell-outside-attack-outcome'),saveOutcome=panel.querySelector('.spell-outside-save-outcome'),saveRuleInfo=panel.querySelector('.spell-outside-save-rule'),saveRuleSetting=panel.querySelector('.spell-outside-save-rule-setting'),damageButton=panel.querySelector('.spell-outside-damage-button'),damageFields=panel.querySelector('.spell-outside-damage'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
-    const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim();
+    const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim(),healing=values.healing;
     type.value=['attack','save'].includes(values.inferred)?values.inferred:'utility';type.disabled=Boolean(values.catalogResolution);type.dataset.inferred=values.inferred;
     const utility=type.value==='utility',save=type.value==='save',damagePhase=panel.dataset.damageReady==='true',saveNoDamage=save&&panel.dataset.saveOutcome==='success'&&spellSaveDamageRule(row,values.spell)==='none';
     if(manualLabel)manualLabel.hidden=utility||save||damagePhase;if(extraLabel)extraLabel.hidden=utility||save||damagePhase;
     manual.disabled=utility||save;extra.disabled=utility||save;
-    if(progress){progress.hidden=utility;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase&&!saveNoDamage);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);steps[1]?.classList.toggle('done',saveNoDamage);}
+    if(progress){progress.hidden=utility||healing;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase&&!saveNoDamage);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);steps[1]?.classList.toggle('done',saveNoDamage);}
     if(button){button.hidden=utility||save||damagePhase;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
-    const damageSpec=!utility?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=damagePhase;
+    const damageSpec=!utility||healing?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=damagePhase;
     if(damageFields){
         const damageSignature=damageSpec?`${damageSpec.expression}|${damageSpec.dice.map(die=>`${die.sign}:${die.sides}`).join(',')}|${damageSpec.modifier}`:'';
         damageFields.hidden=!damageSpec||!damageReady;
         if(damageFields.dataset.damageSignature!==damageSignature){
             damageFields.replaceChildren();damageFields.dataset.damageSignature=damageSignature;
             if(damageSpec){
-                const title=document.createElement('div');title.className='spell-outside-damage-title';title.textContent=`Sebzéskockák értékei (${damageSpec.expression}; üresen automatikus)`;damageFields.appendChild(title);
+                const title=document.createElement('div');title.className='spell-outside-damage-title';title.textContent=`${healing?'Gyógyítási':'Sebzés'}kockák értékei (${damageSpec.expression}; üresen automatikus)`;damageFields.appendChild(title);
                 damageSpec.dice.forEach((die,index)=>{const label=document.createElement('label');label.textContent=`d${die.sides} #${index+1}`;const input=document.createElement('input');input.type='number';input.inputMode='numeric';input.min='1';input.max=String(die.sides);input.step='1';input.dataset.spellDamageDie=String(index);label.appendChild(input);damageFields.appendChild(label);});
             }
         }
@@ -7980,11 +8011,11 @@ function refreshSpellOutsideRoll(row){
     if(outcome)outcome.hidden=save||!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);
     if(saveOutcome){saveOutcome.hidden=!save||!damageSpec;saveOutcome.querySelectorAll('button').forEach(button=>{const selected=button.dataset.saveOutcome===panel.dataset.saveOutcome;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});}
     if(saveRuleInfo){saveRuleInfo.hidden=!save||!damageSpec;saveRuleInfo.textContent=spellSaveDamageRuleText(spellSaveDamageRule(row,values.spell));}
-    if(damageButton){damageButton.hidden=!damageSpec||!damageReady;damageButton.disabled=!name;}
+    if(damageButton){damageButton.hidden=!damageSpec||!damageReady;damageButton.disabled=!name;damageButton.textContent=healing?'🎲 Gyógyítás kiszámítása':'🎲 Sebzés kiszámítása';}
     if(saveDc){saveDc.hidden=!save;saveDc.textContent=save?`Sikeres mentődobáshoz szükséges érték: DC ${values.dc}`:'';}
     if(saveRuleSetting)saveRuleSetting.hidden=!save||Boolean(values.catalogResolution);
     if(rollOptions){rollOptions.hidden=utility||damagePhase||(save&&Boolean(values.catalogResolution));if(rollOptions.hidden)rollOptions.open=false;}
-    note.textContent=utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save&&!damagePhase?'A célpont saját mentődobását a fenti DC ellen végzi el. Csak jelöld, hogy sikerült-e; dobott értéket nem kell megadni.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
+    note.textContent=healing?'Add meg kockánként a kézi gyógyítási értékeket, vagy hagyd üresen az automatikus dobáshoz.':utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save&&!damagePhase?'A célpont saját mentődobását a fenti DC ellen végzi el. Csak jelöld, hogy sikerült-e; dobott értéket nem kell megadni.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
 }
 function resolveSpellOutsideAttack(row,hit){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
@@ -8007,7 +8038,7 @@ function resolveSpellOutsideSave(row,success){
 }
 function performSpellOutsideDamage(row){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
-    const name=row.querySelector('input[id$="_name"]')?.value.trim()||'Varázslat',spec=parseDamageExpression(spellOutsideDamageExpression(row));if(!spec)return;
+    const name=row.querySelector('input[id$="_name"]')?.value.trim()||'Varázslat',spec=parseDamageExpression(spellOutsideDamageExpression(row)),healing=spellOutsideRollValues(row).healing;if(!spec)return;
     const inputs=[...panel.querySelectorAll('[data-spell-damage-die]')],rolls=[];
     for(let index=0;index<spec.dice.length;index++){
         const die=spec.dice[index],text=inputs[index]?.value.trim()||'',manual=text===''?null:Number(text);
@@ -8027,8 +8058,9 @@ function performSpellOutsideDamage(row){
     }else if(panel.dataset.saveOutcome==='failure')saveAdjustment='; sikertelen mentődobás, teljes sebzés';
     const diceText=rolls.map((value,index)=>`${spec.dice[index].sign<0?'−':index?'+ ':''}${value}`).join(' '),modifierText=spec.modifier?` ${spec.modifier>=0?'+':'−'} ${Math.abs(spec.modifier)}`:'';
     const attackText=panel.dataset.attackResult||panel.dataset.usageText||'';
-    const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?' × 2 (kritikus találat)':''}${saveAdjustment}.`;
-    const totalDisplay=document.createElement('div');totalDisplay.className='combat-roll-total';totalDisplay.textContent=String(total);totalDisplay.setAttribute('aria-label',`Összes sebzés: ${total}`);
+    if(healing){total=Math.max(0,baseTotal);saveAdjustment='';}
+    const breakdown=document.createElement('div');breakdown.className='spell-outside-damage-breakdown';breakdown.textContent=healing?`${attackText}${attackText?' ':''}${name} gyógyítása: ${diceText}${modifierText} = ${total}.`:`${attackText}${attackText?' ':''}${name} sebzése: ${diceText}${modifierText} = ${baseTotal}${critical?' × 2 (kritikus találat)':''}${saveAdjustment}.`;
+    const totalDisplay=document.createElement('div');totalDisplay.className='combat-roll-total';totalDisplay.textContent=String(total);totalDisplay.setAttribute('aria-label',`${healing?'Összes gyógyítás':'Összes sebzés'}: ${total}`);
     result.replaceChildren(breakdown,totalDisplay);
 }
 function performSpellOutsideRoll(row,resultOverride=null,usageText=''){
@@ -9761,15 +9793,16 @@ function readCombatSpell(){
     const manualResolution=row.querySelector('input[id$="_outsideResolution"]')?.value||'',rawDamage=row.querySelector('input[id$="_damage"]')?.value.trim()||'';
     const resolution=catalogSpell?.resolution||manualResolution||(/\b(?:sav(?:e|ing)?|mentő(?:dobás)?|dc)\b/i.test(rawDamage)?'save':rawDamage?'attack':'utility'),saveDamageRule=spellSaveDamageRule(row,catalogSpell);
     const liveMode=combatSpellUseMode(),savedMode=combatAttackFlow.eventType==='spell'&&combatAttackFlow.phase!=='choose'?{kind:combatAttackFlow.castMode||'default',level:combatAttackFlow.castLevel||0}:liveMode;
-    const scaledDamage=catalogSpell&&savedMode.kind==='slot'?spellCatalogScaledDamage(catalogSpell,savedMode.level):row.querySelector('input[id$="_damage"]')?.value.trim()||'';
+    const scaledDamage=catalogSpell?spellCatalogResolvedDamage(catalogSpell,savedMode.level||source?.castLevel||catalogSpell.level,source?.ability||''):row.querySelector('input[id$="_damage"]')?.value.trim()||'';
+    const healing=spellIsHealingSpell(catalogSpell);
     if(source?.ability){
         const score=Number(document.getElementById(source.ability)?.value)||10,mod=Math.floor((score-10)/2);
         const level=Number(document.getElementById('characterLevel')?.value)||1,prof=2+Math.floor((level-1)/4);
         return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage,bonus:snapshot?.bonus??mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
-            dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule};
+            dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule,healing:snapshot?.healing??healing};
     }
     return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage, bonus:snapshot?.bonus??(Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0),
-        dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule};
+        dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule,healing:snapshot?.healing??healing};
 }
 
 function readCombatDamageSource(){return combatAttackFlow.eventType==='spell'?readCombatSpell():readCombatAttack();}
@@ -9860,7 +9893,8 @@ function buildCombatDamageDiceInputs(){
     const spec = attack && combatRulesDamageSpec(parseDamageExpression(attack.damage));
     if(!spec){
         const note = document.createElement('span');
-        note.textContent = 'A kiválasztott művelet sebzésmezőjében adj meg kockaképletet (pl. 2d6+3).';
+        const healing=combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='healing';
+        note.textContent = `A kiválasztott művelet ${healing?'gyógyítási':'sebzés'} mezőjében adj meg kockaképletet (pl. 2d6+3).`;
         combatDamageDiceInputs.appendChild(note);
         return;
     }
@@ -9968,6 +10002,16 @@ function performCombatRoll(){
             if(!slot||slot.current<1){refreshCombatSpellCastModes();combatRollResult.textContent=`Nincs elérhető ${castMode.level}. szintű varázsrekesz.`;return;}
         }
         if(castMode.kind!=='scroll'&&!spellRowCanCast(spell.row)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
+        if(spell.healing&&parseDamageExpression(spell.damage)){
+            const rulesIntent=combatRulesCurrentRoll(),rulesPlan=combatRulesPlan(rulesIntent);
+            if(!rulesPlan.ok){combatRollResult.textContent=rulesPlan.error;return;}
+            if(!spendSpellUse(spell.row,castMode)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
+            if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
+            applyArcaneWardFromSpell(spell);
+            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'healing',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'healing',healing:true}};
+            const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='scroll'?`${spell.name} (tekercsből/tárgyból)`:spell.name;
+            recordCombatGuideRoll('spell',spellUseLabel);refreshCombatAttackOptions();updateCombatClassOptions(false);beginCombatDamage();return;
+        }
         if(spell.resolution==='save'){
             const rulesIntent=combatRulesCurrentRoll(),rulesPlan=combatRulesPlan(rulesIntent);
             if(!rulesPlan.ok){combatRollResult.textContent=rulesPlan.error;return;}
@@ -10036,6 +10080,17 @@ function performCombatRoll(){
         recordCombatGuideRoll('attack',attack.name);
         syncCombatAttackFlow();
         return;
+    }
+    const healingFlow=combatAttackFlow.eventType==='spell'&&combatAttackFlow.spellResolution==='healing';
+    if(healingFlow){
+        const spec=parseDamageExpression(attack.damage);if(!spec){combatRollResult.textContent='A gyógyítási mező elején adj meg kockaképletet, például: 2d6+3.';return;}
+        const inputs=[...combatDamageDiceInputs.querySelectorAll('input[data-combat-die-index]')],provided=inputs.map(input=>input.value.trim());
+        if(provided.some(Boolean)&&provided.some(value=>!value)){combatRollResult.textContent='Add meg az összes gyógyítási kocka eredményét, vagy hagyd mindet üresen az automatikus dobáshoz.';return;}
+        const rolls=spec.dice.map((die,index)=>{const value=provided[index]?Number(provided[index]):rollDie(die.sides);return Number.isInteger(value)&&value>=1&&value<=die.sides?{value,sign:die.sign}:null;});
+        if(rolls.some(roll=>!roll)){combatRollResult.textContent='Minden gyógyítási kocka eredményének az adott kocka tartományába kell esnie.';return;}
+        const diceTotal=rolls.reduce((sum,roll)=>sum+roll.value*roll.sign,0),total=Math.max(0,diceTotal+spec.modifier),diceDetail=rolls.length?rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + '):'fix érték',modifierText=spec.modifier?' '+(spec.modifier>=0?'+':'−')+' '+Math.abs(spec.modifier):'';
+        showCombatResult(`${attack.name} gyógyítása: ${spec.expression} | Dobások: ${diceDetail}${modifierText}. A célpont HP-ját kézzel módosítsd.`,total);
+        document.querySelectorAll('#spellEntries .spell-entry-row').forEach(updateSpellUsageStatus);saveCharacter();combatAttackFlow.phase='complete';recordCombatGuideRoll('damage',attack.name+' – gyógyítás');syncCombatAttackFlow();return;
     }
     let inspiration;
     try{inspiration=readRollInspiration('combatRollInspiration');}catch(error){combatRollResult.textContent=error.message;return;}

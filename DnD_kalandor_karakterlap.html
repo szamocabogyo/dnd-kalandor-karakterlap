@@ -2464,12 +2464,15 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   body.pdf-export-mode .class-banner-copy h2{font-size:12pt!important}
   body.pdf-export-mode .class-banner-copy p{margin-top:1mm!important;font-size:7.5pt!important}
   body.pdf-export-mode .class-banner-runes{gap:1mm!important}
-  body.pdf-export-mode .main{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:1.5mm!important;align-items:start!important}
+  body.pdf-export-mode .main{display:grid!important;grid-template-columns:minmax(0,24fr) minmax(0,41fr) minmax(0,35fr)!important;gap:1.5mm!important;align-items:start!important}
   body.pdf-export-mode .abilities{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-content:start!important}
   body.pdf-export-mode .abilities,body.pdf-export-mode .center,body.pdf-export-mode .right-column{width:auto!important;min-width:0!important;gap:2mm!important}
   body.pdf-export-mode .extra-sheet-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:dense!important;grid-auto-rows:auto!important;gap:1.5mm!important;margin-top:1.5mm!important;align-items:start!important}
   body.pdf-export-mode .extra-sheet-grid>.spell-card,body.pdf-export-mode .extra-sheet-grid>.druid-form-card{grid-column:1/-1!important}
+  body.pdf-export-mode .extra-sheet-grid>#mobileNavMore{grid-column:span 2!important}
+  body.pdf-export-mode .extra-sheet-grid>[data-merged-free-text="feats"]{grid-column:1/-1!important}
   body.pdf-export-mode .center>.card,body.pdf-export-mode .right-column>.card,body.pdf-export-mode .extra-sheet-grid>.card{margin-bottom:2mm!important}
+  body.pdf-export-mode .abilities>#savingThrowsCard,body.pdf-export-mode .center>.pdf-official-layout-card,body.pdf-export-mode .right-column>.pdf-official-layout-card{grid-column:1/-1!important;width:100%!important;box-sizing:border-box!important;margin-top:0!important;margin-bottom:2mm!important}
   body.pdf-export-mode .card,body.pdf-export-mode .collapsible,body.pdf-export-mode .spell-entry-row,body.pdf-export-mode .pdf-notes-appendix{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border,var(--border)) 14%,transparent)!important;background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary,var(--accent)) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface,var(--card)),color-mix(in srgb,var(--class-surface,var(--card)) 88%,#000))!important;color:var(--text)!important}
   body.pdf-export-mode .card{padding:2mm!important;break-inside:auto;page-break-inside:auto}
   body.pdf-export-mode .section-header,body.pdf-export-mode .attacks-heading{break-after:avoid;page-break-after:avoid;margin-bottom:2mm!important;padding-bottom:2mm!important;border-bottom-color:color-mix(in srgb,var(--class-border,var(--border)) 70%,transparent)!important}
@@ -12864,13 +12867,26 @@ function preparePdfExport(){
         sheetClass:sheet.className,
         panels:[...sheet.querySelectorAll('.collapsible,.mobile-section-foldable,.attacks')].map(element=>({element,className:element.className})),
         details:[...sheet.querySelectorAll('details')].map(element=>({element,open:element.open})),
-        spellBodies:[...sheet.querySelectorAll('.spell-entry-details')].map(element=>({element,hidden:element.hidden}))
+        spellBodies:[...sheet.querySelectorAll('.spell-entry-details')].map(element=>({element,hidden:element.hidden})),
+        moved:[]
     };
     document.body.classList.add('pdf-export-mode');
     sheet.classList.remove('mobile-mode');
     pdfExportState.panels.forEach(({element})=>element.classList.remove('collapsed','mobile-section-collapsed'));
     pdfExportState.details.forEach(({element})=>element.open=true);
     pdfExportState.spellBodies.forEach(({element})=>element.hidden=false);
+    const moveToOfficialColumn=(element,target)=>{
+        if(!element||!target||element.hidden)return;
+        const marker=document.createComment('pdf-layout-position');element.parentNode.insertBefore(marker,element);
+        pdfExportState.moved.push({element,marker});element.classList.add('pdf-official-layout-card');target.appendChild(element);
+    };
+    const abilities=sheet.querySelector('.abilities'),center=sheet.querySelector('.center'),right=sheet.querySelector('.right-column');
+    moveToOfficialColumn(document.getElementById('savingThrowsCard'),abilities);
+    moveToOfficialColumn(document.getElementById('hitDieType')?.closest('.extra-card'),center);
+    moveToOfficialColumn(document.querySelector('.money-card'),center);
+    moveToOfficialColumn(document.getElementById('otherProficiencies')?.closest('.extra-card'),right);
+    moveToOfficialColumn(document.getElementById('classFeaturesCard'),right);
+    moveToOfficialColumn(document.getElementById('rangerCompanionPanel'),right);
     sheet.querySelectorAll('textarea:not([hidden])').forEach(field=>{
         if(!field.value.trim())return;
         const mirror=document.createElement('div');
@@ -12887,6 +12903,7 @@ function preparePdfExport(){
 }
 function restoreAfterPdfExport(){
     const state=pdfExportState;if(!state)return;
+    [...state.moved].reverse().forEach(({element,marker})=>{element.classList.remove('pdf-official-layout-card');marker.parentNode?.insertBefore(element,marker);marker.remove();});
     state.panels.forEach(({element,className})=>element.className=className);
     state.details.forEach(({element,open})=>element.open=open);
     state.spellBodies.forEach(({element,hidden})=>element.hidden=hidden);

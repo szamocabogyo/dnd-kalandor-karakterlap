@@ -11393,6 +11393,14 @@ function updateMobileClassResourceStatus(){
 function renderMobileContextNotices(){
     const container=document.getElementById('mobileContextNotices');if(!container)return;
     const notices=[],current=Number(document.getElementById('currentHp')?.value),maximum=Number(document.getElementById('maxHp')?.value);
+    const setupSteps=[
+        {id:'characterClass',missing:!document.getElementById('characterClass')?.value,text:'A kezdéshez válassz kasztot.'},
+        {id:'characterLevel',missing:Number(document.getElementById('characterLevel')?.value)<1,text:'Add meg a karakter szintjét.'},
+        {id:'characterRace',missing:!document.getElementById('characterRace')?.value,text:'Válaszd ki a karakter faját.'},
+        {id:'maxHp',missing:maximum<=0,text:'Add meg a maximális életerőt.'}
+    ];
+    const nextSetupStep=setupSteps.find(step=>step.missing);
+    if(nextSetupStep)notices.push({icon:'✦',text:'Karakter beállítása: '+nextSetupStep.text,target:'character',focus:nextSetupStep.id,severity:'guide'});
     if(maximum>0&&current<=0)notices.push({icon:'☠',text:'0 HP – halálmentő dobások szükségesek.',target:'death',severity:'critical'});
     else if(maximum>0&&current<=Math.max(1,Math.floor(maximum/4)))notices.push({icon:'♥',text:'Kritikusan alacsony életerő: '+current+' / '+maximum+' HP.',target:'hp',severity:'critical'});
     else if(maximum>0&&current<=Math.floor(maximum/2))notices.push({icon:'♥',text:'Alacsony életerő: '+current+' / '+maximum+' HP.',target:'hp',severity:'warning'});
@@ -11408,13 +11416,14 @@ function renderMobileContextNotices(){
     }
     container.replaceChildren(...notices.map(notice=>{
         const button=document.createElement('button');button.type='button';button.dataset.contextTarget=notice.target;button.dataset.severity=notice.severity;
+        if(notice.focus)button.dataset.contextFocus=notice.focus;
         const icon=document.createElement('span');icon.setAttribute('aria-hidden','true');icon.textContent=notice.icon;
         const text=document.createElement('span');text.textContent=notice.text;button.append(icon,text);return button;
     }));
     container.hidden=!notices.length;
 }
 function openMobileStatusPanel(kind){
-    const section=kind==='hp'?document.querySelector('.hp-card'):kind==='death'?document.getElementById('deathSaveHome')?.closest('.card'):kind==='inspiration'?document.getElementById('inspirationCard'):kind==='spells'?document.getElementById('mobileNavSpells'):kind==='features'?document.getElementById('classFeaturesCard'):document.querySelector('.combat');
+    const section=kind==='character'?document.getElementById('mobileNavCharacter'):kind==='hp'?document.querySelector('.hp-card'):kind==='death'?document.getElementById('deathSaveHome')?.closest('.card'):kind==='inspiration'?document.getElementById('inspirationCard'):kind==='spells'?document.getElementById('mobileNavSpells'):kind==='features'?document.getElementById('classFeaturesCard'):document.querySelector('.combat');
     if(!section)return;
     section.classList.remove('collapsed','mobile-section-collapsed');
     section.querySelector(':scope > .section-header')?.setAttribute('aria-expanded','true');
@@ -11427,7 +11436,7 @@ function openMobileStatusPanel(kind){
 function setupMobilePlayStatus(){
     const status=document.getElementById('mobilePlayStatus');if(!status||status.dataset.ready==='true')return;
     status.dataset.ready='true';status.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-status-target]');if(button)openMobileStatusPanel(button.dataset.mobileStatusTarget);});
-    document.getElementById('mobileContextNotices')?.addEventListener('click',event=>{const button=event.target.closest('[data-context-target]');if(button)openMobileStatusPanel(button.dataset.contextTarget);});
+    document.getElementById('mobileContextNotices')?.addEventListener('click',event=>{const button=event.target.closest('[data-context-target]');if(!button)return;const focusId=button.dataset.contextFocus;if(focusId)setSheetMode('edit');openMobileStatusPanel(button.dataset.contextTarget);if(focusId)window.setTimeout(()=>document.getElementById(focusId)?.focus({preventScroll:true}),340);});
     document.addEventListener('input',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
     document.addEventListener('change',event=>{if(event.target.matches('#currentHp,#maxHp,#tempHp,#armorClass,#characterInitiativeModifier,#inspiration,#inspirationDie'))updateMobilePlayStatus();});
     document.addEventListener('input',event=>{if(event.target.matches('[id^="spellSlots"],[data-class-resource]'))updateMobilePlayStatus();});

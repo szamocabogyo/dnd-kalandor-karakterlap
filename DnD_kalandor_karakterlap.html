@@ -2497,6 +2497,40 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   body.pdf-export-mode p,body.pdf-export-mode li{orphans:2;widows:2}
 }
 </style>
+<style>
+/* PDF: the desktop sheet itself, uniformly scaled to portrait A4. */
+@media print{
+  body.pdf-export-mode{background:#17120f!important;font-size:16px!important}
+  body.pdf-export-mode #previewFrame{width:1280px!important;max-width:none!important;overflow:visible!important}
+  body.pdf-export-mode .sheet{width:1280px!important;max-width:1280px!important;margin:0!important;padding:22px!important;zoom:.59;box-sizing:border-box!important;border:1px solid rgba(214,181,111,.42)!important;outline:1px solid rgba(214,181,111,.13)!important;outline-offset:6px!important;background:radial-gradient(circle at 50% -8%,var(--class-glow),transparent 32%),linear-gradient(135deg,rgba(255,255,255,.025),transparent 35%),rgba(18,14,12,.24)!important}
+  body.pdf-export-mode h1{margin-bottom:26px!important;padding:18px 12px 22px!important;font-size:clamp(1.55rem,3vw,2.45rem)!important;line-height:normal!important}
+  body.pdf-export-mode .class-fantasy-banner{grid-template-columns:126px minmax(0,1fr) 180px!important;gap:22px!important;min-height:150px!important;margin:-12px 0 22px!important;padding:16px 24px!important}
+  body.pdf-export-mode .class-crest-wrap{width:112px!important;height:112px!important}
+  body.pdf-export-mode .class-banner-copy h2{font-size:clamp(1.45rem,2.6vw,2.35rem)!important}
+  body.pdf-export-mode .class-banner-copy p{margin:9px 0 0!important;font-size:.9rem!important}
+  body.pdf-export-mode .class-banner-runes{gap:9px!important}
+  body.pdf-export-mode .main{display:grid!important;grid-template-columns:250px minmax(0,1fr) 350px!important;gap:20px!important;align-items:start!important}
+  body.pdf-export-mode .abilities,body.pdf-export-mode .center,body.pdf-export-mode .right-column{display:flex!important;flex-direction:column!important;width:auto!important;min-width:0!important;gap:20px!important}
+  body.pdf-export-mode .extra-sheet-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important;grid-auto-rows:auto!important;gap:20px!important;margin-top:20px!important}
+  body.pdf-export-mode .extra-sheet-grid>.spell-card,body.pdf-export-mode .extra-sheet-grid>.druid-form-card{grid-column:1/-1!important}
+  body.pdf-export-mode .extra-sheet-grid>#mobileNavMore,body.pdf-export-mode .extra-sheet-grid>[data-merged-free-text="feats"]{grid-column:auto!important}
+  body.pdf-export-mode .card,body.pdf-export-mode .collapsible,body.pdf-export-mode .spell-entry-row{margin:0!important;padding:17px!important;border-color:color-mix(in srgb,var(--class-border) 78%,#4b3929)!important;border-radius:var(--class-radius)!important;background-image:linear-gradient(145deg,color-mix(in srgb,var(--class-primary) 7%,transparent),transparent 38%),linear-gradient(180deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 88%,#000))!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--class-border) 16%,transparent),inset 0 0 24px rgba(0,0,0,.24),0 8px 22px rgba(0,0,0,.22)!important;color:var(--text)!important}
+  body.pdf-export-mode .center>.card,body.pdf-export-mode .right-column>.card,body.pdf-export-mode .extra-sheet-grid>.card{margin-bottom:0!important}
+  body.pdf-export-mode .ability{padding:17px!important}
+  body.pdf-export-mode .mod-circle{width:84px!important;height:84px!important}
+  body.pdf-export-mode .section-header,body.pdf-export-mode .attacks-heading{margin-bottom:12px!important;padding-bottom:10px!important}
+  body.pdf-export-mode .section-header h3,body.pdf-export-mode .attacks-heading h3,body.pdf-export-mode .extra-card>h3{font-size:inherit!important;color:var(--class-symbol)!important;text-shadow:0 0 12px var(--class-glow)!important}
+  body.pdf-export-mode input,body.pdf-export-mode select{min-height:0!important;padding:10px!important;color:var(--text)!important;background:var(--bg)!important;border-color:var(--border)!important;font-size:inherit!important}
+  body.pdf-export-mode label{color:var(--muted)!important;font-size:inherit!important}
+  body.pdf-export-mode table{font-size:inherit!important}
+  body.pdf-export-mode th,body.pdf-export-mode td{padding:8px!important}
+  body.pdf-export-mode details>summary{display:list-item!important}
+  body.pdf-export-mode .saving-throw-roller,body.pdf-export-mode .skill-check-roller,body.pdf-export-mode .hp-healing,body.pdf-export-mode .spell-outside-roll,body.pdf-export-mode .spell-quick-use-details,body.pdf-export-mode .spell-roll-options{display:block!important}
+  body.pdf-export-mode .print-field-value{padding:10px!important;border:1px solid var(--border)!important;background:var(--bg)!important;color:var(--text)!important;font:inherit;line-height:1.45}
+  body.pdf-export-mode .pdf-notes-appendix{margin-top:20px!important;padding:22px!important;border-color:var(--class-border)!important;background:linear-gradient(145deg,var(--class-surface),color-mix(in srgb,var(--class-surface) 88%,#000))!important;color:var(--text)!important;font-size:1rem!important;line-height:1.6!important}
+  body.pdf-export-mode .pdf-notes-appendix h2{margin:0 0 16px!important;padding-bottom:10px!important;color:var(--class-symbol)!important;font-size:1.5rem!important}
+}
+</style>
 </head>
 <body>
 
@@ -12875,18 +12909,6 @@ function preparePdfExport(){
     pdfExportState.panels.forEach(({element})=>element.classList.remove('collapsed','mobile-section-collapsed'));
     pdfExportState.details.forEach(({element})=>element.open=true);
     pdfExportState.spellBodies.forEach(({element})=>element.hidden=false);
-    const moveToOfficialColumn=(element,target)=>{
-        if(!element||!target||element.hidden)return;
-        const marker=document.createComment('pdf-layout-position');element.parentNode.insertBefore(marker,element);
-        pdfExportState.moved.push({element,marker});element.classList.add('pdf-official-layout-card');target.appendChild(element);
-    };
-    const abilities=sheet.querySelector('.abilities'),center=sheet.querySelector('.center'),right=sheet.querySelector('.right-column');
-    moveToOfficialColumn(document.getElementById('savingThrowsCard'),abilities);
-    moveToOfficialColumn(document.getElementById('hitDieType')?.closest('.extra-card'),center);
-    moveToOfficialColumn(document.querySelector('.money-card'),center);
-    moveToOfficialColumn(document.getElementById('otherProficiencies')?.closest('.extra-card'),right);
-    moveToOfficialColumn(document.getElementById('classFeaturesCard'),right);
-    moveToOfficialColumn(document.getElementById('rangerCompanionPanel'),right);
     sheet.querySelectorAll('textarea:not([hidden])').forEach(field=>{
         if(!field.value.trim())return;
         const mirror=document.createElement('div');

@@ -2434,6 +2434,42 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .sheet.mobile-mode #mobileNavCharacter.collapsed>.section-header{height:auto;min-height:48px;max-height:none;padding-top:8px;padding-bottom:8px}
 .sheet.mobile-mode #mobileNavCharacter.collapsed>.section-header h3{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.25}
 </style>
+<style>
+.print-field-value,.pdf-notes-appendix{display:none}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+  html,body{width:auto!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important;color:#17120f!important}
+  body.pdf-export-mode{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.pdf-export-mode .sheet{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;box-shadow:none!important;background:#fff!important}
+  body.pdf-export-mode .view-switcher,
+  body.pdf-export-mode .mobile-bottom-nav,
+  body.pdf-export-mode .combat-mode-overlay,
+  body.pdf-export-mode .portrait-editor-overlay,
+  body.pdf-export-mode .character-reset-overlay,
+  body.pdf-export-mode .undo-event-bubble,
+  body.pdf-export-mode button,
+  body.pdf-export-mode .spell-entry-delete,
+  body.pdf-export-mode .spell-entry-use-shortcut,
+  body.pdf-export-mode .spell-quick-use-details,
+  body.pdf-export-mode .spell-roll-options,
+  body.pdf-export-mode .mobile-section-fold-toggle{display:none!important}
+  body.pdf-export-mode .main{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) minmax(0,1fr)!important;gap:8px!important;align-items:start!important}
+  body.pdf-export-mode .left,body.pdf-export-mode .center,body.pdf-export-mode .right{display:block!important;width:auto!important;min-width:0!important}
+  body.pdf-export-mode .card,body.pdf-export-mode .collapsible,body.pdf-export-mode .spell-entry-row,body.pdf-export-mode .pdf-notes-appendix{break-inside:avoid;page-break-inside:avoid;box-shadow:none!important;background:#fff!important;color:#17120f!important}
+  body.pdf-export-mode .section-content,body.pdf-export-mode .collapsible.collapsed .section-content{display:block!important;max-height:none!important;overflow:visible!important;opacity:1!important}
+  body.pdf-export-mode .mobile-section-collapsed>*{display:revert!important}
+  body.pdf-export-mode .mobile-generated-section-heading{display:none!important}
+  body.pdf-export-mode details>summary{display:none!important}
+  body.pdf-export-mode .spell-entry-details{display:block!important}
+  body.pdf-export-mode textarea{display:none!important}
+  body.pdf-export-mode .print-field-value{display:block;min-height:2.5em;padding:6px;border:1px solid var(--border);white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;color:#17120f}
+  body.pdf-export-mode .pdf-notes-appendix{display:block;grid-column:1/-1;margin-top:12px;padding:12px;border:2px solid var(--border);background:#fff;color:#17120f}
+  body.pdf-export-mode .pdf-notes-appendix h2{margin:0 0 10px;color:#5b351f}
+  body.pdf-export-mode .pdf-notes-appendix:empty{display:none}
+  body.pdf-export-mode input,body.pdf-export-mode select{color:#17120f!important;background:#fff!important;border-color:#8a6b3f!important}
+  body.pdf-export-mode h1,body.pdf-export-mode h2,body.pdf-export-mode h3,body.pdf-export-mode label{color:#5b351f!important;text-shadow:none!important}
+}
+</style>
 </head>
 <body>
 
@@ -2478,6 +2514,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
         <button id="portraitSettingsButton" type="button">🖼 Portré</button>
         <button id="notesSettingsButton" type="button">📝 Jegyzetek</button>
         <button id="uiLanguageToggle" class="settings-language-toggle" type="button" data-i18n-ignore>English</button>
+        <button id="pdfExportButton" type="button">📄 PDF export</button>
         <button id="exportCharacter">💾 Export</button>
         <button id="importCharacter">📂 Import</button>
         <button id="clearCharacter" type="button">♲ Karakterlap ürítése</button>
@@ -12793,6 +12830,53 @@ document.getElementById('notesSettingsButton')?.addEventListener('click',openNot
 notesEditor?.addEventListener('input',()=>{characterNotesData.value=notesEditor.innerHTML;clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(saveNotes,350);});notesEditor?.addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData?.getData('text/plain')||'');});
 document.getElementById('notesToolbar')?.addEventListener('mousedown',event=>event.preventDefault());document.getElementById('notesToolbar')?.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;notesEditor?.focus();if(button.dataset.notesBlock){const target=button.dataset.notesBlock.toLowerCase(),selection=window.getSelection();let node=selection?.anchorNode;if(node?.nodeType===Node.TEXT_NODE)node=node.parentElement;const current=node instanceof Element?node.closest('h2,h3,p,div'):null;document.execCommand('formatBlock',false,current?.tagName.toLowerCase()===target?'p':target);}else document.execCommand(button.dataset.notesCommand,false,null);saveNotes();});
 syncNotesEditorFromField();
+let pdfExportState=null;
+function preparePdfExport(){
+    if(pdfExportState)return;
+    saveNotes();
+    const sheet=document.querySelector('.sheet');
+    pdfExportState={
+        sheet,
+        sheetClass:sheet.className,
+        panels:[...sheet.querySelectorAll('.collapsible,.mobile-section-foldable,.attacks')].map(element=>({element,className:element.className})),
+        details:[...sheet.querySelectorAll('details')].map(element=>({element,open:element.open})),
+        spellBodies:[...sheet.querySelectorAll('.spell-entry-details')].map(element=>({element,hidden:element.hidden}))
+    };
+    document.body.classList.add('pdf-export-mode');
+    sheet.classList.remove('mobile-mode');
+    pdfExportState.panels.forEach(({element})=>element.classList.remove('collapsed','mobile-section-collapsed'));
+    pdfExportState.details.forEach(({element})=>element.open=true);
+    pdfExportState.spellBodies.forEach(({element})=>element.hidden=false);
+    sheet.querySelectorAll('textarea:not([hidden])').forEach(field=>{
+        if(!field.value.trim())return;
+        const mirror=document.createElement('div');
+        mirror.className='print-field-value';mirror.textContent=field.value;mirror.dataset.pdfTemporary='true';
+        field.insertAdjacentElement('afterend',mirror);
+    });
+    const notesHtml=sanitizeNotesHtml(characterNotesData?.value||notesEditor?.innerHTML||'');
+    const notesText=document.createElement('div');notesText.innerHTML=notesHtml;
+    if(notesText.textContent.trim()){
+        const appendix=document.createElement('section');appendix.className='pdf-notes-appendix';appendix.dataset.pdfTemporary='true';
+        const title=document.createElement('h2');title.textContent=activeUiLanguage==='en'?'Character Notes':'Karakterjegyzetek';
+        const content=document.createElement('div');content.innerHTML=notesHtml;appendix.append(title,content);sheet.appendChild(appendix);
+    }
+}
+function restoreAfterPdfExport(){
+    const state=pdfExportState;if(!state)return;
+    state.panels.forEach(({element,className})=>element.className=className);
+    state.details.forEach(({element,open})=>element.open=open);
+    state.spellBodies.forEach(({element,hidden})=>element.hidden=hidden);
+    state.sheet.className=state.sheetClass;
+    document.querySelectorAll('[data-pdf-temporary="true"]').forEach(element=>element.remove());
+    document.body.classList.remove('pdf-export-mode');pdfExportState=null;
+}
+document.getElementById('pdfExportButton')?.addEventListener('click',()=>{
+    preparePdfExport();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        try{window.print();}finally{restoreAfterPdfExport();}
+    }));
+});
+window.addEventListener('afterprint',restoreAfterPdfExport);
 function clearStoredCharacter(){
     localStorage.removeItem('dndCharacter');
     Object.keys(localStorage).filter(key=>/^skill_(?:manual_)?\d+$/.test(key)).forEach(key=>localStorage.removeItem(key));
@@ -14032,7 +14116,7 @@ setupRangerCombat();
 applyClassVisualTheme();
 
 const uiTranslationsEn={
-'Nyelv':'Language','Magyar':'Hungarian','⚔ Játék':'⚔ Play','✎ Szerkesztés':'✎ Edit','Karakterlap használati módja':'Character sheet mode','⚙ Beállítások':'⚙ Settings','🖼 Portré':'🖼 Portrait','📝 Jegyzetek':'📝 Notes','♲ Karakterlap ürítése':'♲ Clear Character Sheet','🌤 Rövid pihenő':'🌤 Short Rest','🌙 Hosszú pihenő':'🌙 Long Rest','Kalandori heraldika':'Adventurer Heraldry','Válassz kasztot':'Choose a Class','Válassz kasztot...':'Choose a class…','A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.':'The selected class crest, ornamentation, and arcane glow come to life here.','Kasztspecifikus heraldikai fejléc':'Class-themed heraldic banner',
+'Nyelv':'Language','Magyar':'Hungarian','⚔ Játék':'⚔ Play','✎ Szerkesztés':'✎ Edit','Karakterlap használati módja':'Character sheet mode','⚙ Beállítások':'⚙ Settings','🖼 Portré':'🖼 Portrait','📝 Jegyzetek':'📝 Notes','📄 PDF export':'📄 Export PDF','♲ Karakterlap ürítése':'♲ Clear Character Sheet','🌤 Rövid pihenő':'🌤 Short Rest','🌙 Hosszú pihenő':'🌙 Long Rest','Kalandori heraldika':'Adventurer Heraldry','Válassz kasztot':'Choose a Class','Válassz kasztot...':'Choose a class…','A kiválasztott kaszt saját címere, ornamentikája és mágikus fénye itt kel életre.':'The selected class crest, ornamentation, and arcane glow come to life here.','Kasztspecifikus heraldikai fejléc':'Class-themed heraldic banner',
 '✦ Karakter adatok':'✦ Character Details','Karakter adatok':'Character Details','Karakter neve':'Character Name','Kaszt':'Class','Alosztály':'Subclass','Szint':'Level','Faj':'Race','Háttér':'Background','Válassz fajt...':'Choose a race…','Válassz jellemet...':'Choose an alignment…','Válassz vagy írj egyéni hátteret…':'Choose or enter a custom background…','Választható hátterek':'Available Backgrounds','Előbb válassz kasztot…':'Choose a class first…','Karakter portré':'Character Portrait','Karakter portré előnézete':'Character portrait preview','Kép kiválasztása':'Choose Image','Portré eltávolítása':'Remove Portrait','Bezárás':'Close',
 'Tulajdonságpontok':'Ability Scores','ERŐ':'STRENGTH','ÜGYESSÉG':'DEXTERITY','ÁLLÓKÉPESSÉG':'CONSTITUTION','INTELLIGENCIA':'INTELLIGENCE','BÖLCSESSÉG':'WISDOM','KARIZMA':'CHARISMA','Erő':'Strength','Ügyesség':'Dexterity','Állóképesség':'Constitution','Intelligencia':'Intelligence','Bölcsesség':'Wisdom','Karizma':'Charisma','Harci értékek':'Combat Statistics','Aktuális HP':'Current Hit Points','Maximális HP':'Hit Point Maximum','Inspiráció':'Inspiration','Inspiráció aktív':'Inspiration Active','Nincs aktív inspiráció':'No Active Inspiration','Kockaérték':'Die Size',
 'Fegyverek':'Weapons','＋ Új sor':'＋ Add Row','Név':'Name','Bónusz':'Bonus','Sebzés / típus':'Damage / Type','Sor törlése':'Delete row','Felszerelés':'Equipment','Fegyverek, páncélok, tárgyak, készletek és egyéb felszerelés…':'Weapons, armor, items, kits, and other equipment…','Képzettségek':'Skills','Kasztjellemzők':'Class Features','Pénz':'Currency','Mentődobások':'Saving Throws','Egyéb jártasságok és nyelvek':'Other Proficiencies & Languages','Életerőkockák és mentők':'Hit Dice & Saves','Haladó alapadatok':'Advanced Character Details',

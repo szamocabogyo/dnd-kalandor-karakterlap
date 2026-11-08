@@ -2504,16 +2504,20 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 @media print{
   body.pdf-export-mode{background:#17120f!important;font-size:16px!important}
   body.pdf-export-mode .view-switcher,body.pdf-export-mode .mobile-bottom-nav,body.pdf-export-mode .combat-mode-overlay,body.pdf-export-mode .portrait-editor-overlay,body.pdf-export-mode .character-reset-overlay,body.pdf-export-mode .undo-event-bubble,body.pdf-export-mode .mobile-generated-section-heading,body.pdf-export-mode .add-attack-row,body.pdf-export-mode .remove-attack-row,body.pdf-export-mode .spell-entry-delete,body.pdf-export-mode .gem-remove-button,body.pdf-export-mode #addSpellRow,body.pdf-export-mode #addItemSpellRow,body.pdf-export-mode #addGemInventoryRow{display:none!important}
-  body.pdf-export-mode #previewFrame{width:1280px!important;max-width:none!important;overflow:visible!important}
-  body.pdf-export-mode .sheet{width:1280px!important;max-width:1280px!important;margin:0!important;padding:22px!important;zoom:.59;box-sizing:border-box!important;border:1px solid rgba(214,181,111,.42)!important;outline:1px solid rgba(214,181,111,.13)!important;outline-offset:6px!important;background:radial-gradient(circle at 50% -8%,var(--class-glow),transparent 32%),linear-gradient(135deg,rgba(255,255,255,.025),transparent 35%),rgba(18,14,12,.24)!important}
+  body.pdf-export-mode #previewFrame{width:100%!important;max-width:none!important;overflow:visible!important}
+  body.pdf-export-mode .sheet{width:100%!important;max-width:none!important;margin:0!important;padding:16px!important;zoom:1;box-sizing:border-box!important;border:1px solid rgba(214,181,111,.42)!important;outline:1px solid rgba(214,181,111,.13)!important;outline-offset:4px!important;background:radial-gradient(circle at 50% -8%,var(--class-glow),transparent 32%),linear-gradient(135deg,rgba(255,255,255,.025),transparent 35%),rgba(18,14,12,.24)!important}
   body.pdf-export-mode h1{margin-bottom:26px!important;padding:18px 12px 22px!important;font-size:clamp(1.55rem,3vw,2.45rem)!important;line-height:normal!important}
   body.pdf-export-mode .class-fantasy-banner{grid-template-columns:126px minmax(0,1fr) 180px!important;gap:22px!important;min-height:150px!important;margin:-12px 0 22px!important;padding:16px 24px!important}
   body.pdf-export-mode .class-crest-wrap{width:112px!important;height:112px!important}
   body.pdf-export-mode .class-banner-copy h2{font-size:clamp(1.45rem,2.6vw,2.35rem)!important}
   body.pdf-export-mode .class-banner-copy p{margin:9px 0 0!important;font-size:.9rem!important}
   body.pdf-export-mode .class-banner-runes{gap:9px!important}
-  body.pdf-export-mode .main{display:grid!important;grid-template-columns:250px minmax(0,1fr) 350px!important;gap:20px!important;align-items:start!important}
+  body.pdf-export-mode .grid-top{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important;margin-bottom:14px!important}
+  body.pdf-export-mode .grid-top>.character-portrait-card{grid-column:1/-1!important}
+  body.pdf-export-mode .grid-top>.class-choice-card{grid-column:span 2!important}
+  body.pdf-export-mode .main{display:grid!important;grid-template-columns:minmax(0,20fr) minmax(0,52fr) minmax(0,28fr)!important;gap:12px!important;align-items:start!important}
   body.pdf-export-mode .abilities,body.pdf-export-mode .center,body.pdf-export-mode .right-column{display:flex!important;flex-direction:column!important;width:auto!important;min-width:0!important;gap:20px!important}
+  body.pdf-export-mode .combat{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
   body.pdf-export-mode .extra-sheet-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important;grid-auto-rows:auto!important;gap:20px!important;margin-top:20px!important}
   body.pdf-export-mode .extra-sheet-grid>.spell-card,body.pdf-export-mode .extra-sheet-grid>.druid-form-card{grid-column:1/-1!important}
   body.pdf-export-mode .extra-sheet-grid>#mobileNavMore,body.pdf-export-mode .extra-sheet-grid>[data-merged-free-text="feats"]{grid-column:auto!important}
@@ -12912,6 +12916,11 @@ function preparePdfExport(){
     pdfExportState.panels.forEach(({element})=>element.classList.remove('collapsed','mobile-section-collapsed'));
     pdfExportState.details.forEach(({element})=>element.open=true);
     pdfExportState.spellBodies.forEach(({element})=>element.hidden=false);
+    const savingThrows=document.getElementById('savingThrowsCard'),equipment=document.getElementById('equipment')?.closest('.card');
+    if(savingThrows&&equipment&&equipment.nextElementSibling!==savingThrows){
+        const marker=document.createComment('pdf-layout-position');savingThrows.parentNode.insertBefore(marker,savingThrows);
+        pdfExportState.moved.push({element:savingThrows,marker});equipment.after(savingThrows);
+    }
     sheet.querySelectorAll('textarea:not([hidden])').forEach(field=>{
         if(!field.value.trim())return;
         const mirror=document.createElement('div');

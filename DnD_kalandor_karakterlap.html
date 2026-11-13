@@ -1315,7 +1315,7 @@ input:focus, textarea:focus, select:focus {
 .spell-card .extra-field-grid>.spell-list-editor{grid-column:1/-1}
 .spell-card .spell-list-editor>.field-label{display:block;margin-bottom:5px;color:var(--accent);font-size:.82em;font-weight:bold;letter-spacing:.03em;text-transform:uppercase}
 .spell-list-rows{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0}
-.spell-entry-row{display:grid;grid-template-columns:minmax(150px,2fr) repeat(6,minmax(82px,1fr)) minmax(150px,1.2fr) 36px;gap:8px;align-items:end;padding:10px;border:1px solid var(--border);background:rgba(0,0,0,.06)}
+.spell-entry-row{display:grid;grid-template-columns:minmax(150px,2fr) repeat(6,minmax(82px,1fr)) minmax(150px,1.2fr) 36px;gap:8px;align-items:end;padding:10px;border:1px solid var(--border);background:rgba(0,0,0,.06);scroll-margin-top:12px}
 .spell-entry-field{display:flex;flex-direction:column;gap:4px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:bold}
 .spell-entry-field input,.spell-entry-field select{width:100%;min-width:0;box-sizing:border-box}
 .spell-entry-label{display:block;line-height:1.2}
@@ -12025,6 +12025,16 @@ function addItemSpellRow(rowNumber = extraSpellRowCount + 1){
     spellCatalogGroupRows();updateSpellUsageStatus(row);
     return row;
 }
+function openNewSpellEditor(row){
+    if(!row)return;
+    setSpellRowExpanded(row,true);
+    const editor=row.querySelector('.spell-detail-disclosure');if(editor)editor.open=true;
+    const input=row.querySelector('input[id$="_name"]');
+    requestAnimationFrame(()=>{
+        row.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+        requestAnimationFrame(()=>{input?.focus({preventScroll:true});if(input)spellCatalogOpen(row,input,'');});
+    });
+}
 
 function removeSpellRow(row){
     if(!row||row.hidden)return;
@@ -12233,6 +12243,9 @@ function storedSheetMode(){
 function syncSheetModeControls(){
     const play=activeSheetMode==='play';
     document.querySelectorAll(sheetModeEditControlSelector).forEach(control=>{
+        if(play&&document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')&&control.closest('.spell-detail-fields')){
+            control.disabled=false;delete control.dataset.modeLocked;return;
+        }
         if(play){
             if(!sheetModeOriginalDisabled.has(control))sheetModeOriginalDisabled.set(control,control.disabled);
             control.disabled=true;control.dataset.modeLocked='true';
@@ -12628,12 +12641,12 @@ document.querySelectorAll('#spellEntries .spell-entry-row').forEach(updateSpellU
 document.getElementById('addSpellRow')?.addEventListener('click', () => {
     const row = addSpellRow();
     saveCharacter();
-    row.querySelector('input[id$="_name"]')?.focus();
+    openNewSpellEditor(row);
 });
 document.getElementById('addItemSpellRow')?.addEventListener('click', () => {
     const row = addItemSpellRow();
     saveCharacter();
-    row.querySelector('input[id$="_name"]')?.focus();
+    openNewSpellEditor(row);
 });
 updateCharacterPanelTitle();
 

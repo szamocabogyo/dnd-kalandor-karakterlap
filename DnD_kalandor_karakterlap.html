@@ -4763,16 +4763,22 @@ function dailyPreparationReminder(klass=document.getElementById('characterClass'
 }
 function setDailyPreparationEditing(active){
     const sheet=document.querySelector('.sheet');if(!sheet)return;
-    sheet.classList.toggle('spell-preparation-editing',Boolean(active)&&characterUsesDailyPreparation());
+    const available=document.getElementById('dailyPreparationAvailable')?.value==='true';
+    sheet.classList.toggle('spell-preparation-editing',Boolean(active)&&available&&characterUsesDailyPreparation());
     if(typeof syncSheetModeControls==='function')syncSheetModeControls();
     if(sheet.classList.contains('spell-preparation-editing'))document.querySelectorAll('.spell-detail-fields input,.spell-detail-fields select,.spell-detail-fields textarea').forEach(control=>{control.disabled=false;delete control.dataset.modeLocked;});
     updateDailyPreparationToolbar();
     if(active)document.querySelector('.spell-list-fold')?.setAttribute('open','');
 }
+function finishDailyPreparation(){
+    const field=document.getElementById('dailyPreparationAvailable');if(field)field.value='false';
+    document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');
+    updateDailyPreparationToolbar();saveCharacter();
+}
 function updateDailyPreparationToolbar(message=''){
     const toolbar=document.getElementById('dailyPreparationToolbar');if(!toolbar)return;
-    const sheet=document.querySelector('.sheet'),daily=characterUsesDailyPreparation(),play=sheet?.dataset.sheetMode==='play';
-    toolbar.hidden=!(daily&&play);
+    const sheet=document.querySelector('.sheet'),daily=characterUsesDailyPreparation(),play=sheet?.dataset.sheetMode==='play',available=document.getElementById('dailyPreparationAvailable')?.value==='true';
+    toolbar.hidden=!(daily&&play&&available);
     if(!daily){sheet?.classList.remove('spell-preparation-editing');return;}
     const active=sheet?.classList.contains('spell-preparation-editing'),klass=document.getElementById('characterClass')?.value||'';
     const note=document.getElementById('dailyPreparationNote'),button=document.getElementById('dailyPreparationToggle');
@@ -5055,9 +5061,10 @@ function setupSpellCatalog(){
     const editor=document.querySelector('.spell-list-editor');
     if(editor){
         const config=document.createElement('div');config.className='spell-catalog-config';
+        const dailyAvailable=document.createElement('input');dailyAvailable.type='hidden';dailyAvailable.id='dailyPreparationAvailable';dailyAvailable.value='false';config.appendChild(dailyAvailable);
         const dailyToolbar=document.createElement('section');dailyToolbar.id='dailyPreparationToolbar';dailyToolbar.className='daily-preparation-toolbar';dailyToolbar.hidden=true;
         dailyToolbar.innerHTML='<p id="dailyPreparationNote"></p><button id="dailyPreparationToggle" type="button" aria-pressed="false">Napi varázslatok módosítása</button>';
-        dailyToolbar.querySelector('button').addEventListener('click',()=>setDailyPreparationEditing(!document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')));
+        dailyToolbar.querySelector('button').addEventListener('click',()=>{const active=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing');if(active)finishDailyPreparation();else setDailyPreparationEditing(true);});
         const wizardPanel=document.createElement('section');wizardPanel.id='wizardSpellbookPanel';wizardPanel.className='wizard-spellbook-panel';wizardPanel.hidden=true;
         wizardPanel.innerHTML='<div class="wizard-spellbook-stat"><span>Varázskönyv</span><strong id="wizardSpellbookCount">0</strong></div><div class="wizard-spellbook-stat"><span>Ma előkészítve</span><strong id="wizardPreparedCount">0 / 1</strong></div><p class="wizard-spellbook-guide">A katalógusból felvett, legalább 1. szintű Wizard varázslatok a varázskönyvbe kerülnek. Jelöld meg, melyeket készíted elő a napra. A keret: Wizard szint + Intelligencia módosító (legalább 1). A könyvben lévő rituálékat előkészítés nélkül is használhatod rituáléként.</p><p id="wizardSpellbookWarning" class="wizard-spellbook-warning" role="status" aria-live="polite"></p>';
         const label=document.createElement('label');label.textContent='A föld köre – táj';const select=document.createElement('select');select.id='druidLandType';select.appendChild(new Option('Válassz tájat…',''));['Arctic','Coast','Desert','Forest','Grassland','Mountain','Swamp','Underdark'].forEach(name=>select.appendChild(new Option(name,name)));label.appendChild(select);label.hidden=true;
@@ -9128,6 +9135,8 @@ function restoreSpellResources(restType){
     const klass=document.getElementById('characterClass')?.value||'';
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10)||1;
     if(restType==='long'){
+        const dailyPreparation=document.getElementById('dailyPreparationAvailable');if(dailyPreparation)dailyPreparation.value=String(characterUsesDailyPreparation());
+        document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');
         for(let slotLevel=1;slotLevel<=9;slotLevel++){const input=document.getElementById(`spellSlots${slotLevel}`),slot=parseSpellSlotValue(input);if(slot){const maximum=slot.maximum??Math.max(slot.current,characterSpellSlotMaximums()[slotLevel-1]);input.value=`${maximum} / ${maximum}`;}}
         document.querySelectorAll('#spellEntries .spell-entry-row').forEach(row=>{const policy=row.querySelector('select[id$="_usage"]')?.value;const limit=spellUseLimit(policy);const remaining=row.querySelector('input[id$="_remaining"]');if(limit!==null)remaining.value=String(limit);else if(isWarlockArcanum(row))remaining.value='1';updateSpellUsageStatus(row);});
         const recovery=document.getElementById('classFeature_wizardArcaneRecoveryUsed');if(recovery)recovery.checked=false;

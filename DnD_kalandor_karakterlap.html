@@ -1214,6 +1214,9 @@ input:focus, textarea:focus, select:focus {
 .class-feature-resource .resource-value{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
 .class-feature-resource output{font-weight:700;color:var(--accent);white-space:nowrap}
 .class-feature-note{grid-column:1/-1;margin:0;color:var(--muted);font-size:.84em;line-height:1.45}
+.class-feature-help{display:block;color:var(--muted);font-size:.72rem;line-height:1.4;text-transform:none}
+.class-feature-select-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.class-feature-select-list select{width:100%;min-width:0}
 .skill-background-source,.skill-class-source{font-size:.76em;color:var(--accent);font-weight:600}
 .skill-class-source{display:block;margin-top:2px;letter-spacing:.01em}
 .class-feature-fields .toggle-field{flex-direction:row;align-items:center;gap:9px}
@@ -1327,6 +1330,7 @@ input:focus, textarea:focus, select:focus {
 @media(max-width:768px){.extra-sheet-grid{grid-template-columns:minmax(0,1fr)}.spell-card{grid-column:auto}.spell-slots-field{width:100%}.currency-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:768px){.druid-form-card{grid-column:1}.druid-beast-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.druid-beast-abilities{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:768px){.class-feature-fields{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:768px){.class-feature-select-list{grid-template-columns:minmax(0,1fr)}}
 .sheet.mobile-mode .extra-sheet-grid{grid-template-columns:minmax(0,1fr)}
 .sheet.mobile-mode .spell-card{grid-column:auto}
 .sheet.mobile-mode .spell-card .extra-field-grid{grid-template-columns:minmax(0,1fr)}
@@ -8180,6 +8184,37 @@ function classFeatureContext(){
     const intelligence=Number.parseInt(document.getElementById('INT')?.value,10)||10;
     return {klass,level,subclass,charisma,wisdom,strength,dexterity,constitution,intelligence,chaMod:Math.floor((charisma-10)/2),wisMod:Math.floor((wisdom-10)/2),strMod:Math.floor((strength-10)/2),dexMod:Math.floor((dexterity-10)/2),conMod:Math.floor((constitution-10)/2),intMod:Math.floor((intelligence-10)/2),proficiency:2+Math.floor((level-1)/4)};
 }
+const classFeatureSkillOptions=['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival'];
+const classFeatureLanguageOptions=['Common','Dwarvish','Elvish','Giant','Gnomish','Goblin','Halfling','Orc','Abyssal','Celestial','Deep Speech','Draconic','Infernal','Primordial','Sylvan','Undercommon'];
+const classFeatureArtisanToolOptions=['Alchemist’s Supplies','Brewer’s Supplies','Calligrapher’s Supplies','Carpenter’s Tools','Cartographer’s Tools','Cobbler’s Tools','Cook’s Utensils','Glassblower’s Tools','Jeweler’s Tools','Leatherworker’s Tools','Mason’s Tools','Painter’s Supplies','Potter’s Tools','Smith’s Tools','Tinker’s Tools','Weaver’s Tools','Woodcarver’s Tools'];
+const battleMasterManeuverOptions=['Commander’s Strike','Disarming Attack','Distracting Strike','Evasive Footwork','Feinting Attack','Goading Attack','Lunging Attack','Maneuvering Attack','Menacing Attack','Parry','Precision Attack','Pushing Attack','Rally','Riposte','Sweeping Attack','Trip Attack'];
+const fourElementsDisciplineOptions=['Fangs of the Fire Snake','Fist of Four Thunders','Fist of Unbroken Air','Flames of the Phoenix','Gong of the Summit','Mist Stance','Ride the Wind','River of Hungry Flame','Rush of the Gale Spirits','Shape the Flowing River','Sweeping Cinder Strike','Water Whip','Wave of Rolling Earth'];
+const fourElementsDisciplineMinimumLevel={'Gong of the Summit':6,'Mist Stance':6,'Flames of the Phoenix':11,'Ride the Wind':11,'River of Hungry Flame':11,'Wave of Rolling Earth':17};
+function fourElementsOptionsForLevel(level){return fourElementsDisciplineOptions.filter(name=>Number(level)>=(fourElementsDisciplineMinimumLevel[name]||3));}
+const classFeatureWeaponOptions=['Battleaxe','Blowgun','Club','Dagger','Dart','Flail','Glaive','Greataxe','Greatclub','Greatsword','Halberd','Hand Crossbow','Handaxe','Heavy Crossbow','Javelin','Lance','Light Crossbow','Light Hammer','Longbow','Longsword','Mace','Maul','Morningstar','Net','Pike','Quarterstaff','Rapier','Scimitar','Shortbow','Shortsword','Sickle','Sling','Spear','Trident','War Pick','Warhammer','Whip'];
+const eldritchInvocationOptions=['Agonizing Blast','Armor of Shadows','Ascendant Step','Beast Speech','Beguiling Influence','Bewitching Whispers','Book of Ancient Secrets','Chains of Carceri','Devil’s Sight','Dreadful Word','Eldritch Sight','Eldritch Spear','Eyes of the Rune Keeper','Fiendish Vigor','Gaze of Two Minds','Lifedrinker','Mask of Many Faces','Master of Myriad Forms','Minions of Chaos','Mire the Mind','Misty Visions','One with Shadows','Otherworldly Leap','Repelling Blast','Sculptor of Flesh','Sign of Ill Omen','Thief of Five Fates','Thirsting Blade','Visions of Distant Realms','Voice of the Chain Master','Whispers of the Grave','Witch Sight'];
+function classFeatureSpellOptions(level=null,klass=null){
+    return spellCatalogData.filter(spell=>(level===null||Number(spell.level)===Number(level))&&(!klass||spell.classes?.includes(klass))).map(spell=>spell.name).sort((a,b)=>a.localeCompare(b));
+}
+function parseClassFeatureListValue(value){
+    if(Array.isArray(value))return value.map(String);
+    const text=String(value||'').trim();if(!text)return [];
+    try{const parsed=JSON.parse(text);if(Array.isArray(parsed))return parsed.map(String);}catch{}
+    return text.split(/\r?\n|[,;]+/).map(item=>item.trim()).filter(Boolean);
+}
+function classFeatureEscape(value){return String(value??'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
+function classFeatureFieldHelp(field){
+    if(field.help)return field.help;
+    if(field.type==='counter')return 'A számláló a még elkölthető használatokat mutatja; a megfelelő pihenő után a lap automatikusan visszatölti.';
+    if(field.type==='toggle')return 'Jelöld be, amikor a képesség aktív; a hatás lejártakor kapcsold ki.';
+    if(field.type==='select'||field.type==='selectlist')return 'Válassz a szabályok szerint elérhető lehetőségek közül.';
+    if(field.type==='textarea'||field.type==='text')return 'Egyéni vagy kampányfüggő adat; a lap változtatás nélkül megőrzi.';
+    return '';
+}
+function syncClassFeatureSelectListOptions(key){
+    const controls=[...document.querySelectorAll(`[data-class-select-list="${key}"]`)],selected=controls.map(control=>control.value).filter(Boolean);
+    controls.forEach(control=>[...control.options].forEach(option=>{option.disabled=Boolean(option.value&&option.value!==control.value&&selected.includes(option.value));}));
+}
 const classFeatureModels={
     Barbarian:{note:'Haraghasználatok hosszú pihenőre töltődnek vissza. A harag sebzésbónusza szint szerint automatikus.',fields:[
         {type:'counter',key:'rageUses',label:'Harag használata',max:c=>c.level>=20?Infinity:c.level>=17?6:c.level>=12?5:c.level>=6?4:c.level>=3?3:2,rest:'long'},
@@ -8205,9 +8240,9 @@ const classFeatureModels={
         {type:'select',key:'bardExpertise4',label:'Expertise 4',minLevel:10,options:['Acrobatics','Animal Handling','Arcana','Athletics','Deception','History','Insight','Intimidation','Investigation','Medicine','Nature','Perception','Performance','Persuasion','Religion','Sleight of Hand','Stealth','Survival']},
         {type:'output',key:'fontOfInspiration',label:'Font of Inspiration',minLevel:5,wide:true,value:()=> 'A Bárdi inspiráció rövid vagy hosszú pihenő befejezésekor teljesen visszatöltődik.'},
         {type:'output',key:'countercharm',label:'Countercharm',minLevel:6,wide:true,value:()=> 'Akcióval a következő saját köröd végéig te és a 30 ft-on belüli, halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra.'},
-        {type:'textarea',key:'magicalSecrets',label:'Magical Secrets – választott varázslatok / jegyzetek',minLevel:10,wide:true},
+        {type:'selectlist',key:'magicalSecrets',label:'Magical Secrets – választott varázslatok',minLevel:10,wide:true,count:c=>c.level>=18?6:c.level>=14?4:2,options:c=>spellCatalogData.filter(spell=>Number(spell.level)<=Math.min(9,Math.ceil(c.level/2))).map(spell=>spell.name).sort((a,b)=>a.localeCompare(b)),help:'A bárd bármely kaszt varázslistájáról választhat, de csak olyan szintűt, amelyhez van varázsrekesze; a választás bárdvarázslatnak számít.'},
         {type:'output',key:'superiorInspiration',label:'Superior Inspiration',minLevel:20,wide:true,value:()=> 'Kezdeményezés dobásakor, ha nincs Bárdi inspirációd, automatikusan visszakapsz egy használatot.'},
-        {type:'textarea',key:'loreBonusSkills',label:'College of Lore – három bónusz jártasság',minLevel:3,wide:true,when:c=>c.subclass.includes('lore')},
+        {type:'selectlist',key:'loreBonusSkills',label:'College of Lore – három bónusz jártasság',minLevel:3,wide:true,count:3,options:classFeatureSkillOptions,when:c=>c.subclass.includes('lore'),help:'Válassz három olyan készséget, amelyhez a Bonus Proficiencies jártasságot ad.'},
         {type:'output',key:'cuttingWords',label:'College of Lore – Cutting Words',minLevel:3,wide:true,when:c=>c.subclass.includes('lore'),value:()=> 'Reakcióval és egy Bárdi inspirációval csökkentheted egy látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobását.'},
         {type:'output',key:'peerlessSkill',label:'College of Lore – Peerless Skill',minLevel:14,wide:true,when:c=>c.subclass.includes('lore'),value:c=>'Saját tulajdonságpróbához elkölthetsz egy Bárdi inspirációt, és hozzáadhatsz '+(c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6')+'-t.'},
         {type:'output',key:'valorProficiencies',label:'College of Valor – Bonus Proficiencies',minLevel:3,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Közepes páncél, pajzs és harci fegyverek.'},
@@ -8226,7 +8261,7 @@ const classFeatureModels={
         {type:'output',key:'knowledgeBlessings',label:'Knowledge – Blessings of Knowledge',wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Két választott nyelv; két választott Arcana, History, Nature vagy Religion készségnél jártasság és dupla jártassági bónusz.'},
         {type:'select',key:'knowledgeExpertise1',label:'Knowledge – Expertise 1',when:c=>c.subclass.includes('knowledge'),options:['Arcana','History','Nature','Religion']},
         {type:'select',key:'knowledgeExpertise2',label:'Knowledge – Expertise 2',when:c=>c.subclass.includes('knowledge'),options:['Arcana','History','Nature','Religion']},
-        {type:'textarea',key:'knowledgeLanguages',label:'Knowledge – két választott nyelv',wide:true,when:c=>c.subclass.includes('knowledge')},
+        {type:'selectlist',key:'knowledgeLanguages',label:'Knowledge – két választott nyelv',wide:true,count:2,options:classFeatureLanguageOptions,when:c=>c.subclass.includes('knowledge'),help:'A Blessings of Knowledge két szabadon választott nyelvet ad.'},
         {type:'output',key:'knowledgeOfAges',label:'Knowledge – Knowledge of the Ages',minLevel:2,wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Channel Divinity akcióval 10 percre jártasság egy választott készségben vagy eszközben.'},
         {type:'output',key:'readThoughts',label:'Knowledge – Read Thoughts',minLevel:6,wide:true,when:c=>c.subclass.includes('knowledge'),value:()=> 'Channel Divinity akcióval egy 60 ft-on belüli lény gondolatainak olvasása és a Suggestion elmondása varázsrekesz nélkül.'},
         {type:'output',key:'potentSpellcasting',label:'Potent Spellcasting',minLevel:8,wide:true,when:c=>['knowledge domain','light domain'].some(x=>c.subclass.includes(x)),value:c=>'A cleric trükkök sebzéséhez hozzáadódik a Bölcsességmódosító ('+signed(c.wisMod)+').'},
@@ -8277,8 +8312,8 @@ const classFeatureModels={
         {type:'output',key:'superiorityDie',label:'Battle Master kocka',value:c=>c.level>=18?'d12':c.level>=10?'d10':'d8',when:c=>c.subclass.includes('battle master'),minLevel:3},
         {type:'counter',key:'superiorityDice',label:'Battle Master manőverkockák',max:c=>c.level>=15?6:c.level>=7?5:4,rest:'both',when:c=>c.subclass.includes('battle master'),minLevel:3},
         {type:'output',key:'maneuverSaveDC',label:'Manőver mentődobás DC',minLevel:3,when:c=>c.subclass.includes('battle master'),value:c=>8+c.proficiency+Math.max(c.strMod,c.dexMod)},
-        {type:'textarea',key:'maneuvers',label:'Ismert manőverek',minLevel:3,wide:true,when:c=>c.subclass.includes('battle master')},
-        {type:'textarea',key:'studentWar',label:'Student of War – választott kézműves eszköz',minLevel:3,wide:true,when:c=>c.subclass.includes('battle master')},
+        {type:'selectlist',key:'maneuvers',label:'Ismert manőverek',minLevel:3,wide:true,when:c=>c.subclass.includes('battle master'),count:c=>c.level>=15?9:c.level>=10?7:c.level>=7?5:3,options:battleMasterManeuverOptions,help:'A Battle Master a szintjének megfelelő számú, különböző manővert ismer.'},
+        {type:'selectlist',key:'studentWar',label:'Student of War – választott kézműves eszköz',minLevel:3,wide:true,when:c=>c.subclass.includes('battle master'),count:1,options:classFeatureArtisanToolOptions,help:'A Student of War egy választott kézművesszerszám használatában ad jártasságot.'},
         {type:'output',key:'knowEnemy',label:'Know Your Enemy',minLevel:7,wide:true,when:c=>c.subclass.includes('battle master'),value:()=> 'Harc nélkül legalább 1 perc megfigyelés után a DM két választott harci jellemzőről megmondja, hogy a célpont egyenlő, jobb vagy rosszabb.'},
         {type:'output',key:'relentless',label:'Relentless',minLevel:15,wide:true,when:c=>c.subclass.includes('battle master'),value:()=> 'Kezdeményezés dobásakor, ha nincs manőverkockád, egyet visszakapsz.'},
         {type:'output',key:'weaponBond',label:'Eldritch Knight – Weapon Bond',minLevel:3,wide:true,when:c=>c.subclass.includes('eldritch knight'),value:()=> 'Legfeljebb két kötött fegyver; nem lefegyverezhető, és ugyanazon a síkon bónuszakcióval kézbe idézhető.'},
@@ -8320,7 +8355,7 @@ const classFeatureModels={
         {type:'output',key:'shadowStep',label:'Shadow Step',minLevel:6,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Félhomályból vagy sötétségből bónuszakcióval legfeljebb 60 ft teleport egy látható félhomályos/sötét helyre; előny a következő közelharci támadásra a kör végéig.'},
         {type:'output',key:'cloakShadowsMonk',label:'Cloak of Shadows',minLevel:11,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Félhomályban vagy sötétségben akcióval láthatatlanná válsz; támadás, varázslás vagy erős fény megszünteti.'},
         {type:'output',key:'opportunist',label:'Opportunist',minLevel:17,wide:true,when:c=>c.subclass.includes('way of shadow'),value:()=> 'Reakcióval közelharci támadás egy 5 ft-on belüli lény ellen, amikor azt más eltalálja.'},
-        {type:'textarea',key:'elementalDisciplines',label:'Four Elements – ismert elemi diszciplínák',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements')},
+        {type:'selectlist',key:'elementalDisciplines',label:'Four Elements – választott elemi diszciplínák',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements'),count:c=>c.level>=17?4:c.level>=11?3:c.level>=6?2:1,options:c=>fourElementsOptionsForLevel(c.level),help:'Az Elemental Attunement alapból ismert; a lista csak az aktuális monk szinten elérhető további diszciplínákat mutatja.'},
         {type:'output',key:'elementalDisciplinesRules',label:'Disciple of the Elements',minLevel:3,wide:true,when:c=>c.subclass.includes('four elements'),value:()=> 'Elemental Attunement és a szint alapján választott diszciplínák; a varázslatkatalógus a kiválasztott diszciplínák Ki-költségét automatikusan kezeli.'}
     ]},
     Paladin:{note:'PHB 2014: a Karizma a varázslási tulajdonság. A Lay on Hands, Divine Sense és a magasabb szintű képességek hosszú pihenőre; az eskü Isteni Energiája rövid vagy hosszú pihenőre töltődik vissza.',fields:[
@@ -8367,18 +8402,18 @@ const classFeatureModels={
         {type:'output',key:'spellcasting2024',label:'Varázslás',wide:true,value:()=> '1. szinttől, Bölcsességgel. Az előkészített listából hosszú pihenőn egy varázslat cserélhető; a mindig előkészítettek nem számítanak a keretbe.'},
         {type:'counter',key:'favoredEnemyUses',label:'Hunter’s Mark – megmaradt ingyenes használatok',max:c=>c.level>=17?6:c.level>=13?5:c.level>=9?4:c.level>=5?3:2,rest:'long'},
         {type:'output',key:'favoredEnemy2024',label:'Favored Enemy',wide:true,value:()=> 'Hunter’s Mark mindig előkészített. A fenti használatok nem fogyasztanak varázsrekeszt; hosszú pihenő tölti vissza őket. A varázslat koncentrációt igényel.'},
-        {type:'textarea',key:'weaponMastery',label:'Weapon Mastery – két választott fegyvertípus',wide:true},
+        {type:'selectlist',key:'weaponMastery',label:'Weapon Mastery – két választott fegyvertípus',wide:true,count:2,options:classFeatureWeaponOptions,help:'Válassz két fegyvertípust, amelyek Mastery tulajdonságát használhatod.'},
         {type:'output',key:'weaponMasteryRules',label:'Weapon Mastery',wide:true,value:()=> 'Két jártas fegyvertípus mesterfogását használhatod. A fegyvertípusok hosszú pihenő végén cserélhetők.'},
-        {type:'textarea',key:'deftExplorerExpertise',label:'Deft Explorer – egy Expertise készség',minLevel:2,wide:true},
-        {type:'textarea',key:'deftExplorerLanguages',label:'Deft Explorer – két választott nyelv',minLevel:2,wide:true},
+        {type:'selectlist',key:'deftExplorerExpertise',label:'Deft Explorer – egy Expertise készség',minLevel:2,wide:true,count:1,options:classFeatureSkillOptions,help:'Olyan készséget válassz, amelyben már jártas vagy; ennél a jártassági bónuszod kétszerese jár.'},
+        {type:'selectlist',key:'deftExplorerLanguages',label:'Deft Explorer – két választott nyelv',minLevel:2,wide:true,count:2,options:classFeatureLanguageOptions},
         {type:'output',key:'deftExplorerRules',label:'Deft Explorer',minLevel:2,wide:true,value:()=> 'Egy már jártas, Expertise nélküli készségnél kétszeres jártassági bónusz; ezenfelül két nyelv.'},
         {type:'select',key:'fightingStyle',label:'Fighting Style / Druidic Warrior',minLevel:2,options:['Archery','Blind Fighting','Defense','Dueling','Great Weapon Fighting','Interception','Protection','Thrown Weapon Fighting','Two-Weapon Fighting','Unarmed Fighting','Druidic Warrior']},
         {type:'output',key:'fightingStyleRules',label:'Harci stílus választása',minLevel:2,wide:true,value:()=> 'Egy Fighting Style feat, vagy Druidic Warrior: két druida trükk Bölcsességgel; szintlépéskor egyikük cserélhető.'},
-        {type:'textarea',key:'druidicWarriorCantrips',label:'Druidic Warrior – két trükk, ha ezt választottad',minLevel:2,wide:true},
+        {type:'selectlist',key:'druidicWarriorCantrips',label:'Druidic Warrior – két druida trükk',minLevel:2,wide:true,count:2,options:()=>classFeatureSpellOptions(0,'Druid'),help:'Csak akkor válassz, ha a Fighting Style mezőben a Druidic Warrior szerepel.'},
         {type:'output',key:'abilityScoreImprovements',label:'Tulajdonságfejlesztés / feat',minLevel:4,wide:true,value:c=> 'A 4., 8., 12. és 16. szinten választható; eddig '+[4,8,12,16].filter(level=>c.level>=level).length+' alkalom.'},
         {type:'output',key:'extraAttack',label:'Extra Attack',minLevel:5,wide:true,value:()=> 'Saját fordulóban Támadás akcióként két támadás.'},
         {type:'output',key:'roving',label:'Roving',minLevel:6,wide:true,value:()=> 'Nehézpáncél nélkül +10 ft sebesség. Mászó- és úszósebességed a sebességeddel egyezik.'},
-        {type:'textarea',key:'rangerExpertise',label:'Expertise – két további választott készség',minLevel:9,wide:true},
+        {type:'selectlist',key:'rangerExpertise',label:'Expertise – két további választott készség',minLevel:9,wide:true,count:2,options:classFeatureSkillOptions,help:'Két már jártas készségnél a jártassági bónuszod kétszerese jár.'},
         {type:'output',key:'rangerExpertiseRules',label:'Expertise',minLevel:9,wide:true,value:()=> 'Két további, már jártas készség kap Expertise-t; ugyanarra nem választható kétszer.'},
         {type:'counter',key:'tirelessUses',label:'Tireless – megmaradt használatok',minLevel:10,max:c=>Math.max(1,c.wisMod),rest:'long'},
         {type:'output',key:'tirelessRules',label:'Tireless',minLevel:10,wide:true,value:c=> 'Mágia akció: 1d8 '+(c.wisMod>=0?'+':'−')+' '+Math.abs(c.wisMod)+' ideiglenes HP, minimum 1. Használat után csökkentsd a számlálót. Rövid pihenőn a kimerültség egy szinttel csökken.'},
@@ -8456,7 +8491,7 @@ const classFeatureModels={
     Warlock:{note:'PHB 2014: a Paktummágia összes rekesze azonos szintű, és rövid vagy hosszú pihenőn visszatöltődik. A patrónus- és invokációs erőforrásokat a Combat mód is követi.',fields:[
         {type:'output',key:'pactMagicRules',label:'Pact Magic',wide:true,value:c=>{const slots=characterSpellSlotMaximums(),slotLevel=highestSpellSlotLevel(slots);return 'Karizma alapú varázslás. Mentődobás DC: '+(8+c.proficiency+c.chaMod)+', varázstámadás: '+(c.proficiency+c.chaMod>=0?'+':'')+(c.proficiency+c.chaMod)+'. '+slots[slotLevel-1]+' darab '+slotLevel+'. szintű paktumrekesz; rövid vagy hosszú pihenőn mind visszatöltődik.';}},
         {type:'output',key:'knownMagic',label:'Ismert varázslatok és invokációk',wide:true,value:c=>{const spells=[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15][c.level-1],inv=c.level<2?0:c.level<5?2:c.level<7?3:c.level<9?4:c.level<12?5:c.level<15?6:c.level<18?7:8;return spells+' ismert, 1–5. szintű varázslat; '+inv+' ismert Eldritch Invocation.';}},
-        {type:'textarea',key:'eldritchInvocations',label:'Eldritch invokációk',wide:true,minLevel:2},
+        {type:'selectlist',key:'eldritchInvocations',label:'Eldritch invokációk',wide:true,minLevel:2,count:c=>c.level>=18?8:c.level>=15?7:c.level>=12?6:c.level>=9?5:c.level>=7?4:c.level>=5?3:2,options:eldritchInvocationOptions,help:'Csak olyan invokációt válassz, amelynek szint-, paktum- és varázslatkövetelményét teljesíted.'},
         {type:'toggle',key:'agonizingBlast',label:'Agonizing Blast kiválasztva',minLevel:2},
         {type:'toggle',key:'repellingBlast',label:'Repelling Blast kiválasztva',minLevel:2},
         {type:'toggle',key:'thirstingBlade',label:'Thirsting Blade kiválasztva',minLevel:5},
@@ -8488,13 +8523,13 @@ const classFeatureModels={
         {type:'output',key:'thoughtShield',label:'Thought Shield',wide:true,minLevel:10,when:c=>c.subclass.includes('great old one'),value:()=> 'Beleegyezésed nélkül nem olvashatják a gondolataidat; ellenállsz a psychic sebzésnek, és ugyanannyi psychic sebzést okozol annak, aki ilyet okoz neked.'},
         {type:'textarea',key:'createThrallTarget',label:'Create Thrall – elbájolt humanoid',wide:true,minLevel:14,when:c=>c.subclass.includes('great old one')},
         {type:'output',key:'createThrallRules',label:'Create Thrall',wide:true,minLevel:14,when:c=>c.subclass.includes('great old one'),value:()=> 'Akcióval megérintett, incapacitated humanoid elbájolódik a Remove Curse használatáig; ugyanazon a létsíkon telepatikusan kommunikálhattok.'},
-        {type:'textarea',key:'mysticArcanum6Spell',label:'Mystic Arcanum – 6. szintű varázslat',wide:true,minLevel:11},
+        {type:'selectlist',key:'mysticArcanum6Spell',label:'Mystic Arcanum – 6. szintű varázslat',wide:true,minLevel:11,count:1,options:()=>classFeatureSpellOptions(6,'Warlock')},
         {type:'counter',key:'mysticArcanum6Used',label:'6. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:11},
-        {type:'textarea',key:'mysticArcanum7Spell',label:'Mystic Arcanum – 7. szintű varázslat',wide:true,minLevel:13},
+        {type:'selectlist',key:'mysticArcanum7Spell',label:'Mystic Arcanum – 7. szintű varázslat',wide:true,minLevel:13,count:1,options:()=>classFeatureSpellOptions(7,'Warlock')},
         {type:'counter',key:'mysticArcanum7Used',label:'7. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:13},
-        {type:'textarea',key:'mysticArcanum8Spell',label:'Mystic Arcanum – 8. szintű varázslat',wide:true,minLevel:15},
+        {type:'selectlist',key:'mysticArcanum8Spell',label:'Mystic Arcanum – 8. szintű varázslat',wide:true,minLevel:15,count:1,options:()=>classFeatureSpellOptions(8,'Warlock')},
         {type:'counter',key:'mysticArcanum8Used',label:'8. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:15},
-        {type:'textarea',key:'mysticArcanum9Spell',label:'Mystic Arcanum – 9. szintű varázslat',wide:true,minLevel:17},
+        {type:'selectlist',key:'mysticArcanum9Spell',label:'Mystic Arcanum – 9. szintű varázslat',wide:true,minLevel:17,count:1,options:()=>classFeatureSpellOptions(9,'Warlock')},
         {type:'counter',key:'mysticArcanum9Used',label:'9. szintű Arcanum használata',max:()=>1,rest:'long',minLevel:17},
         {type:'counter',key:'eldritchMaster',label:'Eldritch Master – megmaradt használatok',max:()=>1,rest:'long',minLevel:20},
         {type:'output',key:'eldritchMasterRules',label:'Eldritch Master',wide:true,minLevel:20,value:()=> '1 percig kérleled a patrónusodat, majd minden elhasznált Pact Magic rekeszed visszatöltődik; hosszú pihenőnként egyszer.'}
@@ -8504,9 +8539,9 @@ const classFeatureModels={
         {type:'output',key:'arcaneRecoveryPoints',label:'Arcane Recovery keret',value:c=>`${Math.ceil(c.level/2)} varázsrekesz-szint`},
         {type:'toggle',key:'wizardArcaneRecoveryUsed',label:'Arcane Recovery felhasználva',rest:'long'},
         {type:'textarea',key:'spellbookNotes',label:'Varázskönyv / további jegyzetek',wide:true},
-        {type:'textarea',key:'spellMastery',label:'Spell Mastery – választott 1. és 2. szintű varázslat',wide:true,minLevel:18},
+        {type:'selectlist',key:'spellMastery',label:'Spell Mastery – választott 1. és 2. szintű varázslat',wide:true,minLevel:18,count:2,options:(c,index)=>classFeatureSpellOptions(index+1,'Wizard'),help:'Az első mezőben egy 1., a másodikban egy 2. szintű mágusvarázslatot válassz; ezeket legalacsonyabb szinten rekesz nélkül használhatod.'},
         {type:'output',key:'spellMasteryRules',label:'Spell Mastery',wide:true,minLevel:18,value:()=> 'A két előkészített varázslat legalacsonyabb szinten korlátlanul, rekesz nélkül használható; 8 óra tanulással cserélhetők.'},
-        {type:'textarea',key:'signatureSpells',label:'Signature Spells – két 3. szintű varázslat',wide:true,minLevel:20},
+        {type:'selectlist',key:'signatureSpells',label:'Signature Spells – két 3. szintű varázslat',wide:true,minLevel:20,count:2,options:()=>classFeatureSpellOptions(3,'Wizard'),help:'A két kiválasztott varázslat mindig előkészített; mindkettő egyszer használható 3. szinten rekesz nélkül rövid vagy hosszú pihenőnként.'},
         {type:'counter',key:'signatureSpell1',label:'Signature Spell 1 – ingyenes használat',max:()=>1,rest:'both',minLevel:20},
         {type:'counter',key:'signatureSpell2',label:'Signature Spell 2 – ingyenes használat',max:()=>1,rest:'both',minLevel:20},
         {type:'counter',key:'arcaneWardHp',label:'Abjuration – Arcane Ward aktuális HP',max:c=>Math.max(0,2*c.level+c.intMod),minLevel:2,when:c=>c.subclass.includes('abjuration')},
@@ -8519,7 +8554,7 @@ const classFeatureModels={
         {type:'output',key:'benignTranspositionRules',label:'Benign Transposition',wide:true,minLevel:6,when:c=>c.subclass.includes('conjuration'),value:()=> 'Akcióval 30 ft teleport, vagy helycsere egy beleegyező Small/Medium lénnyel. Conjuration varázslat használata azonnal visszatölti.'},
         {type:'output',key:'focusedConjuration',label:'Focused Conjuration',wide:true,minLevel:10,when:c=>c.subclass.includes('conjuration'),value:()=> 'Sebzés nem szakítja meg a koncentrációdat conjuration varázslaton.'},
         {type:'output',key:'durableSummons',label:'Durable Summons',wide:true,minLevel:14,when:c=>c.subclass.includes('conjuration'),value:c=>'Az általad megidézett vagy létrehozott lények '+(30)+' ideiglenes HP-val jelennek meg.'},
-        {type:'textarea',key:'portentDice',label:'Divination – Portent dobások',wide:true,minLevel:2,when:c=>c.subclass.includes('divination')},
+        {type:'selectlist',key:'portentDice',label:'Divination – Portent dobások',wide:true,minLevel:2,when:c=>c.subclass.includes('divination'),count:c=>c.level>=14?3:2,options:Array.from({length:20},(_,index)=>String(index+1)),help:'Hosszú pihenő után rögzítsd a kidobott d20 értékeket. Egy értéket látott lény támadás-, mentő- vagy tulajdonságpróbája előtt helyettesíthetsz be.'},
         {type:'output',key:'portentRules',label:'Portent',wide:true,minLevel:2,when:c=>c.subclass.includes('divination'),value:c=>(c.level>=14?3:2)+' d20 dobás hosszú pihenő végén; saját vagy látott lény támadását, mentőjét vagy próbáját a dobás előtt egy eltett eredményre cserélheted.'},
         {type:'output',key:'expertDivination',label:'Expert Divination',wide:true,minLevel:6,when:c=>c.subclass.includes('divination'),value:()=> '2. vagy magasabb szintű divination varázslat rekesszel használva visszatölt egy alacsonyabb, legfeljebb 5. szintű rekeszt.'},
         {type:'select',key:'thirdEye',label:'The Third Eye',minLevel:10,when:c=>c.subclass.includes('divination'),options:['Darkvision 60 ft','Ethereal Sight 60 ft','Greater Comprehension','See Invisibility 10 ft']},
@@ -8778,7 +8813,46 @@ function supplementalSubclassFields(context){
         ...milestones
     ];
 }
-function allClassFeatureFields(model,context){return [...(model?.fields||[]),...supplementalSubclassFields(context)];}
+const additionalBaseClassFeatureFields={
+Barbarian:[
+    {type:'output',key:'guide_recklessAttack',label:'Reckless Attack',minLevel:2,wide:true,value:()=> 'A saját köröd első, Erővel végzett közelharci fegyvertámadása előtt választhatod. Ebben a körben az Erő-alapú közelharci támadásaid előnyösek, de a következő köröd kezdetéig az ellened végzett támadások is előnyösek.'},
+    {type:'output',key:'guide_dangerSense',label:'Danger Sense',minLevel:2,wide:true,value:()=> 'Előnyöd van a látható hatások elleni Ügyesség mentődobásokra, ha nem vagy vak, süket vagy cselekvésképtelen.'},
+    {type:'output',key:'guide_extraAttack',label:'Extra Attack',minLevel:5,wide:true,value:()=> 'A Támadás akcióval egy helyett két támadást hajthatsz végre.'},
+    {type:'output',key:'guide_fastMovement',label:'Fast Movement',minLevel:5,wide:true,value:()=> 'Nehézpáncél viselése nélkül a sebességed 10 ft-tal nő.'},
+    {type:'output',key:'guide_feralInstinct',label:'Feral Instinct',minLevel:7,wide:true,value:()=> 'Előny a kezdeményezésre. Meglepetés esetén az első körödben normálisan cselekedhetsz, ha minden más előtt bónuszakcióval haragba lépsz.'},
+    {type:'output',key:'guide_brutalCritical',label:'Brutal Critical',minLevel:9,wide:true,value:c=> 'Kritikus közelharci találatkor további '+(c.level>=17?3:c.level>=13?2:1)+' fegyversebzés-kockát dobsz; a Combat mód ezt automatikusan kezeli.'},
+    {type:'output',key:'guide_relentlessRage',label:'Relentless Rage',minLevel:11,wide:true,value:c=> 'Harag közben 0 HP-ra kerülve, ha nem halsz meg azonnal, DC 10 Állóképesség mentővel 1 HP-n maradhatsz. Minden további siker után a DC 5-tel nő, rövid vagy hosszú pihenő után visszaáll 10-re.'},
+    {type:'output',key:'guide_persistentRage',label:'Persistent Rage',minLevel:15,wide:true,value:()=> 'A haragod csak akkor ér véget idő előtt, ha eszméletlenné válsz vagy saját döntésedből befejezed.'},
+    {type:'output',key:'guide_indomitableMight',label:'Indomitable Might',minLevel:18,wide:true,value:c=> 'Erőpróbán, ha a dobás eredménye kisebb az Erő értékednél ('+c.strength+'), az Erő értékedet használhatod eredményként.'},
+    {type:'output',key:'guide_primalChampion',label:'Primal Champion',minLevel:20,wide:true,value:()=> 'Az Erő és Állóképesség értéked 4-gyel nő, és ezek maximuma 24 lesz.'},
+    {type:'output',key:'guide_mindlessRage',label:'Berserker – Mindless Rage',minLevel:6,wide:true,when:c=>c.subclass.includes('berserker'),value:()=> 'Harag közben nem bájolhatnak el és nem ijeszthetnek meg; ha ilyen hatás alatt lépsz haragba, a hatás a harag idejére felfüggesztődik.'},
+    {type:'output',key:'guide_intimidatingPresence',label:'Berserker – Intimidating Presence',minLevel:10,wide:true,when:c=>c.subclass.includes('berserker'),value:c=> 'Akcióval egy 30 ft-on belüli, téged látó lény WIS mentőt dob (DC '+(8+c.proficiency+c.chaMod)+'); sikertelenségnél a következő köröd végéig megijed, és akcióval fenntarthatod.'},
+    {type:'output',key:'guide_retaliation',label:'Berserker – Retaliation',minLevel:14,wide:true,when:c=>c.subclass.includes('berserker'),value:()=> 'Ha egy 5 ft-on belüli lény megsebez, reakcióval közelharci fegyvertámadást végezhetsz ellene.'},
+    {type:'output',key:'guide_spiritWalker',label:'Totem Warrior – Spirit Walker',minLevel:10,wide:true,when:c=>c.subclass.includes('totem warrior'),value:()=> 'A Commune with Nature varázslatot rituáléként használhatod, hogy a környező vidékről és lényeiről természetfeletti ismeretet szerezz.'}
+],
+Druid:[
+    {type:'output',key:'guide_druidic',label:'Druidic',wide:true,value:()=> 'Ismered a druidák titkos nyelvét: rejtett üzenetet hagyhatsz, amelyet más druida automatikusan észrevesz és megért.'},
+    {type:'output',key:'guide_spellcasting',label:'Varázslás',wide:true,value:c=> 'Bölcsességalapú előkészített varázslás. Naponta '+Math.max(1,c.level+c.wisMod)+' druida varázslat készíthető elő; a rituálé jelölésű előkészített varázslatok rituáléként is használhatók.'},
+    {type:'output',key:'guide_wildShapeRules',label:'Vad alak – működés',minLevel:2,wide:true,value:c=> 'Akcióval olyan bestia alakját veszed fel, amelyet láttál. Legfeljebb '+Math.floor(c.level/2)+' óráig tart; a forma külön HP-készletet, fizikai értékeket és mozgásokat ad, de az elméd és kasztjellemzőid megmaradnak, ha az alak képes használni őket.'},
+    {type:'output',key:'guide_timelessBody',label:'Timeless Body',minLevel:18,wide:true,value:()=> 'Minden eltelt tíz év alatt csak egy évet öregszel, és mágikusan nem öregíthetnek.'},
+    {type:'output',key:'guide_beastSpells',label:'Beast Spells',minLevel:18,wide:true,value:()=> 'Vad alakban is használhatsz druida varázslatokat verbális és szomatikus komponensekkel; anyagi komponenst továbbra sem tudsz biztosítani.'},
+    {type:'output',key:'guide_archdruid',label:'Archdruid',minLevel:20,wide:true,value:()=> 'Korlátlanul használhatod a Vad alakot, és a druida varázslatok legtöbb verbális, szomatikus és nem költséges anyagi komponensét figyelmen kívül hagyhatod.'},
+    {type:'output',key:'guide_naturalRecovery',label:'Circle of the Land – Natural Recovery',minLevel:2,wide:true,when:c=>c.subclass.includes('land'),value:c=> 'Rövid pihenő végén egyszer visszatölthetsz összesen legfeljebb '+Math.ceil(c.level/2)+' rekeszszintnyi, legfeljebb 5. szintű varázsrekeszt; hosszú pihenő után használható újra.'},
+    {type:'output',key:'guide_landsStride',label:'Circle of the Land – Land’s Stride',minLevel:6,wide:true,when:c=>c.subclass.includes('land'),value:()=> 'A nem mágikus nehéz terep nem lassít, növényzeten sebződés nélkül haladsz át, és előnyöd van a mágikusan létrehozott növények mentődobásaira.'},
+    {type:'output',key:'guide_naturesWard',label:'Circle of the Land – Nature’s Ward',minLevel:10,wide:true,when:c=>c.subclass.includes('land'),value:()=> 'Nem bájolhatnak el és nem ijeszthetnek meg elementálok vagy tündérlények; immunis vagy a méregre és betegségekre.'},
+    {type:'output',key:'guide_naturesSanctuary',label:'Circle of the Land – Nature’s Sanctuary',minLevel:14,wide:true,when:c=>c.subclass.includes('land'),value:c=> 'Téged támadó bestia vagy növény WIS mentőt dob (DC '+(8+c.proficiency+c.wisMod)+'); sikertelenségnél másik célpontot kell választania vagy elveszíti a támadást.'},
+    {type:'output',key:'guide_combatWildShape',label:'Circle of the Moon – Combat Wild Shape',minLevel:2,wide:true,when:c=>c.subclass.includes('moon'),value:()=> 'A Vad alak bónuszakcióval használható. Vad alakban bónuszakcióval varázsrekeszt költhetsz, és rekeszszintenként 1d8 HP-t gyógyulhatsz.'},
+    {type:'output',key:'guide_circleForms',label:'Circle of the Moon – Circle Forms',minLevel:2,wide:true,when:c=>c.subclass.includes('moon'),value:c=> 'Magasabb CR bestiák választhatók: 2. szinten CR 1, 6. szinttől legfeljebb a druida szint harmada ('+Math.floor(c.level/3)+'). A mozgáskorlátok továbbra is érvényesek.'},
+    {type:'output',key:'guide_primalStrike',label:'Circle of the Moon – Primal Strike',minLevel:6,wide:true,when:c=>c.subclass.includes('moon'),value:()=> 'Vad alakban a támadásaid mágikusnak számítanak a nem mágikus ellenállások és immunitások leküzdéséhez.'},
+    {type:'output',key:'guide_elementalWildShape',label:'Circle of the Moon – Elemental Wild Shape',minLevel:10,wide:true,when:c=>c.subclass.includes('moon'),value:()=> 'Két Vad alak használat elköltésével levegő-, föld-, tűz- vagy vízelementál alakját veheted fel.'},
+    {type:'output',key:'guide_thousandForms',label:'Circle of the Moon – Thousand Forms',minLevel:14,wide:true,when:c=>c.subclass.includes('moon'),value:()=> 'Az Alter Self varázslatot tetszés szerint használhatod varázsrekesz elköltése nélkül.'}
+]};
+function commonAbilityImprovementField(context){
+    if(context.klass==='Ranger')return [];
+    const levels=context.klass==='Fighter'?[4,6,8,12,14,16,19]:context.klass==='Rogue'?[4,8,10,12,16,19]:[4,8,12,16,19];
+    return [{type:'output',key:'guide_abilityScoreImprovement',label:'Tulajdonságfejlesztés / feat',minLevel:4,wide:true,value:c=>'Az eddig elért választási szintek: '+levels.filter(level=>c.level>=level).join(', ')+'. Minden ilyen alkalommal tulajdonságértéket növelhetsz vagy a mesélő által engedett featet választhatsz.'}];
+}
+function allClassFeatureFields(model,context){return [...(model?.fields||[]),...commonAbilityImprovementField(context),...(additionalBaseClassFeatureFields[context.klass]||[]),...supplementalSubclassFields(context)];}
 
 const sorcererMetamagicCosts={
     'Careful Spell':()=>1,'Distant Spell':()=>1,'Empowered Spell':()=>1,'Extended Spell':()=>1,
@@ -8797,7 +8871,7 @@ function classFeatureState(){
 }
 function renderClassFeatureField(field,context,state){
     const key=field.key, id=`classFeature_${key}`, value=state[key];
-    const wide=field.wide?' wide':'';
+    const wide=field.wide?' wide':'',help=classFeatureFieldHelp(field),helpHtml=help?`<small class="class-feature-help">${classFeatureEscape(help)}</small>`:'';
     if(field.when&&!field.when(context))return '';
     if(field.minLevel&&context.level<field.minLevel)return '';
     if(field.type==='counter'){
@@ -8805,14 +8879,19 @@ function renderClassFeatureField(field,context,state){
         if(maximum===0)return '';
         if(maximum===Infinity)return `<div class="class-feature-resource${wide}"><label>${field.label}</label><div class="resource-value"><output>Korlátlan</output></div></div>`;
         const current=Number.isFinite(Number(value))?Math.max(0,Math.min(maximum,Number(value))):maximum;
-        return `<div class="class-feature-resource${wide}"><label for="${id}">${field.label}</label><div class="resource-value"><input id="${id}" data-class-resource="${key}" type="number" min="0" max="${maximum}" step="1" value="${current}"><output data-resource-max="${key}">/ ${maximum}</output></div></div>`;
+        return `<div class="class-feature-resource${wide}"><label for="${id}">${field.label}</label><div class="resource-value"><input id="${id}" data-class-resource="${key}" type="number" min="0" max="${maximum}" step="1" value="${current}"><output data-resource-max="${key}">/ ${maximum}</output></div>${helpHtml}</div>`;
     }
     if(field.type==='output'&&context.klass==='Ranger'&&field.wide)return `<details class="ranger-feature-detail wide"><summary>${field.label}</summary><output id="classFeatureValue_${key}">${field.value(context)}</output></details>`;
     if(field.type==='output')return `<label class="class-feature-output${wide}">${field.label}<output id="classFeatureValue_${key}">${field.value(context)}</output></label>`;
-    if(field.type==='toggle')return `<label class="toggle-field${wide}"><input id="${id}" data-class-resource="${key}" type="checkbox" ${value?'checked':''} ${field.rest?`data-rest-reset="${field.rest}"`:''}>${field.label}</label>`;
-    if(field.type==='textarea')return `<label class="${wide}">${field.label}<textarea id="${id}" data-class-resource="${key}" rows="2">${String(value||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}</textarea></label>`;
-    if(field.type==='select')return `<label>${field.label}<select id="${id}" data-class-resource="${key}"><option value="">Válassz…</option>${field.options.map(option=>`<option ${value===option?'selected':''}>${option}</option>`).join('')}</select></label>`;
-    return `<label>${field.label}<input id="${id}" data-class-resource="${key}" type="text" value="${String(value||'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}"></label>`;
+    if(field.type==='toggle')return `<label class="toggle-field${wide}"><input id="${id}" data-class-resource="${key}" type="checkbox" ${value?'checked':''} ${field.rest?`data-rest-reset="${field.rest}"`:''}><span>${field.label}${helpHtml}</span></label>`;
+    if(field.type==='textarea')return `<label class="${wide}">${field.label}<textarea id="${id}" data-class-resource="${key}" rows="2">${classFeatureEscape(value||'')}</textarea>${helpHtml}</label>`;
+    if(field.type==='select')return `<label class="${wide}">${field.label}<select id="${id}" data-class-resource="${key}"><option value="">Válassz…</option>${field.options.map(option=>`<option ${value===option?'selected':''}>${classFeatureEscape(option)}</option>`).join('')}</select>${helpHtml}</label>`;
+    if(field.type==='selectlist'){
+        const count=Math.max(1,typeof field.count==='function'?field.count(context):Number(field.count)||1),selected=parseClassFeatureListValue(value),hiddenValue=classFeatureEscape(JSON.stringify(selected));
+        const controls=Array.from({length:count},(_,index)=>{let options=typeof field.options==='function'?field.options(context,index):field.options||[];const current=selected[index]||'';if(current&&!options.includes(current))options=[current,...options];return `<select id="${id}_${index+1}" data-class-select-list="${key}" aria-label="${classFeatureEscape(field.label)} ${index+1}"><option value="">${index+1}. választás…</option>${options.map(option=>`<option value="${classFeatureEscape(option)}" ${current===option?'selected':''}>${classFeatureEscape(option)}</option>`).join('')}</select>`;}).join('');
+        return `<label class="${wide}">${field.label}<input id="${id}" data-class-resource="${key}" type="hidden" value="${hiddenValue}"><span class="class-feature-select-list">${controls}</span>${helpHtml}</label>`;
+    }
+    return `<label class="${wide}">${field.label}<input id="${id}" data-class-resource="${key}" type="text" value="${classFeatureEscape(value||'')}">${helpHtml}</label>`;
 }
 const classVisualThemes={
     Barbarian:{name:'Barbár',crest:'barbarian',motto:'Repedt kő, kovácsolt bronz és a csata parazsa.'},
@@ -8858,6 +8937,11 @@ function renderClassFeatures(){
         control.addEventListener('input',()=>{updateClassFeatureCalculations();updateDerivedFields();if(/Expertise|Skill/.test(control.id))updateSkills();saveCharacter();});
         control.addEventListener('change',()=>{updateClassFeatureCalculations();updateDerivedFields();if(/Expertise|Skill/.test(control.id))updateSkills();if(control.id==='classFeature_genieKind')refreshSpellCatalog();saveCharacter();});
     });
+    fields.querySelectorAll('[data-class-select-list]').forEach(control=>{
+        const sync=()=>{const key=control.dataset.classSelectList,hidden=document.getElementById(`classFeature_${key}`),values=[...fields.querySelectorAll(`[data-class-select-list="${key}"]`)].map(select=>select.value).filter(Boolean);syncClassFeatureSelectListOptions(key);if(hidden){hidden.value=JSON.stringify(values);hidden.dispatchEvent(new Event('change',{bubbles:true}));}};
+        control.addEventListener('change',sync);
+    });
+    new Set([...fields.querySelectorAll('[data-class-select-list]')].map(control=>control.dataset.classSelectList)).forEach(syncClassFeatureSelectListOptions);
     fields.querySelectorAll('textarea').forEach(autoResizeTextarea);
     updateClassFeatureCalculations();
     updateDerivedFields();

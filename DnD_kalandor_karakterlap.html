@@ -2024,6 +2024,14 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .spell-preparation-field{grid-column:1/-1;display:flex;align-items:center;gap:9px;min-height:44px;padding:8px;border:1px solid var(--border);color:var(--accent);font-size:.8rem;line-height:1.4;cursor:pointer}
 .spell-preparation-field[hidden]{display:none!important}
 .spell-preparation-field>input{flex:0 0 20px;width:20px;height:20px;min-height:20px;padding:0;accent-color:var(--accent)}
+.wizard-spellbook-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px;padding:10px;border:1px solid var(--border);border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.wizard-spellbook-panel[hidden]{display:none!important}
+.wizard-spellbook-stat{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--border) 78%,transparent);background:var(--bg)}
+.wizard-spellbook-stat strong{color:var(--accent);font-size:1.05rem}
+.wizard-spellbook-guide,.wizard-spellbook-warning{grid-column:1/-1;margin:0;font-size:.76rem;line-height:1.45}
+.wizard-spellbook-warning{padding:7px 9px;border-left:2px solid var(--accent);background:var(--bg);font-weight:700}
+.wizard-spellbook-warning:empty{display:none}
+@media(max-width:768px){.wizard-spellbook-panel{grid-template-columns:1fr}.wizard-spellbook-guide,.wizard-spellbook-warning{grid-column:1}}
 .spell-catalog-source-title{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:.74rem;font-weight:bold;line-height:1.4}
 .spell-source-group{width:100%;min-width:0}
 .spell-source-group[hidden],.spell-source-group-title[hidden]{display:none!important}
@@ -4247,6 +4255,7 @@ function spellCatalogSourceInfo(choice){
     if(choice.origin==='ranger-2024:favored-enemy')return info('ranger-prepared','Ranger 2024 – mindig előkészített','Hunter’s Mark: varázsrekesszel használható. Az ingyenes kaszthasználat külön a Combat bónuszakciói között szerepel.',24);
     if(choice.alwaysPrepared)return info('always-prepared','Alosztály – mindig előkészített','Az alosztály automatikusan adja, és mindig előkészített. A varázslat szokásos varázsrekeszt használ.',25);
     if(choice.spellbookGranted)return info('spellbook','Alosztály – varázskönyvbe kapott','Az alosztály a varázskönyvbe adja. A rendes használathoz előkészítés és varázsrekesz szükséges.',27);
+    if(choice.spellbookRequired)return info('wizard-spellbook','Varázskönyv','A Wizard ismert varázslata. A könyvben marad, de varázsrekeszből csak akkor használható, ha az adott napra előkészítetted. A rituálék a könyvből előkészítés nélkül is elvégezhetők.',10);
     if(kind==='magical-secrets')return info('magical-secrets','Mágikus titkok (Magical Secrets)','A bárd más kaszt listájáról választhat, a képesség szint- és darabszámkorlátja szerint.',55);
     if(kind==='ritual')return info('ritual','Képességből járó rituálék','A képesség rituális használatot ad; ezek nem egyetlen körműveletként hajthatók végre.',75);
     if(choice.resource?.kind==='ki')return info('ki','Ki-varázslás','A diszciplína Ki-pontokat fogyaszt a varázsrekeszek helyett. A költség a használat mezőjében látszik.',70);
@@ -4370,7 +4379,7 @@ function spellCatalogSpend(row,castLevel=0){
 }
 function spellCatalogUpdateStatus(row){
     const choice=spellCatalogSelection(row),meta=spellCatalogMetadata(row),badge=row.querySelector('.spell-catalog-source');
-    const preparation=row.querySelector('.spell-preparation-field');if(preparation)preparation.hidden=!choice?.spellbookGranted;
+    const preparation=row.querySelector('.spell-preparation-field');if(preparation)preparation.hidden=!wizardSpellbookEntry(row);
     if(badge){
         const spell=spellCatalogDataFor(choice),warning=spellCatalogWarning(row);
         badge.hidden=!meta;
@@ -4398,6 +4407,7 @@ function spellCatalogUpdateStatus(row){
 function spellCatalogRefreshRows(){
     document.querySelectorAll('#spellEntries .spell-entry-row').forEach(row=>{spellCatalogRefreshDamage(row);spellCatalogRefreshDescription(row);refreshSpellRowTitle(row);spellCatalogUpdateStatus(row);updateSpellUsageStatus(row);});
     spellCatalogGroupRows();
+    updateWizardSpellbookPanel();
 }
 function spellCatalogRefreshDamage(row){
     const meta=spellCatalogMetadata(row),input=row?.querySelector('input[id$="_damage"]');
@@ -4425,6 +4435,7 @@ function spellRowInactiveReason(row){
     const klass=document.getElementById('characterClass')?.value||'';
     if(klass==='Barbarian'&&document.getElementById('classFeature_rageActive')?.checked)return 'Harag közben nem lehet varázsolni.';
     if(klass==='Druid'&&document.getElementById('combatWildShapeActive')?.value==='true'&&(Number(document.getElementById('characterLevel')?.value)||1)<18)return 'Ebben a vad alakban a jelenlegi szinten nem lehet varázsolni.';
+    if(!wizardSpellPreparedForSlot(row))return 'A varázslat a varázskönyvben van, de nincs előkészítve mára. Rituáléként továbbra is használható, ha a varázslat rituálé jelölésű.';
     // Read live control values. Cloning a select resets its current selection.
     // The shared availability helper does not change resource counters.
     if(spellRowCanCast(row))return '';
@@ -4673,6 +4684,35 @@ function spellCatalogWriteChoice(row,choice,mode='manual'){
     if(mode!=='update'&&mode!=='adopt'&&!unchanged&&!choice.resource)field('remaining').value='';
     return changed;
 }
+function wizardPreparationLimit(){
+    if(document.getElementById('characterClass')?.value!=='Wizard')return 0;
+    const level=Math.max(1,Number.parseInt(document.getElementById('characterLevel')?.value,10)||1);
+    const intelligence=Number(document.getElementById('INT')?.value)||10;
+    return Math.max(1,level+Math.floor((intelligence-10)/2));
+}
+function wizardSpellbookEntry(row){
+    if(!row||row.hidden||document.getElementById('characterClass')?.value!=='Wizard'||spellRowIsItem(row))return false;
+    const levelValue=row.querySelector('select[id$="_level"]')?.value||'';
+    if(levelValue==='cantrip'||!(Number(levelValue)>0)||row.querySelector('select[id$="_usage"]')?.value!=='slots')return false;
+    const choice=spellCatalogSelection(row),meta=spellCatalogMetadata(row);
+    return choice?Boolean(choice.spellbookRequired||choice.spellbookGranted):!meta;
+}
+function wizardPreparedRows(){
+    return [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].filter(row=>wizardSpellbookEntry(row)&&row.querySelector('input[id$="_prepared"]')?.checked);
+}
+function wizardSpellPreparedForSlot(row){
+    return !wizardSpellbookEntry(row)||Boolean(row.querySelector('input[id$="_prepared"]')?.checked);
+}
+function updateWizardSpellbookPanel(message=''){
+    const panel=document.getElementById('wizardSpellbookPanel');if(!panel)return;
+    const wizard=document.getElementById('characterClass')?.value==='Wizard';panel.hidden=!wizard;if(!wizard)return;
+    const book=[...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].filter(wizardSpellbookEntry);
+    const prepared=wizardPreparedRows(),limit=wizardPreparationLimit();
+    document.getElementById('wizardSpellbookCount').textContent=String(book.length);
+    document.getElementById('wizardPreparedCount').textContent=`${prepared.length} / ${limit}`;
+    const warning=document.getElementById('wizardSpellbookWarning');
+    warning.textContent=message||(prepared.length>limit?`Az előkészített varázslatok száma ${prepared.length-limit} darabbal meghaladja a napi keretet. Vedd ki a jelölést a felesleges varázslatoknál.`:'');
+}
 function spellCatalogDuplicateRow(choice,currentRow){
     const spell=spellCatalogDataFor(choice);if(!spell)return null;
     return [...document.querySelectorAll('#spellEntries .spell-entry-row')].find(row=>{
@@ -4849,8 +4889,16 @@ function setupSpellCatalogRow(row){
     const metadata=document.createElement('input');metadata.type='hidden';metadata.id=input.id.replace(/_name$/,'_catalogSource');row.appendChild(metadata);
     const preparation=document.createElement('label');preparation.className='spell-preparation-field';preparation.hidden=true;
     const prepared=document.createElement('input');prepared.type='checkbox';prepared.id=input.id.replace(/_name$/,'_prepared');
-    preparation.append(prepared,document.createTextNode('Előkészítve – használható a varázskönyvből'));
+    preparation.append(prepared,document.createTextNode('Előkészítve mára – használható varázsrekeszből'));
     (row.querySelector('.spell-detail-fields')||row).appendChild(preparation);
+    prepared.addEventListener('change',()=>{
+        if(prepared.checked&&wizardPreparedRows().length>wizardPreparationLimit()){
+            prepared.checked=false;
+            spellCatalogRefreshRows();
+            updateWizardSpellbookPanel(`A napi előkészítési keret megtelt (${wizardPreparationLimit()}). Előbb vedd ki a jelölést egy másik varázslatnál.`);
+        }else spellCatalogRefreshRows();
+        saveCharacter();
+    });
     button.addEventListener('click',event=>{event.preventDefault();input.focus();spellCatalogOpen(row,input);});
     input.addEventListener('click',()=>spellCatalogOpen(row,input));
     input.addEventListener('input',()=>{
@@ -4931,6 +4979,8 @@ function setupSpellCatalog(){
     const editor=document.querySelector('.spell-list-editor');
     if(editor){
         const config=document.createElement('div');config.className='spell-catalog-config';
+        const wizardPanel=document.createElement('section');wizardPanel.id='wizardSpellbookPanel';wizardPanel.className='wizard-spellbook-panel';wizardPanel.hidden=true;
+        wizardPanel.innerHTML='<div class="wizard-spellbook-stat"><span>Varázskönyv</span><strong id="wizardSpellbookCount">0</strong></div><div class="wizard-spellbook-stat"><span>Ma előkészítve</span><strong id="wizardPreparedCount">0 / 1</strong></div><p class="wizard-spellbook-guide">A katalógusból felvett, legalább 1. szintű Wizard varázslatok a varázskönyvbe kerülnek. Jelöld meg, melyeket készíted elő a napra. A keret: Wizard szint + Intelligencia módosító (legalább 1). A könyvben lévő rituálékat előkészítés nélkül is használhatod rituáléként.</p><p id="wizardSpellbookWarning" class="wizard-spellbook-warning" role="status" aria-live="polite"></p>';
         const label=document.createElement('label');label.textContent='A föld köre – táj';const select=document.createElement('select');select.id='druidLandType';select.appendChild(new Option('Válassz tájat…',''));['Arctic','Coast','Desert','Forest','Grassland','Mountain','Swamp','Underdark'].forEach(name=>select.appendChild(new Option(name,name)));label.appendChild(select);label.hidden=true;
         const information=document.createElement('details');information.className='spell-catalog-info';
         const informationTitle=document.createElement('summary');informationTitle.textContent='Varázslási tudnivalók';
@@ -4938,7 +4988,7 @@ function setupSpellCatalog(){
         const summary=document.createElement('p');summary.id='spellCatalogSummary';summary.className='spell-catalog-summary';summary.setAttribute('aria-live','polite');
         const guide=document.createElement('dl');guide.className='spell-catalog-source-guide';guide.dataset.spellSourceGuide='true';
         const note=document.createElement('p');note.className='spell-catalog-note';note.textContent='PHB 2014 · A karakternek biztosan járó varázslatok automatikusan bekerülnek. A választást igénylő ismert és előkészített varázslatokat te jelölöd. A varázslatok a forrásukhoz tartozó képességmódosítóval számolnak; egyéni érték is megadható.';
-        informationBody.append(summary,note,guide);information.append(informationTitle,informationBody);config.append(label,information);editor.prepend(config);
+        informationBody.append(summary,note,guide);information.append(informationTitle,informationBody);config.append(wizardPanel,label,information);editor.prepend(config);
         const details=document.createElement('details');details.className='spell-catalog-sources';const heading=document.createElement('summary');heading.textContent='A varázslatlista forrásai';
         const body=document.createElement('p');body.innerHTML='361 varázslat a 2014-es Player’s Handbook alapján. <a href="https://www.dndbeyond.com/spells?filter-source=2" target="_blank" rel="noopener">PHB 2014 varázslatok</a> · <a href="https://www.dndbeyond.com/sources/dnd/basic-rules-2014/classes" target="_blank" rel="noopener">Kasztok</a> · <a href="https://www.dndbeyond.com/sources/dnd/basic-rules-2014/races" target="_blank" rel="noopener">Fajok</a>.';
         const attribution=document.createElement('p');attribution.innerHTML='This work includes material taken from the System Reference Document 5.1 (“SRD 5.1”) by Wizards of the Coast LLC and available at <a href="https://dnd.wizards.com/resources/systems-reference-document" target="_blank" rel="noopener">dnd.wizards.com/resources/systems-reference-document</a>. The SRD 5.1 is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>. Changes: descriptions omitted; metadata compacted; PHB names restored; class lists corrected.';
@@ -7869,6 +7919,7 @@ function isWarlockArcanum(row){
 function spellRowCanCast(row){
     if(!row||row.hidden)return false;
     if(spellEntryLevelStatus(row))return false;
+    if(!wizardSpellPreparedForSlot(row))return false;
     const catalogUse=spellCatalogCanUse(row);if(catalogUse!==null)return catalogUse;
     const policy=row.querySelector('select[id$="_usage"]')?.value||'slots';
     const limit=spellUseLimit(policy);
@@ -7926,7 +7977,7 @@ function populateSpellUseModes(row,select,hint){
     const choice=spellCatalogSelection(row),resource=spellCatalogResource(row),slotBased=baseLevel>0&&policy==='slots'&&!isWarlockArcanum(row)&&(!resource||choice?.requiresSlot);
     if(policy==='item')select.add(new Option('Tárgyból vagy tekercsből – nincs rekeszköltség','scroll'));
     else if(baseLevel===0)select.add(new Option('Trükk – nem fogyaszt varázsrekeszt','default'));
-    else if(slotBased){
+    else if(slotBased&&wizardSpellPreparedForSlot(row)){
         const klass=document.getElementById('characterClass')?.value||'',levels=klass==='Warlock'?[highestSpellSlotLevel(characterSpellSlotMaximums())]:Array.from({length:10-baseLevel},(_,index)=>baseLevel+index);
         levels.filter(level=>level>=baseLevel).forEach(level=>{const slot=parseSpellSlotValue(document.getElementById('spellSlots'+level));if(slot?.current>0)select.add(new Option(`${level}. szintű varázsrekesz (${slot.current} / ${slot.maximum} maradt)`,`slot:${level}`));});
     }else if(spellRowCanCast(row))select.add(new Option('Képesség szerinti használat','default'));
@@ -7954,6 +8005,7 @@ function spendSpellUse(row,castMode=combatSpellUseMode()){
     if(castMode.kind==='scroll')return true;
     if(spellEntryLevelStatus(row))return false;
     if(castMode.kind==='ritual')return combatSpellRitualEligible(row);
+    if(castMode.kind==='slot'&&!wizardSpellPreparedForSlot(row))return false;
     const catalogSpent=spellCatalogSpend(row,castMode.kind==='slot'?castMode.level:0);if(catalogSpent!==null)return catalogSpent;
     const policy=row.querySelector('select[id$="_usage"]')?.value||'slots';
     if(policy==='free'||policy==='item')return true;
@@ -11337,6 +11389,7 @@ document.getElementById('characterLevel')?.addEventListener('change',()=>{
     updateClassFeatureCalculations();
     saveCharacter();
 }));
+document.getElementById('INT')?.addEventListener('input',()=>{updateWizardSpellbookPanel();spellCatalogRefreshRows();saveCharacter();});
 
 document.querySelectorAll('#spellcastingAbility,#spellSaveDCBonus,#spellAttackBonusExtra,#passivePerceptionBonus,#armorType,#shieldAC,#armorACBonus,#initiativeBonus,[id^="saveProf"],[id^="saveExtra"]')
 .forEach(field => {

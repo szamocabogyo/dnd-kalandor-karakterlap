@@ -4757,6 +4757,32 @@ function unprepareWizardSpell(row){
 }
 const dailyPreparationClasses=new Set(['Cleric','Druid','Paladin','Wizard']);
 function characterUsesDailyPreparation(){return dailyPreparationClasses.has(document.getElementById('characterClass')?.value||'');}
+function dailyPreparationLimit(){
+    const klass=document.getElementById('characterClass')?.value||'',level=Math.max(0,Number.parseInt(document.getElementById('characterLevel')?.value,10)||0);
+    if(klass==='Wizard')return wizardPreparationLimit();
+    const ability=klass==='Paladin'?'CHA':'WIS',score=Number(document.getElementById(ability)?.value)||10,modifier=Math.floor((score-10)/2);
+    if(klass==='Paladin')return level<2?0:Math.max(1,Math.floor(level/2)+modifier);
+    if(klass==='Cleric'||klass==='Druid')return level<1?0:Math.max(1,level+modifier);
+    return 0;
+}
+function dailyPreparedRows(){
+    const klass=document.getElementById('characterClass')?.value||'';
+    if(klass==='Wizard')return wizardPreparedRows();
+    return [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].filter(row=>{
+        if(spellRowIsItem(row))return false;
+        const level=row.querySelector('select[id$="_level"]')?.value||'',usage=row.querySelector('select[id$="_usage"]')?.value||'';
+        if(level==='cantrip'||!(Number(level)>0)||usage!=='slots')return false;
+        const choice=spellCatalogSelection(row);
+        return choice?!choice.alwaysPrepared&&choice.sourceKind==='class':!spellCatalogMetadata(row);
+    });
+}
+function dailyPreparationValidation(){
+    const limit=dailyPreparationLimit(),count=dailyPreparedRows().length,difference=count-limit;
+    return {count,limit,valid:difference===0,message:difference<0
+        ?`Még ${Math.abs(difference)} varázslatot készíts elő. A napi lista csak pontosan ${limit} varázslattal menthető.`
+        :difference>0?`Az előkészített lista ${difference} varázslattal meghaladja a ${limit} darabos maximumot. Törölj a napi listából.`
+        :`A napi lista teljes: ${count} / ${limit} előkészített varázslat.`};
+}
 function dailyPreparationReminder(klass=document.getElementById('characterClass')?.value||''){
     const labels={Cleric:'A Cleric hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Druid:'A Druid hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Paladin:'A Paladin hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Wizard:'A Wizard hosszú pihenő után módosíthatja a varázskönyvéből előkészített napi listát.'};
     return labels[klass]||'';
@@ -4771,9 +4797,11 @@ function setDailyPreparationEditing(active){
     if(active)document.querySelector('.spell-list-fold')?.setAttribute('open','');
 }
 function finishDailyPreparation(){
+    const validation=dailyPreparationValidation();
+    if(!validation.valid){updateDailyPreparationToolbar(validation.message);return false;}
     const field=document.getElementById('dailyPreparationAvailable');if(field)field.value='false';
     document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');
-    updateDailyPreparationToolbar();saveCharacter();
+    updateDailyPreparationToolbar();saveCharacter();return true;
 }
 function updateDailyPreparationToolbar(message=''){
     const toolbar=document.getElementById('dailyPreparationToolbar');if(!toolbar)return;
@@ -4782,7 +4810,8 @@ function updateDailyPreparationToolbar(message=''){
     if(!daily){sheet?.classList.remove('spell-preparation-editing');return;}
     const active=sheet?.classList.contains('spell-preparation-editing'),klass=document.getElementById('characterClass')?.value||'';
     const note=document.getElementById('dailyPreparationNote'),button=document.getElementById('dailyPreparationToggle');
-    if(note)note.textContent=message||(klass==='Wizard'?'A napi előkészített listát a varázskártyák Előkészítem és Előkészítés visszavonása gombjaival módosíthatod.':'Hosszú pihenő után ebből a kasztlistából új napi varázslatokat készíthetsz elő. A módosítás idejére megjelennek a felvételi, törlési és szerkesztési vezérlők.');
+    const validation=active?dailyPreparationValidation():null;
+    if(note)note.textContent=message||(active?validation.message:klass==='Wizard'?'A napi előkészített listát a varázskártyák Előkészítem és Előkészítés visszavonása gombjaival módosíthatod.':'Hosszú pihenő után ebből a kasztlistából új napi varázslatokat készíthetsz elő. A módosítás idejére megjelennek a felvételi, törlési és szerkesztési vezérlők.');
     if(button){button.textContent=active?'Előkészítés befejezése':'Napi varázslatok módosítása';button.setAttribute('aria-pressed',String(active));}
 }
 function updateWizardSpellbookPanel(message=''){

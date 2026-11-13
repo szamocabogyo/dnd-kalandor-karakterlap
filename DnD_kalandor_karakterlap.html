@@ -2040,6 +2040,9 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .daily-preparation-toolbar p{margin:0;font-size:.76rem;line-height:1.45}
 .daily-preparation-toolbar button{min-height:38px;padding:7px 10px;border:1px solid var(--border);background:color-mix(in srgb,var(--accent) 12%,var(--card));color:var(--accent);font:inherit;font-size:.75rem;font-weight:700;cursor:pointer}
 .daily-preparation-toolbar button:hover,.daily-preparation-toolbar button:focus-visible{border-color:var(--accent);outline:none}
+.daily-preparation-actions{display:flex;gap:7px;align-items:center}.daily-preparation-cancel{color:var(--muted)!important}
+.character-save-status{grid-column:1/-1;margin:0;font-size:.72rem;line-height:1.35;text-align:center}.character-save-status[data-state=error]{color:#ff9b9b;font-weight:700}
+.arcane-recovery-dialog{max-width:520px}.arcane-recovery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin:12px 0}.arcane-recovery-grid label{display:flex;flex-direction:column;gap:5px;color:var(--accent);font-size:.78rem;font-weight:700}.arcane-recovery-grid input{width:100%;box-sizing:border-box}.arcane-recovery-summary{padding:9px;border-left:3px solid var(--accent);background:var(--bg);line-height:1.45}.arcane-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(max-width:768px){.daily-preparation-toolbar{grid-template-columns:1fr}.daily-preparation-toolbar button{width:100%}.sheet[data-sheet-mode=play].spell-preparation-editing .spell-entry-heading{grid-template-columns:minmax(0,1fr) 88px 42px}}
 .spell-catalog-source-title{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:.74rem;font-weight:bold;line-height:1.4}
 .spell-source-group{width:100%;min-width:0}
@@ -2511,6 +2514,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
 </div>
 <p id="restStatus" class="rest-status" aria-live="polite" hidden></p>
+<p id="characterSaveStatus" class="character-save-status" role="status" aria-live="polite" data-state="saved">A karakterlap automatikusan mentődik.</p>
 <p id="combatEncounterStatus" class="combat-encounter-status" role="status" hidden><span id="combatEncounterStatusText"></span><button id="combatEncounterDismiss" type="button" aria-label="Értesítés bezárása" title="Bezárás">×</button></p>
 
 <nav id="mobilePlayStatus" class="mobile-play-status" aria-label="Játék közbeni állapot" data-i18n-ignore>
@@ -3392,6 +3396,15 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
       <button id="confirmClearCharacter" class="character-reset-danger" type="button">Ürítés mentés nélkül</button>
       <button id="cancelClearCharacter" type="button">Mégse</button>
     </div>
+  </div>
+</div>
+<div id="arcaneRecoveryOverlay" class="portrait-editor-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="arcaneRecoveryTitle">
+  <div class="portrait-editor-dialog arcane-recovery-dialog">
+    <h2 id="arcaneRecoveryTitle">✦ Arcane Recovery</h2>
+    <p id="arcaneRecoveryGuide">Válaszd ki, mely varázsrekeszeket szeretnéd visszatölteni.</p>
+    <div id="arcaneRecoveryGrid" class="arcane-recovery-grid"></div>
+    <p id="arcaneRecoverySummary" class="arcane-recovery-summary" role="status" aria-live="polite"></p>
+    <div class="arcane-recovery-actions"><button id="arcaneRecoveryApply" type="button">Visszatöltés</button><button id="arcaneRecoveryCancel" type="button">Most nem használom</button></div>
   </div>
 </div>
 <input id="advancedBaseAutoState" type="hidden" value="">
@@ -4777,11 +4790,14 @@ function dailyPreparedRows(){
     });
 }
 function dailyPreparationValidation(){
-    const limit=dailyPreparationLimit(),count=dailyPreparedRows().length,difference=count-limit;
-    return {count,limit,valid:difference===0,message:difference<0
-        ?`Még ${Math.abs(difference)} varázslatot készíts elő. A napi lista csak pontosan ${limit} varázslattal menthető.`
-        :difference>0?`Az előkészített lista ${difference} varázslattal meghaladja a ${limit} darabos maximumot. Törölj a napi listából.`
-        :`A napi lista teljes: ${count} / ${limit} előkészített varázslat.`};
+    const maximum=dailyPreparationLimit(),klass=document.getElementById('characterClass')?.value||'';
+    const available=klass==='Wizard'?[...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].filter(wizardSpellbookEntry).length:maximum;
+    const limit=Math.min(maximum,available),count=dailyPreparedRows().length,difference=count-limit;
+    const limited=klass==='Wizard'&&available<maximum?` A varázskönyvben jelenleg csak ${available} előkészíthető varázslat van.`:'';
+    return {count,limit,maximum,valid:difference===0,message:difference<0
+        ?`Még ${Math.abs(difference)} varázslatot készíts elő. A napi lista ${limit} varázslattal menthető.${limited}`
+        :difference>0?`Az előkészített lista ${difference} varázslattal meghaladja a ${limit} darabos elérhető keretet. Vegyél ki varázslatot a napi listából.${limited}`
+        :`A napi lista teljes: ${count} / ${limit} előkészített varázslat.${limited}`};
 }
 function dailyPreparationReminder(klass=document.getElementById('characterClass')?.value||''){
     const labels={Cleric:'A Cleric hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Druid:'A Druid hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Paladin:'A Paladin hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Wizard:'A Wizard hosszú pihenő után módosíthatja a varázskönyvéből előkészített napi listát.'};
@@ -4790,18 +4806,27 @@ function dailyPreparationReminder(klass=document.getElementById('characterClass'
 function setDailyPreparationEditing(active){
     const sheet=document.querySelector('.sheet');if(!sheet)return;
     const available=document.getElementById('dailyPreparationAvailable')?.value==='true';
+    if(active&&available&&characterUsesDailyPreparation()&&!sheet.classList.contains('spell-preparation-editing')){
+        saveCharacter();
+        try{localStorage.setItem('dndDailyPreparationSnapshot',localStorage.getItem('dndCharacter')||'{}');localStorage.removeItem('dndDailyPreparationDraft');}catch{}
+    }
     sheet.classList.toggle('spell-preparation-editing',Boolean(active)&&available&&characterUsesDailyPreparation());
     if(typeof syncSheetModeControls==='function')syncSheetModeControls();
     if(sheet.classList.contains('spell-preparation-editing'))document.querySelectorAll('.spell-detail-fields input,.spell-detail-fields select,.spell-detail-fields textarea').forEach(control=>{control.disabled=false;delete control.dataset.modeLocked;});
     updateDailyPreparationToolbar();
     if(active)document.querySelector('.spell-list-fold')?.setAttribute('open','');
 }
+function cancelDailyPreparation(){
+    const snapshot=localStorage.getItem('dndDailyPreparationSnapshot');
+    if(snapshot){localStorage.setItem('dndCharacter',snapshot);localStorage.removeItem('dndDailyPreparationSnapshot');localStorage.removeItem('dndDailyPreparationDraft');window.location.reload();return;}
+    document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');updateDailyPreparationToolbar();
+}
 function finishDailyPreparation(){
     const validation=dailyPreparationValidation();
     if(!validation.valid){updateDailyPreparationToolbar(validation.message);return false;}
     const field=document.getElementById('dailyPreparationAvailable');if(field)field.value='false';
     document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');
-    updateDailyPreparationToolbar();saveCharacter();return true;
+    localStorage.removeItem('dndDailyPreparationSnapshot');localStorage.removeItem('dndDailyPreparationDraft');updateDailyPreparationToolbar();saveCharacter();return true;
 }
 function updateDailyPreparationToolbar(message=''){
     const toolbar=document.getElementById('dailyPreparationToolbar');if(!toolbar)return;
@@ -4809,10 +4834,11 @@ function updateDailyPreparationToolbar(message=''){
     toolbar.hidden=!(daily&&play&&available);
     if(!daily){sheet?.classList.remove('spell-preparation-editing');return;}
     const active=sheet?.classList.contains('spell-preparation-editing'),klass=document.getElementById('characterClass')?.value||'';
-    const note=document.getElementById('dailyPreparationNote'),button=document.getElementById('dailyPreparationToggle');
+    const note=document.getElementById('dailyPreparationNote'),button=document.getElementById('dailyPreparationToggle'),cancel=document.getElementById('dailyPreparationCancel');
     const validation=active?dailyPreparationValidation():null;
     if(note)note.textContent=message||(active?validation.message:klass==='Wizard'?'A napi előkészített listát a varázskártyák Előkészítem és Előkészítés visszavonása gombjaival módosíthatod.':'Hosszú pihenő után ebből a kasztlistából új napi varázslatokat készíthetsz elő. A módosítás idejére megjelennek a felvételi, törlési és szerkesztési vezérlők.');
     if(button){button.textContent=active?'Előkészítés befejezése':'Napi varázslatok módosítása';button.setAttribute('aria-pressed',String(active));}
+    if(cancel)cancel.hidden=!active;
 }
 function updateWizardSpellbookPanel(message=''){
     const panel=document.getElementById('wizardSpellbookPanel');if(!panel)return;
@@ -5092,8 +5118,9 @@ function setupSpellCatalog(){
         const config=document.createElement('div');config.className='spell-catalog-config';
         const dailyAvailable=document.createElement('input');dailyAvailable.type='hidden';dailyAvailable.id='dailyPreparationAvailable';dailyAvailable.value='false';config.appendChild(dailyAvailable);
         const dailyToolbar=document.createElement('section');dailyToolbar.id='dailyPreparationToolbar';dailyToolbar.className='daily-preparation-toolbar';dailyToolbar.hidden=true;
-        dailyToolbar.innerHTML='<p id="dailyPreparationNote"></p><button id="dailyPreparationToggle" type="button" aria-pressed="false">Napi varázslatok módosítása</button>';
-        dailyToolbar.querySelector('button').addEventListener('click',()=>{const active=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing');if(active)finishDailyPreparation();else setDailyPreparationEditing(true);});
+        dailyToolbar.innerHTML='<p id="dailyPreparationNote"></p><div class="daily-preparation-actions"><button id="dailyPreparationToggle" type="button" aria-pressed="false">Napi varázslatok módosítása</button><button id="dailyPreparationCancel" class="daily-preparation-cancel" type="button" hidden>Mégse</button></div>';
+        dailyToolbar.querySelector('#dailyPreparationToggle').addEventListener('click',()=>{const active=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing');if(active)finishDailyPreparation();else setDailyPreparationEditing(true);});
+        dailyToolbar.querySelector('#dailyPreparationCancel').addEventListener('click',cancelDailyPreparation);
         const wizardPanel=document.createElement('section');wizardPanel.id='wizardSpellbookPanel';wizardPanel.className='wizard-spellbook-panel';wizardPanel.hidden=true;
         wizardPanel.innerHTML='<div class="wizard-spellbook-stat"><span>Varázskönyv</span><strong id="wizardSpellbookCount">0</strong></div><div class="wizard-spellbook-stat"><span>Ma előkészítve</span><strong id="wizardPreparedCount">0 / 1</strong></div><p class="wizard-spellbook-guide">A katalógusból felvett, legalább 1. szintű Wizard varázslatok a varázskönyvbe kerülnek. Jelöld meg, melyeket készíted elő a napra. A keret: Wizard szint + Intelligencia módosító (legalább 1). A könyvben lévő rituálékat előkészítés nélkül is használhatod rituáléként.</p><p id="wizardSpellbookWarning" class="wizard-spellbook-warning" role="status" aria-live="polite"></p>';
         const label=document.createElement('label');label.textContent='A föld köre – táj';const select=document.createElement('select');select.id='druidLandType';select.appendChild(new Option('Válassz tájat…',''));['Arctic','Coast','Desert','Forest','Grassland','Mountain','Swamp','Underdark'].forEach(name=>select.appendChild(new Option(name,name)));label.appendChild(select);label.hidden=true;
@@ -9158,12 +9185,46 @@ function restoreClassResources(restType){
     updateClassFeatureCalculations();
 }
 
+function closeArcaneRecoveryPicker(){
+    const overlay=document.getElementById('arcaneRecoveryOverlay');if(overlay)overlay.hidden=true;
+    document.body.style.overflow='';document.getElementById('shortRestButton')?.focus();
+}
+function updateArcaneRecoveryPicker(){
+    const grid=document.getElementById('arcaneRecoveryGrid'),summary=document.getElementById('arcaneRecoverySummary'),apply=document.getElementById('arcaneRecoveryApply');if(!grid||!summary||!apply)return;
+    const budget=Math.ceil((Number.parseInt(document.getElementById('characterLevel')?.value,10)||1)/2);
+    const selections=[...grid.querySelectorAll('input[data-slot-level]')],cost=selections.reduce((total,input)=>total+(Number(input.value)||0)*Number(input.dataset.slotLevel),0);
+    const valid=cost>0&&cost<=budget;summary.textContent=`Felhasználva: ${cost} / ${budget} rekeszszint${cost>budget?' — csökkentsd a kiválasztást.':''}`;summary.dataset.state=valid?'valid':'invalid';apply.disabled=!valid;
+}
+function openArcaneRecoveryPicker(){
+    if(document.getElementById('characterClass')?.value!=='Wizard'||document.getElementById('classFeature_wizardArcaneRecoveryUsed')?.checked)return false;
+    const grid=document.getElementById('arcaneRecoveryGrid'),overlay=document.getElementById('arcaneRecoveryOverlay');if(!grid||!overlay)return false;
+    grid.replaceChildren();let recoverable=false;
+    for(let level=1;level<=5;level++){
+        const slot=parseSpellSlotValue(document.getElementById(`spellSlots${level}`));if(!slot)continue;
+        const missing=Math.max(0,slot.maximum-slot.current);if(!missing)continue;recoverable=true;
+        const label=document.createElement('label');label.textContent=`${level}. szint (hiányzik: ${missing})`;
+        const input=document.createElement('input');input.type='number';input.min='0';input.max=String(missing);input.step='1';input.value='0';input.dataset.slotLevel=String(level);input.addEventListener('input',()=>{input.value=String(Math.max(0,Math.min(missing,Math.trunc(Number(input.value)||0))));updateArcaneRecoveryPicker();});label.appendChild(input);grid.appendChild(label);
+    }
+    if(!recoverable)return false;
+    overlay.hidden=false;document.body.style.overflow='hidden';updateArcaneRecoveryPicker();requestAnimationFrame(()=>grid.querySelector('input')?.focus());return true;
+}
+document.getElementById('arcaneRecoveryApply')?.addEventListener('click',()=>{
+    const grid=document.getElementById('arcaneRecoveryGrid'),budget=Math.ceil((Number.parseInt(document.getElementById('characterLevel')?.value,10)||1)/2);
+    const selections=[...grid.querySelectorAll('input[data-slot-level]')],cost=selections.reduce((total,input)=>total+(Number(input.value)||0)*Number(input.dataset.slotLevel),0);if(cost<1||cost>budget)return;
+    selections.forEach(input=>{const count=Number(input.value)||0,level=Number(input.dataset.slotLevel),field=document.getElementById(`spellSlots${level}`),slot=parseSpellSlotValue(field);if(count&&field&&slot)field.value=`${Math.min(slot.maximum,slot.current+count)} / ${slot.maximum}`;});
+    const used=document.getElementById('classFeature_wizardArcaneRecoveryUsed');if(used)used.checked=true;closeArcaneRecoveryPicker();updateSpellSlotFields();saveCharacter();
+});
+document.getElementById('arcaneRecoveryCancel')?.addEventListener('click',closeArcaneRecoveryPicker);
+document.getElementById('arcaneRecoveryOverlay')?.addEventListener('click',event=>{if(event.target===event.currentTarget)closeArcaneRecoveryPicker();});
+
 function restoreSpellResources(restType){
+    if(document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')){cancelDailyPreparation();return;}
     const undoSnapshot=captureUndoSnapshot(restType==='long'?'Hosszú pihenő':'Rövid pihenő');
     updateSpellSlotFields();
     const klass=document.getElementById('characterClass')?.value||'';
     const level=Number.parseInt(document.getElementById('characterLevel')?.value,10)||1;
     if(restType==='long'){
+        localStorage.removeItem('dndDailyPreparationDraft');localStorage.removeItem('dndDailyPreparationSnapshot');
         const dailyPreparation=document.getElementById('dailyPreparationAvailable');if(dailyPreparation)dailyPreparation.value=String(characterUsesDailyPreparation());
         document.querySelector('.sheet')?.classList.remove('spell-preparation-editing');
         for(let slotLevel=1;slotLevel<=9;slotLevel++){const input=document.getElementById(`spellSlots${slotLevel}`),slot=parseSpellSlotValue(input);if(slot){const maximum=slot.maximum??Math.max(slot.current,characterSpellSlotMaximums()[slotLevel-1]);input.value=`${maximum} / ${maximum}`;}}
@@ -9175,12 +9236,6 @@ function restoreSpellResources(restType){
             if(slotLevel){const input=document.getElementById(`spellSlots${slotLevel}`),slot=parseSpellSlotValue(input);if(slot)input.value=`${slot.maximum??maximums[slotLevel-1]} / ${slot.maximum??maximums[slotLevel-1]}`;}
         }
         document.querySelectorAll('#spellEntries .spell-entry-row').forEach(row=>{const policy=row.querySelector('select[id$="_usage"]')?.value;const limit=spellUseLimit(policy);if(policy?.startsWith('short-')&&limit!==null)row.querySelector('input[id$="_remaining"]').value=String(limit);updateSpellUsageStatus(row);});
-        if(klass==='Wizard'&&!document.getElementById('classFeature_wizardArcaneRecoveryUsed')?.checked){
-            let recoveryPoints=Math.ceil(level/2);
-            let recovered=false;
-            for(let slotLevel=1;slotLevel<=5;slotLevel++)while(recoveryPoints>=slotLevel){const input=document.getElementById(`spellSlots${slotLevel}`),slot=parseSpellSlotValue(input);if(!slot||slot.current>=slot.maximum)break;input.value=`${slot.current+1} / ${slot.maximum}`;recoveryPoints-=slotLevel;recovered=true;}
-            const recovery=document.getElementById('classFeature_wizardArcaneRecoveryUsed');if(recovery&&recovered)recovery.checked=true;
-        }
     }
     const hitDiceRecovered=restType==='long'?recoverHitDiceAfterLongRest():null;
     restoreClassResources(restType);
@@ -9193,6 +9248,7 @@ function restoreSpellResources(restType){
     spellCatalogRestoreLedger(restType);
     spellCatalogRefreshRows();
     saveCharacter();
+    if(restType==='short'&&klass==='Wizard')openArcaneRecoveryPicker();
     if(!combatModeOverlay.hidden){refreshCombatAttackOptions();renderCombatTurnChoices();}
     const restStatus=document.getElementById('restStatus');
     if(restStatus){restStatus.textContent=restType==='long'?'Hosszú pihenő: a varázsrekeszek és a hosszú pihenőre visszatöltő használatok helyreálltak.':'Rövid pihenő: a rövid pihenőre visszatöltő használatok helyreálltak.';if(hitDiceRecovered!==null)restStatus.textContent+=` Életerőkockák: ${hitDiceRecovered} visszatöltve.`;const preparationMessage=restType==='long'?dailyPreparationReminder(klass):'';if(preparationMessage){restStatus.textContent+=' '+preparationMessage+' Játék módban nyisd meg a Varázslás panel Napi varázslatok módosítása részét.';updateDailyPreparationToolbar(preparationMessage);}restStatus.hidden=false;showUndoEventBubble(restType==='long'?'Hosszú pihenő':'Rövid pihenő',restStatus.textContent,undoSnapshot);}
@@ -12284,6 +12340,7 @@ function syncSheetModeControls(){
     });
 }
 function setSheetMode(mode,{persist=true}={}){
+    if(mode==='edit'&&document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')){cancelDailyPreparation();return;}
     activeSheetMode=mode==='edit'?'edit':'play';
     const sheet=document.querySelector('.sheet');if(sheet)sheet.dataset.sheetMode=activeSheetMode;
     if(activeSheetMode==='edit')sheet?.classList.remove('spell-preparation-editing');
@@ -12300,6 +12357,13 @@ function setSheetMode(mode,{persist=true}={}){
     updateMobilePlayStatus();
 }
 
+let characterSaveStatusTimer=0,characterSaveDebounceTimer=0;
+function showCharacterSaveStatus(message,state='saved'){
+    const status=document.getElementById('characterSaveStatus');if(!status)return;
+    status.textContent=message;status.dataset.state=state;status.hidden=false;clearTimeout(characterSaveStatusTimer);
+    if(state==='saved')characterSaveStatusTimer=window.setTimeout(()=>{status.textContent='A karakterlap automatikusan mentődik.';},1400);
+}
+function scheduleCharacterSave(){clearTimeout(characterSaveDebounceTimer);characterSaveDebounceTimer=window.setTimeout(saveCharacter,220);}
 function saveCharacter() {
 
     refreshSpellAvailability();
@@ -12350,10 +12414,14 @@ function saveCharacter() {
         characterData._classFeatureStates = {};
     }
 
-    localStorage.setItem(
-        'dndCharacter',
-        JSON.stringify(characterData)
-    );
+    try{
+        const preparing=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing'),storageKey=preparing?'dndDailyPreparationDraft':'dndCharacter';
+        localStorage.setItem(storageKey,JSON.stringify(characterData));
+        showCharacterSaveStatus(preparing?'Előkészítési piszkozat mentve.':'Mentve.','saved');return true;
+    }catch(error){
+        showCharacterSaveStatus('A mentés nem sikerült. A böngésző tárhelye megtelhetett; exportáld a karaktert, majd csökkentsd a portré vagy a jegyzetek méretét.','error');
+        console.error('Character save failed',error);return false;
+    }
 }
 
 const characterSubclasses2014={
@@ -12683,8 +12751,8 @@ document
 .querySelectorAll('input, textarea, select')
 .forEach(field => {
 
-    field.addEventListener('input', saveCharacter);
-    field.addEventListener('change', saveCharacter);
+    field.addEventListener('input', scheduleCharacterSave);
+    field.addEventListener('change', scheduleCharacterSave);
 });
 
 const frame =
@@ -12840,9 +12908,7 @@ responsiveSheetMedia.addEventListener?.('change',()=>requestAnimationFrame(syncM
 document.getElementById('combatCloseButton')?.addEventListener('click',()=>requestAnimationFrame(syncMobileBottomNavCurrent));
 requestAnimationFrame(syncMobileBottomNavCurrent);
 
-document
-.getElementById('exportCharacter')
-.addEventListener('click', () => {
+function exportCharacterData(){
 
     const characterData = {};
 
@@ -12880,6 +12946,7 @@ document
     characterData._deletedSpellRows = deletedSpellRows;
     characterData._characterPortraitData = characterPortraitData;
     characterData._sheetMode = activeSheetMode;
+    try{characterData._classFeatureStates=JSON.parse(localStorage.getItem('dndCharacter')||'{}')._classFeatureStates||{};}catch{characterData._classFeatureStates={};}
 
     const blob = new Blob(
         [JSON.stringify(characterData,null,2)],
@@ -12897,11 +12964,11 @@ document
     link.download =
         'dnd-character.json';
 
-    link.click();
-
-    URL.revokeObjectURL(url);
-
-});
+    document.body.appendChild(link);link.click();link.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showCharacterSaveStatus('A karakter exportfájlja elkészült.','saved');return true;
+}
+document.getElementById('exportCharacter')?.addEventListener('click',exportCharacterData);
 
 document
 .getElementById('importCharacter')
@@ -12927,8 +12994,13 @@ document
 
     reader.onload = e => {
 
-        const data =
-            JSON.parse(e.target.result);
+        let data;
+        try{data=JSON.parse(e.target.result);}catch{
+            showCharacterSaveStatus('Az importálás sikertelen: a kiválasztott fájl nem érvényes JSON karakterlap.','error');event.target.value='';return;
+        }
+        if(!data||typeof data!=='object'||Array.isArray(data)){
+            showCharacterSaveStatus('Az importálás sikertelen: a fájl nem karakterlap-adatokat tartalmaz.','error');event.target.value='';return;
+        }
 
         spellCatalogState.grantsReady=false;
         restoreCombatWildShapeProfile(data);
@@ -13002,8 +13074,11 @@ document
         setSheetMode(data._sheetMode==='edit'?'edit':'play');
 
         saveCharacter();
+        showCharacterSaveStatus('A karakter importálása sikerült.','saved');event.target.value='';
 
     };
+
+    reader.onerror=()=>{showCharacterSaveStatus('Az importfájlt nem sikerült beolvasni.','error');event.target.value='';};
 
     reader.readAsText(file);
 
@@ -13067,8 +13142,8 @@ const portraitEditorOverlay = document.getElementById('portraitEditorOverlay');
 const characterResetOverlay = document.getElementById('characterResetOverlay');
 const notesOverlay=document.getElementById('notesOverlay'),notesEditor=document.getElementById('notesEditor'),characterNotesData=document.getElementById('characterNotesData');
 let notesSaveTimer=0;
-function sanitizeNotesHtml(value){const template=document.createElement('template');template.innerHTML=String(value||'');const allowed=new Set(['P','DIV','BR','B','STRONG','I','EM','U','H2','H3','UL','OL','LI','BLOCKQUOTE']);const clean=node=>{[...node.childNodes].forEach(child=>{if(child.nodeType===Node.ELEMENT_NODE){if(!allowed.has(child.tagName)){child.replaceWith(...child.childNodes);return;}[...child.attributes].forEach(attribute=>child.removeAttribute(attribute.name));clean(child);}else if(child.nodeType!==Node.TEXT_NODE)child.remove();});};clean(template.content);return template.innerHTML;}
-function syncNotesEditorFromField(){if(notesEditor&&characterNotesData)notesEditor.innerHTML=sanitizeNotesHtml(characterNotesData.value);}
+function sanitizeNotesHtml(value){const template=document.createElement('template');template.innerHTML=String(value||'');const allowed=new Set(['P','DIV','BR','B','STRONG','I','EM','U','H2','H3','UL','OL','LI','BLOCKQUOTE']);const clean=node=>{[...node.childNodes].forEach(child=>{if(child.nodeType===Node.ELEMENT_NODE){if(!allowed.has(child.tagName)){const children=[...child.childNodes];child.replaceWith(...children);children.forEach(inserted=>{if(inserted.nodeType===Node.ELEMENT_NODE){if(!allowed.has(inserted.tagName)){inserted.remove();return;}[...inserted.attributes].forEach(attribute=>inserted.removeAttribute(attribute.name));clean(inserted);}});return;}[...child.attributes].forEach(attribute=>child.removeAttribute(attribute.name));clean(child);}else if(child.nodeType!==Node.TEXT_NODE)child.remove();});};clean(template.content);return template.innerHTML;}
+function syncNotesEditorFromField(){if(notesEditor&&characterNotesData){const clean=sanitizeNotesHtml(characterNotesData.value);characterNotesData.value=clean;notesEditor.innerHTML=clean;}}
 function saveNotes(){if(!notesEditor||!characterNotesData)return;characterNotesData.value=notesEditor.innerHTML;saveCharacter();const status=document.getElementById('notesStatus');if(status){status.textContent='Mentve.';clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(()=>{status.textContent='A jegyzet automatikusan mentődik.';},1200);}}
 function openNotes(){syncNotesEditorFromField();notesOverlay.hidden=false;document.body.style.overflow='hidden';requestAnimationFrame(()=>notesEditor?.focus());}
 function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById('notesSettingsButton')?.focus();}
@@ -13078,6 +13153,7 @@ document.getElementById('notesToolbar')?.addEventListener('mousedown',event=>eve
 syncNotesEditorFromField();
 function clearStoredCharacter(){
     localStorage.removeItem('dndCharacter');
+    localStorage.removeItem('dndDailyPreparationSnapshot');localStorage.removeItem('dndDailyPreparationDraft');
     Object.keys(localStorage).filter(key=>/^skill_(?:manual_)?\d+$/.test(key)).forEach(key=>localStorage.removeItem(key));
     window.location.reload();
 }
@@ -13085,14 +13161,17 @@ document.getElementById('portraitSettingsButton')?.addEventListener('click', () 
     portraitEditorOverlay.hidden = false;
 });
 document.getElementById('clearCharacter')?.addEventListener('click',()=>{
+    const saveButton=document.getElementById('saveAndClearCharacter');if(saveButton){delete saveButton.dataset.exportReady;saveButton.textContent='💾 Mentés és ürítés';}
+    const description=document.getElementById('characterResetDescription');if(description)description.textContent='Az összes megadott karakteradat, harci állapot, felvett fegyver és varázslat törlődik.';
     characterResetOverlay.hidden=false;
     requestAnimationFrame(()=>document.getElementById('saveAndClearCharacter')?.focus());
 });
 document.getElementById('cancelClearCharacter')?.addEventListener('click',()=>{characterResetOverlay.hidden=true;});
 document.getElementById('confirmClearCharacter')?.addEventListener('click',clearStoredCharacter);
 document.getElementById('saveAndClearCharacter')?.addEventListener('click',()=>{
-    document.getElementById('exportCharacter')?.click();
-    window.setTimeout(clearStoredCharacter,250);
+    const button=document.getElementById('saveAndClearCharacter');
+    if(button?.dataset.exportReady==='true'){clearStoredCharacter();return;}
+    if(exportCharacterData()&&button){button.dataset.exportReady='true';button.textContent='✓ Export elkészült – ürítés megerősítése';document.getElementById('characterResetDescription').textContent='Az export letöltése elindult. Ellenőrizd a letöltést, majd nyomd meg újra a kiemelt gombot az ürítéshez.';}
 });
 characterResetOverlay?.addEventListener('click',event=>{if(event.target===characterResetOverlay)characterResetOverlay.hidden=true;});
 document.getElementById('chooseCharacterPortrait')?.addEventListener('click', () => {
@@ -13104,9 +13183,12 @@ document.getElementById('settingsMenu')?.addEventListener('click', event => {
     if(event.target.closest('button')) event.currentTarget.open = false;
 });
 document.addEventListener('keydown', event => {
+    const modal=document.querySelector('[role="dialog"][aria-modal="true"]:not([hidden])');
+    if(event.key==='Tab'&&modal){const focusable=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[contenteditable="true"],[tabindex]:not([tabindex="-1"])')].filter(item=>!item.hidden&&item.getClientRects().length);if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}}
+    if(event.key === 'Escape' && !document.getElementById('arcaneRecoveryOverlay')?.hidden){closeArcaneRecoveryPicker();return;}
     if(event.key === 'Escape' && notesOverlay && !notesOverlay.hidden){closeNotes();return;}
-    if(event.key === 'Escape' && portraitEditorOverlay && !portraitEditorOverlay.hidden) portraitEditorOverlay.hidden = true;
-    if(event.key === 'Escape' && characterResetOverlay && !characterResetOverlay.hidden) characterResetOverlay.hidden = true;
+    if(event.key === 'Escape' && portraitEditorOverlay && !portraitEditorOverlay.hidden){portraitEditorOverlay.hidden = true;document.getElementById('portraitSettingsButton')?.focus();return;}
+    if(event.key === 'Escape' && characterResetOverlay && !characterResetOverlay.hidden){characterResetOverlay.hidden = true;document.getElementById('clearCharacter')?.focus();}
 });
 const druidBeastStats = {
   'Baboon': {name:'Pávián',size:'Kicsi',cr:'0',ac:12,hp:3,speed:'30 ft.',other:'mászás 30 ft.',passive:11,abilities:[8,14,11,4,12,6],skills:'',senses:'',attacks:'Harapás: +1, 1d4−1 szúró',traits:'Fal taktika'},

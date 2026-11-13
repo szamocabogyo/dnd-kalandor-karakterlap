@@ -4460,7 +4460,13 @@ function updateSpellRowAvailability(row){
     if(badge)badge.hidden=!inactive;
     if(detail){detail.textContent=reason;detail.hidden=!inactive;}
     const toggle=row.querySelector('.spell-entry-toggle');if(toggle)toggle.title=reason;
-    const useShortcut=row.querySelector('.spell-entry-use-shortcut');if(useShortcut){useShortcut.disabled=!hasSpell;useShortcut.title=inactive?`${reason} Más felhasználási mód, például tekercs még választható.`:'Varázslat azonnali használata';}
+    const useShortcut=row.querySelector('.spell-entry-use-shortcut');if(useShortcut){
+        const needsPreparation=wizardSpellNeedsPreparation(row);
+        useShortcut.disabled=!hasSpell;
+        useShortcut.textContent=needsPreparation?'✦ Előkészítem':'✦ Használat';
+        useShortcut.classList.toggle('spell-entry-prepare-shortcut',needsPreparation);
+        useShortcut.title=needsPreparation?'A varázslat előkészítése a napi keretből':inactive?`${reason} Más felhasználási mód, például tekercs még választható.`:'Varázslat azonnali használata';
+    }
     if(hasSpell)row.querySelector('.spell-use-status')?.classList.toggle('spell-use-unavailable',inactive);
     refreshSpellRowTitle(row);
 }
@@ -4475,7 +4481,7 @@ function refreshSpellRowTitle(row){
     const name=row.querySelector('input[id$="_name"]')?.value.trim()||'Új varázslat';
     title.textContent=name;
     toggle.setAttribute('aria-label',name+(row.classList.contains('spell-entry-inactive')?' – Inaktív':'')+' – megismerés és leírás '+(toggle.getAttribute('aria-expanded')==='true'?'összecsukása':'megnyitása'));
-    const useShortcut=row.querySelector('.spell-entry-use-shortcut');if(useShortcut)useShortcut.setAttribute('aria-label',name+' – azonnali használat');
+    const useShortcut=row.querySelector('.spell-entry-use-shortcut');if(useShortcut)useShortcut.setAttribute('aria-label',name+(wizardSpellNeedsPreparation(row)?' – előkészítés a napi keretből':' – azonnali használat'));
     const remove=row.querySelector('.spell-entry-delete');if(remove){remove.setAttribute('aria-label',name+' – varázslat törlése');remove.title='Varázslat törlése: '+name;}
 }
 function setSpellRowExpanded(row,expanded){
@@ -4519,7 +4525,10 @@ function setupSpellRowFolding(row){
     }
     row.append(heading,body);row.classList.add('spell-entry-collapsible');
     toggle.addEventListener('click',()=>{openSpellRowMode(row,'learn');if(!body.hidden)updateSpellUsageStatus(row);});
-    useShortcut.addEventListener('click',()=>{openSpellRowMode(row,'use');if(!body.hidden)updateSpellUsageStatus(row);});
+    useShortcut.addEventListener('click',()=>{
+        if(wizardSpellNeedsPreparation(row)){prepareWizardSpell(row);return;}
+        openSpellRowMode(row,'use');if(!body.hidden)updateSpellUsageStatus(row);
+    });
     input.addEventListener('input',()=>refreshSpellRowTitle(row));
     setSpellRowExpanded(row,!input.value.trim());
 }
@@ -4702,6 +4711,23 @@ function wizardPreparedRows(){
 }
 function wizardSpellPreparedForSlot(row){
     return !wizardSpellbookEntry(row)||Boolean(row.querySelector('input[id$="_prepared"]')?.checked);
+}
+function wizardSpellNeedsPreparation(row){
+    return wizardSpellbookEntry(row)&&!row.querySelector('input[id$="_prepared"]')?.checked;
+}
+function prepareWizardSpell(row){
+    if(!wizardSpellNeedsPreparation(row))return false;
+    const prepared=row.querySelector('input[id$="_prepared"]'),limit=wizardPreparationLimit();
+    if(wizardPreparedRows().length>=limit){
+        updateWizardSpellbookPanel(`A napi előkészítési keret megtelt (${limit}). Előbb vedd ki a jelölést egy másik varázslatnál.`);
+        return false;
+    }
+    prepared.checked=true;
+    const name=row.querySelector('input[id$="_name"]')?.value.trim()||'A varázslat';
+    spellCatalogRefreshRows();
+    updateWizardSpellbookPanel(`${name} előkészítve. Mától használható varázsrekeszből.`);
+    saveCharacter();
+    return true;
 }
 function updateWizardSpellbookPanel(message=''){
     const panel=document.getElementById('wizardSpellbookPanel');if(!panel)return;

@@ -589,6 +589,8 @@ select{
 .sheet[data-sheet-mode=play] [data-mode-locked=true]{opacity:1;color:var(--text);cursor:default}
 .sheet[data-sheet-mode=play] select[data-mode-locked=true],.sheet[data-sheet-mode=play] input[data-mode-locked=true],.sheet[data-sheet-mode=play] textarea[data-mode-locked=true]{border-color:color-mix(in srgb,var(--border) 65%,transparent);background:color-mix(in srgb,var(--bg) 76%,var(--card));-webkit-text-fill-color:var(--text)}
 .sheet[data-sheet-mode=play] #addAttackRow,.sheet[data-sheet-mode=play] .attacks .remove-attack-row,.sheet[data-sheet-mode=play] #addSpellRow,.sheet[data-sheet-mode=play] #addItemSpellRow,.sheet[data-sheet-mode=play] .spell-entry-delete,.sheet[data-sheet-mode=play] .spell-detail-disclosure,.sheet[data-sheet-mode=play] #addGemInventoryRow,.sheet[data-sheet-mode=play] .gem-remove-button,.sheet[data-sheet-mode=play] #portraitSettingsButton,.sheet[data-sheet-mode=play] #importCharacter,.sheet[data-sheet-mode=play] #clearCharacter{display:none!important}
+.sheet[data-sheet-mode=play].spell-preparation-editing #addSpellRow,.sheet[data-sheet-mode=play].spell-preparation-editing .spell-entry-delete,.sheet[data-sheet-mode=play].spell-preparation-editing .spell-detail-disclosure{display:block!important}
+.sheet[data-sheet-mode=play].spell-preparation-editing .spell-entry-heading{grid-template-columns:minmax(0,1fr) auto 44px}
 .sheet[data-sheet-mode=play] .skill-row[data-skill-selectable=true]{cursor:default}
 .rest-status{margin:-14px 0 20px;color:var(--accent);text-align:center;font-size:.9rem;font-weight:bold}
 .settings-menu{position:relative;z-index:20}
@@ -2033,6 +2035,12 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .wizard-spellbook-warning{padding:7px 9px;border-left:2px solid var(--accent);background:var(--bg);font-weight:700}
 .wizard-spellbook-warning:empty{display:none}
 @media(max-width:768px){.wizard-spellbook-panel{grid-template-columns:1fr}.wizard-spellbook-guide,.wizard-spellbook-warning{grid-column:1}}
+.daily-preparation-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:10px;padding:9px 10px;border:1px solid var(--border);background:color-mix(in srgb,var(--accent) 7%,var(--card))}
+.daily-preparation-toolbar[hidden]{display:none!important}
+.daily-preparation-toolbar p{margin:0;font-size:.76rem;line-height:1.45}
+.daily-preparation-toolbar button{min-height:38px;padding:7px 10px;border:1px solid var(--border);background:color-mix(in srgb,var(--accent) 12%,var(--card));color:var(--accent);font:inherit;font-size:.75rem;font-weight:700;cursor:pointer}
+.daily-preparation-toolbar button:hover,.daily-preparation-toolbar button:focus-visible{border-color:var(--accent);outline:none}
+@media(max-width:768px){.daily-preparation-toolbar{grid-template-columns:1fr}.daily-preparation-toolbar button{width:100%}.sheet[data-sheet-mode=play].spell-preparation-editing .spell-entry-heading{grid-template-columns:minmax(0,1fr) 88px 42px}}
 .spell-catalog-source-title{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:.74rem;font-weight:bold;line-height:1.4}
 .spell-source-group{width:100%;min-width:0}
 .spell-source-group[hidden],.spell-source-group-title[hidden]{display:none!important}
@@ -4409,6 +4417,7 @@ function spellCatalogRefreshRows(){
     document.querySelectorAll('#spellEntries .spell-entry-row').forEach(row=>{spellCatalogRefreshDamage(row);spellCatalogRefreshDescription(row);refreshSpellRowTitle(row);spellCatalogUpdateStatus(row);updateSpellUsageStatus(row);});
     spellCatalogGroupRows();
     updateWizardSpellbookPanel();
+    updateDailyPreparationToolbar();
 }
 function spellCatalogRefreshDamage(row){
     const meta=spellCatalogMetadata(row),input=row?.querySelector('input[id$="_damage"]');
@@ -4746,6 +4755,30 @@ function unprepareWizardSpell(row){
     saveCharacter();
     return true;
 }
+const dailyPreparationClasses=new Set(['Cleric','Druid','Paladin','Wizard']);
+function characterUsesDailyPreparation(){return dailyPreparationClasses.has(document.getElementById('characterClass')?.value||'');}
+function dailyPreparationReminder(klass=document.getElementById('characterClass')?.value||''){
+    const labels={Cleric:'A Cleric hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Druid:'A Druid hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Paladin:'A Paladin hosszú pihenő után új varázslatokat készíthet elő a kasztlistájáról.',Wizard:'A Wizard hosszú pihenő után módosíthatja a varázskönyvéből előkészített napi listát.'};
+    return labels[klass]||'';
+}
+function setDailyPreparationEditing(active){
+    const sheet=document.querySelector('.sheet');if(!sheet)return;
+    sheet.classList.toggle('spell-preparation-editing',Boolean(active)&&characterUsesDailyPreparation());
+    if(typeof syncSheetModeControls==='function')syncSheetModeControls();
+    if(sheet.classList.contains('spell-preparation-editing'))document.querySelectorAll('.spell-detail-fields input,.spell-detail-fields select,.spell-detail-fields textarea').forEach(control=>{control.disabled=false;delete control.dataset.modeLocked;});
+    updateDailyPreparationToolbar();
+    if(active)document.querySelector('.spell-list-fold')?.setAttribute('open','');
+}
+function updateDailyPreparationToolbar(message=''){
+    const toolbar=document.getElementById('dailyPreparationToolbar');if(!toolbar)return;
+    const sheet=document.querySelector('.sheet'),daily=characterUsesDailyPreparation(),play=sheet?.dataset.sheetMode==='play';
+    toolbar.hidden=!(daily&&play);
+    if(!daily){sheet?.classList.remove('spell-preparation-editing');return;}
+    const active=sheet?.classList.contains('spell-preparation-editing'),klass=document.getElementById('characterClass')?.value||'';
+    const note=document.getElementById('dailyPreparationNote'),button=document.getElementById('dailyPreparationToggle');
+    if(note)note.textContent=message||(klass==='Wizard'?'A napi előkészített listát a varázskártyák Előkészítem és Előkészítés visszavonása gombjaival módosíthatod.':'Hosszú pihenő után ebből a kasztlistából új napi varázslatokat készíthetsz elő. A módosítás idejére megjelennek a felvételi, törlési és szerkesztési vezérlők.');
+    if(button){button.textContent=active?'Előkészítés befejezése':'Napi varázslatok módosítása';button.setAttribute('aria-pressed',String(active));}
+}
 function updateWizardSpellbookPanel(message=''){
     const panel=document.getElementById('wizardSpellbookPanel');if(!panel)return;
     const wizard=document.getElementById('characterClass')?.value==='Wizard';panel.hidden=!wizard;if(!wizard)return;
@@ -5022,6 +5055,9 @@ function setupSpellCatalog(){
     const editor=document.querySelector('.spell-list-editor');
     if(editor){
         const config=document.createElement('div');config.className='spell-catalog-config';
+        const dailyToolbar=document.createElement('section');dailyToolbar.id='dailyPreparationToolbar';dailyToolbar.className='daily-preparation-toolbar';dailyToolbar.hidden=true;
+        dailyToolbar.innerHTML='<p id="dailyPreparationNote"></p><button id="dailyPreparationToggle" type="button" aria-pressed="false">Napi varázslatok módosítása</button>';
+        dailyToolbar.querySelector('button').addEventListener('click',()=>setDailyPreparationEditing(!document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')));
         const wizardPanel=document.createElement('section');wizardPanel.id='wizardSpellbookPanel';wizardPanel.className='wizard-spellbook-panel';wizardPanel.hidden=true;
         wizardPanel.innerHTML='<div class="wizard-spellbook-stat"><span>Varázskönyv</span><strong id="wizardSpellbookCount">0</strong></div><div class="wizard-spellbook-stat"><span>Ma előkészítve</span><strong id="wizardPreparedCount">0 / 1</strong></div><p class="wizard-spellbook-guide">A katalógusból felvett, legalább 1. szintű Wizard varázslatok a varázskönyvbe kerülnek. Jelöld meg, melyeket készíted elő a napra. A keret: Wizard szint + Intelligencia módosító (legalább 1). A könyvben lévő rituálékat előkészítés nélkül is használhatod rituáléként.</p><p id="wizardSpellbookWarning" class="wizard-spellbook-warning" role="status" aria-live="polite"></p>';
         const label=document.createElement('label');label.textContent='A föld köre – táj';const select=document.createElement('select');select.id='druidLandType';select.appendChild(new Option('Válassz tájat…',''));['Arctic','Coast','Desert','Forest','Grassland','Mountain','Swamp','Underdark'].forEach(name=>select.appendChild(new Option(name,name)));label.appendChild(select);label.hidden=true;
@@ -5031,7 +5067,7 @@ function setupSpellCatalog(){
         const summary=document.createElement('p');summary.id='spellCatalogSummary';summary.className='spell-catalog-summary';summary.setAttribute('aria-live','polite');
         const guide=document.createElement('dl');guide.className='spell-catalog-source-guide';guide.dataset.spellSourceGuide='true';
         const note=document.createElement('p');note.className='spell-catalog-note';note.textContent='PHB 2014 · A karakternek biztosan járó varázslatok automatikusan bekerülnek. A választást igénylő ismert és előkészített varázslatokat te jelölöd. A varázslatok a forrásukhoz tartozó képességmódosítóval számolnak; egyéni érték is megadható.';
-        informationBody.append(summary,note,guide);information.append(informationTitle,informationBody);config.append(wizardPanel,label,information);editor.prepend(config);
+        informationBody.append(summary,note,guide);information.append(informationTitle,informationBody);config.append(dailyToolbar,wizardPanel,label,information);editor.prepend(config);
         const details=document.createElement('details');details.className='spell-catalog-sources';const heading=document.createElement('summary');heading.textContent='A varázslatlista forrásai';
         const body=document.createElement('p');body.innerHTML='361 varázslat a 2014-es Player’s Handbook alapján. <a href="https://www.dndbeyond.com/spells?filter-source=2" target="_blank" rel="noopener">PHB 2014 varázslatok</a> · <a href="https://www.dndbeyond.com/sources/dnd/basic-rules-2014/classes" target="_blank" rel="noopener">Kasztok</a> · <a href="https://www.dndbeyond.com/sources/dnd/basic-rules-2014/races" target="_blank" rel="noopener">Fajok</a>.';
         const attribution=document.createElement('p');attribution.innerHTML='This work includes material taken from the System Reference Document 5.1 (“SRD 5.1”) by Wizards of the Coast LLC and available at <a href="https://dnd.wizards.com/resources/systems-reference-document" target="_blank" rel="noopener">dnd.wizards.com/resources/systems-reference-document</a>. The SRD 5.1 is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noopener">Creative Commons Attribution 4.0 International License</a>. Changes: descriptions omitted; metadata compacted; PHB names restored; class lists corrected.';
@@ -9121,7 +9157,7 @@ function restoreSpellResources(restType){
     saveCharacter();
     if(!combatModeOverlay.hidden){refreshCombatAttackOptions();renderCombatTurnChoices();}
     const restStatus=document.getElementById('restStatus');
-    if(restStatus){restStatus.textContent=restType==='long'?'Hosszú pihenő: a varázsrekeszek és a hosszú pihenőre visszatöltő használatok helyreálltak.':'Rövid pihenő: a rövid pihenőre visszatöltő használatok helyreálltak.';if(hitDiceRecovered!==null)restStatus.textContent+=` Életerőkockák: ${hitDiceRecovered} visszatöltve.`;if(restType==='long'&&klass==='Wizard')restStatus.textContent+=' A napi előkészített varázslatokat most a varázskártyák gyorsgombjaival módosíthatod.';restStatus.hidden=false;showUndoEventBubble(restType==='long'?'Hosszú pihenő':'Rövid pihenő',restStatus.textContent,undoSnapshot);}
+    if(restStatus){restStatus.textContent=restType==='long'?'Hosszú pihenő: a varázsrekeszek és a hosszú pihenőre visszatöltő használatok helyreálltak.':'Rövid pihenő: a rövid pihenőre visszatöltő használatok helyreálltak.';if(hitDiceRecovered!==null)restStatus.textContent+=` Életerőkockák: ${hitDiceRecovered} visszatöltve.`;const preparationMessage=restType==='long'?dailyPreparationReminder(klass):'';if(preparationMessage){restStatus.textContent+=' '+preparationMessage+' Játék módban nyisd meg a Varázslás panel Napi varázslatok módosítása részét.';updateDailyPreparationToolbar(preparationMessage);}restStatus.hidden=false;showUndoEventBubble(restType==='long'?'Hosszú pihenő':'Rövid pihenő',restStatus.textContent,undoSnapshot);}
 }
 
 function refreshCombatAttackOptions(){
@@ -12199,11 +12235,13 @@ function syncSheetModeControls(){
 function setSheetMode(mode,{persist=true}={}){
     activeSheetMode=mode==='edit'?'edit':'play';
     const sheet=document.querySelector('.sheet');if(sheet)sheet.dataset.sheetMode=activeSheetMode;
+    if(activeSheetMode==='edit')sheet?.classList.remove('spell-preparation-editing');
     const playButton=document.getElementById('sheetPlayModeButton'),editButton=document.getElementById('sheetEditModeButton');
     playButton?.setAttribute('aria-pressed',String(activeSheetMode==='play'));editButton?.setAttribute('aria-pressed',String(activeSheetMode==='edit'));
     const characterPanel=document.getElementById('mobileNavCharacter'),characterHeader=characterPanel?.querySelector(':scope > .section-header');
     if(characterPanel){const collapsed=activeSheetMode==='play';characterPanel.classList.toggle('collapsed',collapsed);characterHeader?.setAttribute('aria-expanded',String(!collapsed));updateCharacterPanelTitle();}
     syncSheetModeControls();
+    updateDailyPreparationToolbar();
     if(persist){
         localStorage.setItem('dndSheetMode',activeSheetMode);
         try{const saved=JSON.parse(localStorage.getItem('dndCharacter')||'{}');saved._sheetMode=activeSheetMode;localStorage.setItem('dndCharacter',JSON.stringify(saved));}catch{}

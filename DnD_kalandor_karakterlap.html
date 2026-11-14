@@ -13126,7 +13126,6 @@ localStorage.removeItem('theme');
     const panelSelector=['.character-info','.main>.abilities','.main>.center>.combat','.main>.right-column>.combat','.main>.center>.card','.main>.right-column>.card','.extra-sheet-grid>.card'].join(',');
     const panels=[...sheet.querySelectorAll(panelSelector)];
     const savingThrowsPanel=document.getElementById('savingThrowsCard');
-    const equipmentPanel=document.getElementById('equipment')?.closest('.card');
     const skillsPanel=document.querySelector('.skills-list')?.closest('.card');
     const panelRank=panel=>{
         if(panel.matches('.character-info'))return 0;
@@ -13150,7 +13149,7 @@ localStorage.removeItem('theme');
     };
     const positionSavingThrowsPanel=()=>{
         if(!savingThrowsPanel)return;
-        const anchor=sheet.classList.contains('mobile-mode')?skillsPanel:equipmentPanel;
+        const anchor=sheet.classList.contains('mobile-mode')?skillsPanel:document.querySelector('.main>.center .inspiration-card');
         if(anchor&&anchor.nextElementSibling!==savingThrowsPanel)anchor.after(savingThrowsPanel);
     };
     const syncFixedPanelOrder=()=>{

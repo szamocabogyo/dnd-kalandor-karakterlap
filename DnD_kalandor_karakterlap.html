@@ -1615,6 +1615,17 @@ input:focus, textarea:focus, select:focus {
   .sheet:not(.mobile-mode) .abilities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 
+/* Desktop karakterlap: teljes szélességű tulajdonságsáv, alatta két hasáb. */
+@media(min-width:769px){
+  .sheet:not(.mobile-mode) .main{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .sheet:not(.mobile-mode) .abilities{grid-column:1/-1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--panel-gap);padding:12px;border:1px solid var(--border);background:color-mix(in srgb,var(--accent) 4%,var(--bg))}
+  .sheet:not(.mobile-mode) .desktop-abilities-title{grid-column:1/-1;margin:0;padding:0 0 9px;border-bottom:1px solid var(--border);color:var(--accent);font:700 1.08rem/1.2 Georgia,"Times New Roman",serif;letter-spacing:.06em;text-transform:uppercase}
+  .sheet:not(.mobile-mode) .abilities>.ability{height:100%;min-height:0;box-sizing:border-box}
+  .sheet:not(.mobile-mode) .center,.sheet:not(.mobile-mode) .right-column{grid-column:auto;display:flex;flex-direction:column;min-width:0}
+  .sheet:not(.mobile-mode) .extra-sheet-grid{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+.sheet.mobile-mode .desktop-abilities-title{display:none!important}
+
 /* Mobile-first sheet polish: use the available width, prevent sideways overflow,
    and keep fields readable without wasting vertical space. */
 body:has(.sheet.mobile-mode){padding:0;overflow-x:hidden}
@@ -2640,6 +2651,8 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 
     <!-- BAL OLDAL -->
     <div class="abilities">
+
+<h2 class="desktop-abilities-title"><span class="dnd-mark" aria-hidden="true">✣</span> Tulajdonságok</h2>
 
 <div class="card ability">
     <h3><span class="dnd-mark" aria-hidden="true">⚔</span> STR</h3>

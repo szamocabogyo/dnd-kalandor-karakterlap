@@ -12777,10 +12777,23 @@ const sheet =
 const combatStatsPanel=document.querySelector('.main>.center>.combat');
 const combatStatsHome=document.createComment('combat-stats-home');
 if(combatStatsPanel)combatStatsPanel.before(combatStatsHome);
+const weaponsPanel=document.querySelector('.main>.center>.attacks');
+const weaponsPanelHome=document.createComment('weapons-panel-home');
+if(weaponsPanel)weaponsPanel.before(weaponsPanelHome);
+const equipmentPanelDesktop=document.getElementById('equipment')?.closest('.card');
+const equipmentPanelHome=document.createComment('equipment-panel-home');
+if(equipmentPanelDesktop)equipmentPanelDesktop.before(equipmentPanelHome);
 function positionCombatStatsPanel(){
-    if(!combatStatsPanel)return;
-    if(sheet.classList.contains('mobile-mode'))combatStatsHome.parentNode?.insertBefore(combatStatsPanel,combatStatsHome.nextSibling);
-    else document.querySelector('.main>.right-column')?.prepend(combatStatsPanel);
+    const mobile=sheet.classList.contains('mobile-mode'),center=document.querySelector('.main>.center'),right=document.querySelector('.main>.right-column');
+    if(mobile){
+        if(combatStatsPanel)combatStatsHome.parentNode?.insertBefore(combatStatsPanel,combatStatsHome.nextSibling);
+        if(weaponsPanel)weaponsPanelHome.parentNode?.insertBefore(weaponsPanel,weaponsPanelHome.nextSibling);
+        if(equipmentPanelDesktop)equipmentPanelHome.parentNode?.insertBefore(equipmentPanelDesktop,equipmentPanelHome.nextSibling);
+        return;
+    }
+    const hpPanel=center?.querySelector('.hp-card');if(combatStatsPanel&&hpPanel)hpPanel.after(combatStatsPanel);
+    const skillsPanel=right?.querySelector('#mobileNavRolls');
+    if(right&&skillsPanel){if(weaponsPanel)right.insertBefore(weaponsPanel,skillsPanel);if(equipmentPanelDesktop)right.insertBefore(equipmentPanelDesktop,skillsPanel);}
 }
 
 const responsiveSheetMedia=window.matchMedia('(max-width: 768px)');

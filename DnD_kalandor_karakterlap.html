@@ -2207,6 +2207,17 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:36px!important;width:100%;margin:0;padding:4px 5px!important;border-radius:8px;font-size:.64rem!important;font-weight:600;line-height:1.15;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]{grid-column:1/-1}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]>.settings-menu-panel{margin-top:6px;width:100%}
+.sheet.mobile-mode #desktopNotesButton{display:none!important}
+@media(min-width:769px){
+  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(5,minmax(112px,1fr));gap:6px;align-items:stretch;width:100%;margin:0 0 16px}
+  .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{display:grid;width:100%;min-width:0;padding:2px;border-radius:9px}
+  .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:36px;padding:4px 7px;border-radius:7px;font-size:.72rem}
+  .sheet:not(.mobile-mode)>.view-switcher>button,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
+  .sheet:not(.mobile-mode)>.view-switcher>button,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;width:100%;min-height:42px;margin:0;padding:5px 8px;border-radius:8px;font-size:.72rem;font-weight:600;line-height:1.15;letter-spacing:0;text-align:center;white-space:normal;box-sizing:border-box}
+  .sheet:not(.mobile-mode)>.view-switcher>button:hover,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary:hover{transform:none}
+  .sheet:not(.mobile-mode) #notesSettingsButton{display:none!important}
+}
+@media(min-width:769px) and (max-width:1099px){.sheet:not(.mobile-mode)>.view-switcher{grid-template-columns:repeat(5,minmax(0,1fr))}.sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{grid-column:1/-1}}
 /* Compact, consistent mobile form rhythm without shrinking touch targets. */
 .sheet.mobile-mode input:not([type=checkbox]):not([type=radio]):not([type=hidden]),.sheet.mobile-mode select{height:40px;min-height:40px;padding:6px 8px;font-size:16px;line-height:1.25;border-radius:6px}
 .sheet.mobile-mode textarea{min-height:72px;padding:7px 8px;font-size:16px;line-height:1.4;border-radius:6px}
@@ -2521,6 +2532,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
         <input type="file" id="importFile" accept=".json" style="display:none;">
       </div>
     </details>
+    <button id="desktopNotesButton" type="button">📝 Jegyzetek</button>
     <button id="combatModeButton" type="button">⚔ Harc</button>
     <button id="shortRestButton" type="button">🌤 Rövid pihenő</button>
     <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
@@ -13177,8 +13189,8 @@ function sanitizeNotesHtml(value){const template=document.createElement('templat
 function syncNotesEditorFromField(){if(notesEditor&&characterNotesData){const clean=sanitizeNotesHtml(characterNotesData.value);characterNotesData.value=clean;notesEditor.innerHTML=clean;}}
 function saveNotes(){if(!notesEditor||!characterNotesData)return;characterNotesData.value=notesEditor.innerHTML;saveCharacter();const status=document.getElementById('notesStatus');if(status){status.textContent='Mentve.';clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(()=>{status.textContent='A jegyzet automatikusan mentődik.';},1200);}}
 function openNotes(){syncNotesEditorFromField();notesOverlay.hidden=false;document.body.style.overflow='hidden';requestAnimationFrame(()=>notesEditor?.focus());}
-function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById('notesSettingsButton')?.focus();}
-document.getElementById('notesSettingsButton')?.addEventListener('click',openNotes);document.getElementById('notesCloseButton')?.addEventListener('click',closeNotes);notesOverlay?.addEventListener('click',event=>{if(event.target===notesOverlay)closeNotes();});
+function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById(sheet?.classList.contains('mobile-mode')?'notesSettingsButton':'desktopNotesButton')?.focus();}
+document.getElementById('notesSettingsButton')?.addEventListener('click',openNotes);document.getElementById('desktopNotesButton')?.addEventListener('click',openNotes);document.getElementById('notesCloseButton')?.addEventListener('click',closeNotes);notesOverlay?.addEventListener('click',event=>{if(event.target===notesOverlay)closeNotes();});
 notesEditor?.addEventListener('input',()=>{characterNotesData.value=notesEditor.innerHTML;clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(saveNotes,350);});notesEditor?.addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData?.getData('text/plain')||'');});
 document.getElementById('notesToolbar')?.addEventListener('mousedown',event=>event.preventDefault());document.getElementById('notesToolbar')?.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;notesEditor?.focus();if(button.dataset.notesBlock){const target=button.dataset.notesBlock.toLowerCase(),selection=window.getSelection();let node=selection?.anchorNode;if(node?.nodeType===Node.TEXT_NODE)node=node.parentElement;const current=node instanceof Element?node.closest('h2,h3,p,div'):null;document.execCommand('formatBlock',false,current?.tagName.toLowerCase()===target?'p':target);}else document.execCommand(button.dataset.notesCommand,false,null);saveNotes();});
 syncNotesEditorFromField();

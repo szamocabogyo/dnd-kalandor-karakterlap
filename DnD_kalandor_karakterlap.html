@@ -1679,7 +1679,7 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-result{margin-top:12px}
 .mobile-roll-result:empty{display:none}
 .mobile-roll-result .saving-throw-result-card{margin:0}
-.combat-help-panel{display:grid;gap:12px}.combat-help-panel[hidden]{display:none!important}.combat-help-section{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.combat-help-section h3{margin:0 0 8px;color:var(--accent);font-size:1rem}.combat-help-section ol,.combat-help-section ul{margin:0;padding-left:1.35rem}.combat-help-section li{margin:0 0 7px;line-height:1.42}.combat-help-section li:last-child{margin-bottom:0}.combat-help-class-name{display:block;margin:-3px 0 9px;color:var(--muted);font-size:.82rem}
+.combat-help-panel{display:grid;gap:12px}.combat-help-panel[hidden]{display:none!important}.combat-help-section{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.combat-help-section h3{margin:0 0 8px;color:var(--accent);font-size:1rem}.combat-help-section h4{margin:14px 0 7px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--border) 65%,transparent);color:var(--accent);font-size:.86rem}.combat-help-section ol,.combat-help-section ul{margin:0;padding-left:1.35rem}.combat-help-section li{margin:0 0 7px;line-height:1.42}.combat-help-section li:last-child{margin-bottom:0}.combat-help-class-name{display:block;margin:-3px 0 9px;color:var(--muted);font-size:.82rem}.combat-help-detail-list{list-style:none;padding-left:0!important}.combat-help-detail-list li{padding:8px 9px;border-left:2px solid var(--border);background:color-mix(in srgb,var(--card) 70%,transparent)}.combat-help-detail-list strong{display:block;color:var(--text);font-size:.83rem}.combat-help-detail-list span{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;line-height:1.45}.combat-help-empty{color:var(--muted);font-style:italic}
 .mobile-roll-dice-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin:7px 0}
 .mobile-roll-dice-summary.is-single{grid-template-columns:1fr}
 .mobile-roll-die{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--muted);font-size:.74rem;line-height:1.2}
@@ -3166,7 +3166,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <p id="mobileRollInstruction" class="context-instruction" aria-live="polite"></p>
     <div id="combatHelpPanel" class="combat-help-panel" hidden>
       <section class="combat-help-section"><h3>Általános harci lépések</h3><ol id="combatHelpGeneral"></ol></section>
-      <section class="combat-help-section"><h3>Kasztspecifikus lehetőségek</h3><span id="combatHelpClassName" class="combat-help-class-name"></span><ul id="combatHelpClass"></ul></section>
+      <section class="combat-help-section"><h3>Kasztspecifikus harci kézikönyv</h3><span id="combatHelpClassName" class="combat-help-class-name"></span><h4>Gyors harci áttekintés</h4><ul id="combatHelpClass"></ul><h4>Aktuális erőforrások és állapotok</h4><ul id="combatHelpResources" class="combat-help-detail-list"></ul><h4>Elérhető kaszt- és alkasztképességek</h4><ul id="combatHelpAbilities" class="combat-help-detail-list"></ul><h4>Varázslás harc közben</h4><ul id="combatHelpSpellcasting" class="combat-help-detail-list"></ul></section>
     </div>
     <div id="mobileRollFields" class="mobile-roll-fields">
       <label id="mobileRollChoiceField"><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
@@ -12951,10 +12951,42 @@ const combatHelpClassFeatures={
     Wizard:[{min:1,text:'Varázslás: csak az aznap előkészített varázslatokat használhatod rekeszből; a trükkök nem fogyasztanak rekeszt.'},{min:1,text:'Minden varázslat előtt ellenőrizd a varázslási időt, a hatótávot, a komponenseket és a koncentrációt.'},{min:2,text:'Az arcane tradition képességei módosíthatják a sebzést, védelmet, dobásokat vagy a varázslatok célzását.'}]
 };
 function renderCombatHelp(){
-    const general=document.getElementById('combatHelpGeneral'),specific=document.getElementById('combatHelpClass'),name=document.getElementById('combatHelpClassName');if(!general||!specific||!name)return;
+    const general=document.getElementById('combatHelpGeneral'),specific=document.getElementById('combatHelpClass'),name=document.getElementById('combatHelpClassName'),resources=document.getElementById('combatHelpResources'),abilities=document.getElementById('combatHelpAbilities'),spellcasting=document.getElementById('combatHelpSpellcasting');if(!general||!specific||!name||!resources||!abilities||!spellcasting)return;
     general.replaceChildren(...combatHelpGeneralSteps.map(text=>{const item=document.createElement('li');item.textContent=text;return item;}));
-    const klass=document.getElementById('characterClass')?.value||'',level=Math.max(1,Number(document.getElementById('characterLevel')?.value)||1),features=(combatHelpClassFeatures[klass]||[]).filter(feature=>level>=feature.min);
-    name.textContent=klass?`${klass} · ${level}. szint`:'Nincs kaszt kiválasztva';specific.replaceChildren(...(features.length?features:[{text:'Válassz kasztot és szintet a karakteradatoknál a kasztspecifikus harci lehetőségek megjelenítéséhez.'}]).map(feature=>{const item=document.createElement('li');item.textContent=feature.text;return item;}));
+    const context=classFeatureContext(),klass=context.klass,level=Math.max(1,context.level||1),subclass=document.getElementById('characterSubclass')?.value||'',features=(combatHelpClassFeatures[klass]||[]).filter(feature=>level>=feature.min);
+    name.textContent=klass?`${klass}${subclass?' · '+subclass:''} · ${level}. szint`:'Nincs kaszt kiválasztva';specific.replaceChildren(...(features.length?features:[{text:'Válassz kasztot és szintet a karakteradatoknál a kasztspecifikus harci lehetőségek megjelenítéséhez.'}]).map(feature=>{const item=document.createElement('li');item.textContent=feature.text;return item;}));
+    const detailItem=(title,text,empty=false)=>{const item=document.createElement('li');if(empty)item.className='combat-help-empty';const heading=document.createElement('strong');heading.textContent=title;const body=document.createElement('span');body.textContent=text;item.append(heading,body);return item;};
+    if(!klass){resources.replaceChildren(detailItem('Nincs adat','A kaszterőforrások a kaszt kiválasztása után jelennek meg.',true));abilities.replaceChildren(detailItem('Nincs adat','A képességek a kaszt és a szint kiválasztása után jelennek meg.',true));spellcasting.replaceChildren(detailItem('Nincs adat','A varázslási adatok a varázshasználó kaszt kiválasztása után jelennek meg.',true));return;}
+    const model=classFeatureModels[klass],fields=allClassFeatureFields(model,context).filter(field=>(field.minLevel||0)<=level&&(!field.when||field.when(context)));
+    const restLabel=rest=>typeof rest==='function'?'a képesség szabálya szerint':rest==='short'?'rövid pihenő':rest==='both'?'rövid vagy hosszú pihenő':'hosszú pihenő';
+    const resourceItems=[];
+    fields.forEach(field=>{
+        const control=document.getElementById(`classFeature_${field.key}`),help=classFeatureFieldHelp(field)||'';
+        if(field.type==='counter'){
+            const maximum=typeof field.max==='function'?field.max(context):field.max,current=Number(control?.value)||0,maximumText=maximum===Infinity?'korlátlan':String(maximum??'—');resourceItems.push(detailItem(field.label,`${current} / ${maximumText} maradt${field.rest?' · visszatöltés: '+restLabel(field.rest):''}${help?' · '+help:''}`));
+        }else if(field.type==='toggle')resourceItems.push(detailItem(field.label,`${control?.checked?'Aktív':'Nem aktív'}${help?' · '+help:''}`));
+    });
+    resources.replaceChildren(...(resourceItems.length?resourceItems:[detailItem('Nincs külön kaszterőforrás','Ezen a szinten nincs külön számlálóval vagy aktív állapottal követett kaszterőforrás.',true)]));
+    const abilityItems=[];
+    fields.forEach(field=>{
+        const control=document.getElementById(`classFeature_${field.key}`),help=classFeatureFieldHelp(field)||'';
+        if(field.type==='output'){
+            let value='';try{value=typeof field.value==='function'?field.value(context):field.value||'';}catch{}if(value)abilityItems.push(detailItem(field.label,String(value)));
+        }else if(!['counter','toggle'].includes(field.type)&&control){
+            let value=control.value||'';if(field.type==='selectlist'){try{const parsed=JSON.parse(value);value=Array.isArray(parsed)?parsed.join(', '):value;}catch{}}
+            if(value)abilityItems.push(detailItem(field.label,`${value}${help?' · '+help:''}`));
+        }
+    });
+    abilities.replaceChildren(...(abilityItems.length?abilityItems:[detailItem('Nincs további részlet','A gyors áttekintés tartalmazza az ezen a szinten elérhető fő harci lehetőségeket.',true)]));
+    if(!characterCanCastSpells()){spellcasting.replaceChildren(detailItem('Nincs kasztalapú varázslás','A karakter jelenlegi kasztja és szintje alapján nincs harcban használható kasztalapú varázslás.',true));return;}
+    updateSpellSlotFields();
+    const spellAbility={Bard:'CHA',Cleric:'WIS',Druid:'WIS',Paladin:'CHA',Ranger:'WIS',Sorcerer:'CHA',Warlock:'CHA',Wizard:'INT'}[klass]||'',slotText=Array.from({length:9},(_,index)=>{const slot=parseSpellSlotValue(document.getElementById(`spellSlots${index+1}`));return slot?.maximum?`${index+1}. szint: ${slot.current}/${slot.maximum}`:'';}).filter(Boolean).join(' · '),spellItems=[];
+    spellItems.push(detailItem('Varázslási értékek',`${spellAbility||'—'} · támadóbónusz: ${document.getElementById('spellAttackBonus')?.value||'—'} · mentődobás DC: ${document.getElementById('spellSaveDC')?.value||'—'}${slotText?' · rekeszek: '+slotText:''}`));
+    [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].forEach(row=>{
+        const spellName=row.querySelector('input[id$="_name"]')?.value.trim();if(!spellName)return;const prepared=row.querySelector('input[id$="_prepared"]'),levelValue=row.querySelector('select[id$="_level"]')?.value||'',casting=row.querySelector('input[id$="_castingTime"]')?.value.trim()||'',damage=row.querySelector('input[id$="_damage"]')?.value.trim()||'',description=row.querySelector('textarea[id$="_description"]')?.value.trim()||'';
+        const requiresPreparation=dailyPreparationClasses.has(klass)&&levelValue!=='cantrip',status=requiresPreparation&&prepared&&!prepared.checked?'nincs előkészítve':'használható',summary=[levelValue==='cantrip'?'trükk':levelValue?`${levelValue}. szint`:'',casting,damage,status,description?description.replace(/\s+/g,' ').slice(0,240)+(description.length>240?'…':''):''].filter(Boolean).join(' · ');spellItems.push(detailItem(spellName,summary));
+    });
+    spellcasting.replaceChildren(...spellItems);
 }
 function mobileRollCurrentBonus(){
     if(mobileRollKind==='save')return Number.parseInt(document.getElementById('saveValue'+mobileRollChoice?.value)?.value,10)||0;

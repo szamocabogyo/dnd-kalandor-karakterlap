@@ -12441,6 +12441,8 @@ function setSheetMode(mode,{persist=true}={}){
 }
 
 let characterSaveStatusTimer=0,characterSaveDebounceTimer=0,characterSavePending=false;
+let characterHydrating=true;
+let characterInitialSaveBlocked=false;
 function showCharacterSaveStatus(message,state='saved'){
     const status=document.getElementById('characterSaveStatus');if(!status)return;
     status.textContent=message;status.dataset.state=state;status.hidden=false;clearTimeout(characterSaveStatusTimer);
@@ -12464,6 +12466,12 @@ function flushCharacterSave(){
 }
 function saveCharacter() {
 
+    // Several derived panels rebuild themselves while the saved character is
+    // being restored. Saving during that interval would replace the complete
+    // record with the still incomplete DOM and silently discard fields which
+    // have not been rendered yet.
+    if(characterHydrating)return true;
+
     clearTimeout(characterSaveDebounceTimer);
     characterSaveDebounceTimer=0;
     characterSavePending=false;
@@ -12473,7 +12481,13 @@ function saveCharacter() {
     renderRangerCompanion();
     updateMobilePlayStatus();
 
-    const characterData = {};
+    const preparing=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing');
+    const storageKey=preparing?'dndDailyPreparationDraft':'dndCharacter';
+    let characterData = {};
+    try{
+        const previous=JSON.parse(localStorage.getItem(storageKey)||'{}');
+        if(previous&&typeof previous==='object'&&!Array.isArray(previous))characterData={...previous};
+    }catch{}
 
     document
         .querySelectorAll('input, textarea, select')
@@ -12517,7 +12531,18 @@ function saveCharacter() {
     }
 
     try{
-        const preparing=document.querySelector('.sheet')?.classList.contains('spell-preparation-editing'),storageKey=preparing?'dndDailyPreparationDraft':'dndCharacter';
+        if(storageKey==='dndCharacter'){
+            const previousRaw=localStorage.getItem(storageKey);
+            if(previousRaw){
+                // Keep a recovery point for ordinary records without doubling
+                // a large portrait/notes payload and exhausting localStorage.
+                try{
+                    JSON.parse(previousRaw);
+                    if(previousRaw.length<=750000)localStorage.setItem('dndCharacterBackup',previousRaw);
+                    else localStorage.removeItem('dndCharacterBackup');
+                }catch{localStorage.removeItem('dndCharacterBackup');}
+            }
+        }
         localStorage.setItem(storageKey,JSON.stringify(characterData));
         showCharacterSaveStatus(preparing?'Előkészítési piszkozat mentve.':'Mentve.','saved');return true;
     }catch(error){
@@ -12741,13 +12766,29 @@ function updateCharacterSubclassOptions(selectedValue=''){
 
 function loadCharacter() {
 
-    const saved =
-        localStorage.getItem('dndCharacter');
+    let saved = localStorage.getItem('dndCharacter');
 
     if(!saved) return;
 
-    const characterData =
-        JSON.parse(saved);
+    let characterData;
+    try{
+        characterData=JSON.parse(saved);
+        if(!characterData||typeof characterData!=='object'||Array.isArray(characterData))throw new Error('Invalid character record');
+    }catch(error){
+        const backup=localStorage.getItem('dndCharacterBackup');
+        try{
+            characterData=JSON.parse(backup||'');
+            if(!characterData||typeof characterData!=='object'||Array.isArray(characterData))throw new Error('Invalid character backup');
+            saved=backup;
+            localStorage.setItem('dndCharacter',backup);
+            showCharacterSaveStatus('A sérült mentés helyett az előző biztonsági másolat állt vissza.','error');
+        }catch{
+            characterInitialSaveBlocked=true;
+            showCharacterSaveStatus('A mentett karakteradat nem olvasható. A böngésző nem írta felül.','error');
+            console.error('Character load failed',error);
+            return;
+        }
+    }
 
     backgroundGeneratedEquipment=characterData._backgroundGeneratedEquipment||'';
     backgroundGeneratedFeature=characterData._backgroundGeneratedFeature||'';
@@ -12833,7 +12874,8 @@ updateBackgroundOptions();
 updateBackgroundRulesNote();
 renderClassFeatures();
 refreshConsolidatedCharacterText();
-saveCharacter();
+characterHydrating=false;
+if(!characterInitialSaveBlocked)saveCharacter();
 spellCatalogState.grantsReady=true;
 updateSpellSlotFields();
 document.querySelectorAll('#spellEntries .spell-entry-row').forEach(updateSpellUsageStatus);

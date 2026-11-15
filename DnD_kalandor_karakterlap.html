@@ -12935,6 +12935,31 @@ document.addEventListener('visibilitychange',()=>{
 });
 window.addEventListener('pagehide',flushCharacterSave);
 
+function reconcileCharacterUiAfterBrowserRestore(){
+    // Mobile Chrome can restore native form controls after the page scripts
+    // have already calculated the crest, notices and play-mode folding. That
+    // restoration does not dispatch input/change events, so rebuild every
+    // derived view from the values which are actually visible in the fields.
+    const classField=document.getElementById('characterClass');
+    if(!classField||characterHydrating)return;
+    const selectedSubclass=document.getElementById('characterSubclass')?.value||'';
+    const renderedClass=document.getElementById('classFeatureFields')?.dataset.className||'';
+    const bannerClass=document.querySelector('.sheet')?.dataset.class||'';
+    const needsClassRefresh=classField.value!==renderedClass||classField.value!==bannerClass;
+    if(needsClassRefresh)updateCharacterSubclassOptions(selectedSubclass);
+    renderClassFeatures();
+    updateModifiers();
+    updateSkills();
+    updateSpellSlotFields();
+    updateCharacterPanelTitle();
+    setSheetMode(storedSheetMode(),{persist:false});
+    updateMobilePlayStatus();
+    saveCharacter();
+}
+window.addEventListener('pageshow',()=>{
+    requestAnimationFrame(()=>window.setTimeout(reconcileCharacterUiAfterBrowserRestore,0));
+});
+
 const frame =
     document.getElementById('previewFrame');
 

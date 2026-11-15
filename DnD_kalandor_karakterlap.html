@@ -13035,14 +13035,15 @@ function populateMobileRollChoices(){
     refreshMobileRollPreview(true);
 }
 function setMobileRollKind(kind){
-    mobileRollKind=['skill','save','attack','initiative','damage','guide'].includes(kind)?kind:'skill';
+    const nextKind=['skill','save','attack','initiative','damage','guide'].includes(kind)?kind:'skill',changed=nextKind!==mobileRollKind;mobileRollKind=nextKind;
+    if(changed){const manual=document.getElementById('mobileRollManual'),extra=document.getElementById('mobileRollExtra');if(manual)manual.value='';if(extra)extra.value='0';document.getElementById('mobileRollResult')?.replaceChildren();}
     document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.mobileRollKind===mobileRollKind)));
     populateMobileRollChoices();
 }
 function openMobileRollPanel(kind=mobileRollKind,returnFocus=document.activeElement){
     mobileRollReturnFocus=returnFocus instanceof HTMLElement?returnFocus:null;
     updateSkills();updateDerivedFields();setMobileRollKind(kind);mobileRollPanelOverlay.hidden=false;
-    document.getElementById('mobileRollManual').value='';document.getElementById('mobileRollResult').replaceChildren();refreshMobileRollPreview();
+    document.getElementById('mobileRollManual').value='';document.getElementById('mobileRollExtra').value='0';document.getElementById('mobileRollResult').replaceChildren();refreshMobileRollPreview();
     requestAnimationFrame(()=>mobileRollKind==='guide'?document.querySelector('[data-mobile-roll-kind="guide"]')?.focus():mobileRollChoice?.focus());
 }
 function closeMobileRollPanel(){

@@ -12382,15 +12382,19 @@ const sheetModeOriginalDisabled=new WeakMap();
 const sheetModeEditControlSelector=[
     '#mobileNavCharacter input','#mobileNavCharacter select','.abilities .score','[data-character-speed]','#proficiencyBonus','#maxHp',
     '.attacks input','#equipment','#mobileNavMore input','#mobileNavMore select','[id^="saveProf"]','[id^="saveExtra"]',
-    '#otherProficiencies','#personality','#feats','#spellcastingAbility','#spellSaveDC','#spellAttackBonus',
-    '.spell-detail-fields input','.spell-detail-fields select','.spell-detail-fields textarea',
-    '#classFeatureFields select','#classFeatureFields textarea','#classFeatureFields input[type="text"]'
+    '#spellcastingAbility','#spellSaveDC','#spellAttackBonus',
+    '.spell-detail-fields input','.spell-detail-fields select',
+    '#classFeatureFields select','#classFeatureFields input[type="text"]'
 ].join(',');
 function storedSheetMode(){
     try{return JSON.parse(localStorage.getItem('dndCharacter')||'{}')._sheetMode==='edit'||localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}catch{return localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}
 }
 function syncSheetModeControls(){
     const play=activeSheetMode==='play';
+    document.querySelectorAll('textarea').forEach(control=>{
+        if(sheetModeOriginalDisabled.has(control)){control.disabled=sheetModeOriginalDisabled.get(control);sheetModeOriginalDisabled.delete(control);}
+        delete control.dataset.modeLocked;
+    });
     document.querySelectorAll(sheetModeEditControlSelector).forEach(control=>{
         if(play&&document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')&&control.closest('.spell-detail-fields')){
             control.disabled=false;delete control.dataset.modeLocked;return;

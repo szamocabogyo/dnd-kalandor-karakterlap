@@ -1651,16 +1651,18 @@ body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;righ
 .mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
 #mobileNavCharacter,#mobileNavStats,#mobileNavWeapons,#mobileNavRolls,#mobileNavSpells,#classFeaturesCard{scroll-margin-top:10px}
-.mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:block;padding:0;background:var(--card);box-sizing:border-box}
+.mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:block;padding:0;background:radial-gradient(circle at 50% -10%,var(--class-glow,rgba(200,169,106,.22)),transparent 34%),var(--card);box-sizing:border-box}
 .mobile-roll-panel-overlay[hidden]{display:none!important}
 .mobile-roll-panel-dialog{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:100dvh;margin:0;padding:0 0 calc(20px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;border:0;border-radius:0;background:var(--card);box-shadow:none;box-sizing:border-box}
-.mobile-roll-panel-dialog>header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;padding:calc(10px + env(safe-area-inset-top)) max(16px,calc((100vw - 960px)/2)) 10px;border-bottom:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 5px 18px rgba(0,0,0,.3);box-sizing:border-box}
-.mobile-roll-panel-dialog>header h2{margin:0;color:var(--accent);font-size:1.1rem;letter-spacing:.03em}
-.mobile-roll-panel-dialog>header button{flex:0 0 42px;min-height:42px;padding:0;border:1px solid var(--border);background:var(--bg);color:var(--accent);font-size:1.25rem}
+.mobile-roll-panel-dialog>header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px;padding:calc(10px + env(safe-area-inset-top)) max(16px,calc((100vw - 960px)/2)) 10px;border-bottom:1px solid var(--class-border,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-surface,var(--card)) 94%,#000),color-mix(in srgb,var(--card) 94%,#000));box-shadow:0 5px 18px rgba(0,0,0,.3),0 0 18px var(--class-glow,transparent);box-sizing:border-box}
+.mobile-roll-panel-dialog>header h2{margin:0;color:var(--class-symbol,var(--accent));font-size:1.1rem;letter-spacing:.03em;text-shadow:0 0 10px var(--class-glow,transparent)}
+.mobile-roll-panel-dialog>header button{flex:0 0 42px;min-height:42px;padding:0;border:1px solid var(--class-border,var(--border));border-radius:var(--class-radius,6px);background:color-mix(in srgb,var(--class-primary,var(--accent)) 12%,var(--bg));color:var(--class-symbol,var(--accent));font-size:1.25rem}
 .mobile-roll-panel-dialog>:not(header){width:min(960px,calc(100% - 32px));margin-left:auto;margin-right:auto;box-sizing:border-box}
-.mobile-roll-kind{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px;margin-bottom:12px}
-.mobile-roll-kind button{min-height:44px;padding:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-weight:700}
-.mobile-roll-kind button[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.mobile-roll-kind{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:7px;margin-bottom:12px;padding:8px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 55%,transparent);border-radius:var(--class-radius,8px);background:color-mix(in srgb,var(--class-surface,var(--card)) 62%,transparent);box-shadow:inset 0 0 18px rgba(0,0,0,.2)}
+.mobile-roll-kind button{position:relative;min-height:46px;padding:8px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 58%,var(--border));border-radius:var(--class-radius,6px);background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 10%,var(--bg)),var(--bg));color:var(--class-symbol,var(--text));font:inherit;font-weight:800;text-shadow:0 1px 0 rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .12s ease}
+.mobile-roll-kind button:hover,.mobile-roll-kind button:focus-visible{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 24%,var(--class-surface,var(--card))),var(--bg));box-shadow:0 0 12px var(--class-glow,rgba(200,169,106,.2));outline:none}
+.mobile-roll-kind button:active{transform:translateY(1px)}
+.mobile-roll-kind button[aria-selected="true"]{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 72%,var(--class-surface,var(--card))),color-mix(in srgb,var(--class-secondary,var(--border)) 42%,var(--bg)));color:var(--class-symbol,#fff);box-shadow:0 0 0 1px color-mix(in srgb,var(--class-primary,var(--accent)) 30%,transparent),0 0 18px var(--class-glow,rgba(200,169,106,.28)),inset 0 1px 0 color-mix(in srgb,var(--class-symbol,#fff) 22%,transparent)}
 .mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mobile-roll-fields[hidden]{display:none!important}
 .mobile-roll-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:700}
@@ -9138,10 +9140,19 @@ const classVisualThemes={
     Warlock:{name:'Boszorkánymester',crest:'warlock',motto:'Mérgező smaragdfény, okkult rúnák és a figyelő szem.'},
     Wizard:{name:'Mágus',crest:'wizard',motto:'Ősi varázskönyv, ezüst csillagok és forgó rúnakörök.'}
 };
+function syncClassThemeToRollPanel(sheet,klass){
+    const overlay=document.getElementById('mobileRollPanelOverlay');
+    if(!sheet||!overlay)return;
+    const computed=getComputedStyle(sheet);
+    ['--class-primary','--class-secondary','--class-glow','--class-border','--class-surface','--class-symbol','--class-radius','--accent','--border']
+        .forEach(property=>overlay.style.setProperty(property,computed.getPropertyValue(property).trim()));
+    if(klass)overlay.dataset.class=klass;else delete overlay.dataset.class;
+}
 function applyClassVisualTheme(){
     const sheet=document.querySelector('.sheet'),klass=document.getElementById('characterClass')?.value||'',theme=classVisualThemes[klass];
     if(!sheet)return;
     if(klass)sheet.dataset.class=klass;else delete sheet.dataset.class;
+    syncClassThemeToRollPanel(sheet,klass);
     const use=document.getElementById('classCrestUse'),name=document.getElementById('classThemeName'),motto=document.getElementById('classThemeMotto'),banner=document.getElementById('classFantasyBanner');
     use?.setAttribute('href','#crest-'+(theme?.crest||'adventurer'));
     if(name)name.textContent=theme?.name||'Válassz kasztot';

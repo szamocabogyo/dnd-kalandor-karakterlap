@@ -12389,11 +12389,25 @@ const sheetModeEditControlSelector=[
 function storedSheetMode(){
     try{return JSON.parse(localStorage.getItem('dndCharacter')||'{}')._sheetMode==='edit'||localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}catch{return localStorage.getItem('dndSheetMode')==='edit'?'edit':'play';}
 }
+function sheetModeTextareaIsManual(control){
+    if(!control)return false;
+    if(control.id==='characterNotesData'||control.matches('#equipment,#personality,#deathSaveDmNote,#feats,#classFeatureFields textarea,[data-ranger-companion],[data-wild-shape-homebrew]'))return true;
+    const spellRow=control.closest('.spell-entry-row');
+    if(spellRow&&control.matches('textarea[id$="_description"]')){const meta=spellCatalogMetadata(spellRow);return !meta?.descriptionAuto||control.value!==meta.descriptionAuto;}
+    if(control.id==='otherProficiencies'){
+        const manual=String(control.value||'').replace(/(?:^|\n\n?)⟦AUTO-(?:RACE|CLASS):[^⟧]*⟧[\s\S]*?⟦\/AUTO-(?:RACE|CLASS)⟧(?:\n\n?|$)/g,'\n').trim();return Boolean(manual);
+    }
+    if(control.id==='druidBeastAttacks'||control.id==='druidBeastTraits'){
+        const beast=druidBeastStats[document.getElementById('druidBeastSelect')?.value||''];if(!beast)return true;const generated=control.id==='druidBeastAttacks'?beast.attacks:describeBeastTraits(beast);return control.value!==generated;
+    }
+    return false;
+}
 function syncSheetModeControls(){
     const play=activeSheetMode==='play';
     document.querySelectorAll('textarea').forEach(control=>{
-        if(sheetModeOriginalDisabled.has(control)){control.disabled=sheetModeOriginalDisabled.get(control);sheetModeOriginalDisabled.delete(control);}
-        delete control.dataset.modeLocked;
+        const editable=!play||sheetModeTextareaIsManual(control);
+        if(editable){if(sheetModeOriginalDisabled.has(control)){control.disabled=sheetModeOriginalDisabled.get(control);sheetModeOriginalDisabled.delete(control);}delete control.dataset.modeLocked;}
+        else{if(!sheetModeOriginalDisabled.has(control))sheetModeOriginalDisabled.set(control,control.disabled);control.disabled=true;control.dataset.modeLocked='true';}
     });
     document.querySelectorAll(sheetModeEditControlSelector).forEach(control=>{
         if(play&&document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')&&control.closest('.spell-detail-fields')){

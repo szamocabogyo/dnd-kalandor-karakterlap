@@ -1651,6 +1651,8 @@ body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav>button,body:has(.sheet:not
 .mobile-bottom-nav>button>span,.mobile-bottom-nav>.settings-menu>summary>span{font-size:1.05rem;line-height:1}
 .mobile-bottom-nav .d20-nav-icon{display:grid;place-items:center;width:22px;height:22px;font-size:0}
 .mobile-bottom-nav .d20-nav-icon svg{display:block;width:22px;height:22px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+.mobile-bottom-nav .action-nav-icon{display:grid;place-items:center;width:22px;height:22px;font-size:0}
+.mobile-bottom-nav .action-nav-icon svg{display:block;width:22px;height:22px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round}
 .d20-line-icon{display:inline-grid;flex:0 0 auto;place-items:center;width:24px;height:24px;color:currentColor;vertical-align:middle}
 .d20-line-icon svg{display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 .mobile-bottom-nav>button>strong,.mobile-bottom-nav>.settings-menu>summary>strong{max-width:100%;overflow:hidden;font-size:.65rem;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
@@ -3141,9 +3143,9 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="classFeaturesCard"><span aria-hidden="true">◆</span><strong>Kaszt</strong></button>
-  <button id="bottomNotesButton" type="button"><span aria-hidden="true">📝</span><strong>Jegyzetek</strong></button>
-  <button id="shortRestButton" type="button"><span aria-hidden="true">🌤</span><strong>Rövid pihenő</strong></button>
-  <button id="longRestButton" type="button"><span aria-hidden="true">🌙</span><strong>Hosszú pihenő</strong></button>
+  <button id="bottomNotesButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 3.5h11.5a2 2 0 0 1 2 2v10.8H8.2A3.2 3.2 0 0 0 5 19.5v-16Z"/><path d="M5 19.5a3.2 3.2 0 0 1 3.2-3.2h10.3v2.2a2 2 0 0 1-2 2H7.7A2.7 2.7 0 0 1 5 17.8M8 7h6.5M8 10h4.5"/><path d="m14.2 14.2 6.2-6.2 1.1 1.1-6.2 6.2-2.1.9.9-2.1Z"/></svg></span><strong>Jegyzetek</strong></button>
+  <button id="shortRestButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.2c.8 2.4-.5 3.4-1.5 4.7-.9 1.1-1.2 2.1-.7 3.4.7-1.1 1.5-1.8 2.6-2.7 1.6 1.5 2.8 3 2.8 5.1A3.4 3.4 0 0 1 12 17.2a3.5 3.5 0 0 1-3.5-3.5c0-2.5 1.6-4.3 3.5-6.4"/><path d="m5 18.4 14 2.4M19 18.4 5 20.8M4 22h16"/></svg></span><strong>Rövid pihenő</strong></button>
+  <button id="longRestButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M17.8 15.8A7.5 7.5 0 0 1 8.2 6.2a7.6 7.6 0 1 0 9.6 9.6Z"/><path d="m17.8 4 .45 1.15L19.4 5.6l-1.15.45-.45 1.15-.45-1.15-1.15-.45 1.15-.45L17.8 4ZM20.2 9.2l.3.8.8.3-.8.3-.3.8-.3-.8-.8-.3.8-.3.3-.8Z"/></svg></span><strong>Hosszú pihenő</strong></button>
   <details id="settingsMenu" class="settings-menu">
     <summary><span aria-hidden="true">⚙</span><strong>Beállítások</strong></summary>
     <div class="settings-menu-panel">

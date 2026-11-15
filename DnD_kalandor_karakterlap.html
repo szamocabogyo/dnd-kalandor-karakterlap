@@ -10786,6 +10786,11 @@ function updateCharacterPanelTitle(){
         ?.value
         ?.trim();
 
+    const characterSubclass =
+        document.getElementById('characterSubclass')
+        ?.value
+        ?.trim();
+
     const characterLevel =
         document.getElementById('characterLevel')
         ?.value
@@ -10793,6 +10798,11 @@ function updateCharacterPanelTitle(){
 
     const alignment =
         document.getElementById('characterAlignment')
+        ?.value
+        ?.trim();
+
+    const background =
+        document.getElementById('characterBackground')
         ?.value
         ?.trim();
 
@@ -10820,12 +10830,20 @@ function updateCharacterPanelTitle(){
             summary += ` ${characterClass}`;
         }
 
+        if(characterSubclass){
+            summary += ` · ${characterSubclass}`;
+        }
+
         if(characterLevel){
             summary += ` Lv.${characterLevel}`;
         }
 
         if(alignment){
             summary += ` • ${alignment}`;
+        }
+
+        if(background){
+            summary += ` • ${background}`;
         }
 
         title.textContent = summary;
@@ -12424,6 +12442,13 @@ function syncSheetModeControls(){
 }
 function setSheetMode(mode,{persist=true}={}){
     if(mode==='edit'&&document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')){cancelDailyPreparation();return;}
+    // Commit the currently edited values before controls are locked or the
+    // character panel is collapsed. This also closes the small window between
+    // a debounced input event and an immediate mode switch.
+    if(persist&&!characterHydrating){
+        characterSavePending=true;
+        flushCharacterSave();
+    }
     activeSheetMode=mode==='edit'?'edit':'play';
     const sheet=document.querySelector('.sheet');if(sheet)sheet.dataset.sheetMode=activeSheetMode;
     if(activeSheetMode==='edit')sheet?.classList.remove('spell-preparation-editing');
@@ -12435,7 +12460,7 @@ function setSheetMode(mode,{persist=true}={}){
     updateDailyPreparationToolbar();
     if(persist){
         localStorage.setItem('dndSheetMode',activeSheetMode);
-        try{const saved=JSON.parse(localStorage.getItem('dndCharacter')||'{}');saved._sheetMode=activeSheetMode;localStorage.setItem('dndCharacter',JSON.stringify(saved));}catch{}
+        saveCharacter();
     }
     updateMobilePlayStatus();
 }
@@ -13381,12 +13406,12 @@ document
 
 });
 
-document
-.getElementById('characterName')
-.addEventListener(
-    'input',
-    updateCharacterPanelTitle
-);
+['characterName','characterRace','characterClass','characterSubclass','characterLevel','characterAlignment','characterBackground']
+    .forEach(id=>{
+        const field=document.getElementById(id);
+        field?.addEventListener('input',updateCharacterPanelTitle);
+        field?.addEventListener('change',updateCharacterPanelTitle);
+    });
 
 localStorage.removeItem('theme');
 

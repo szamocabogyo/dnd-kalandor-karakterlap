@@ -8462,7 +8462,7 @@ const classFeatureModels={
         {type:'output',key:'countercharm',label:'Countercharm',minLevel:6,wide:true,value:()=> 'Akcióval a következő saját köröd végéig te és a 30 ft-on belüli, halló szövetségesek előnyt kapnak az ijedtség és bájolás elleni mentődobásokra.'},
         {type:'selectlist',key:'magicalSecrets',label:'Magical Secrets – választott varázslatok',minLevel:10,wide:true,count:c=>c.level>=18?6:c.level>=14?4:2,options:c=>spellCatalogData.filter(spell=>Number(spell.level)<=Math.min(9,Math.ceil(c.level/2))).map(spell=>spell.name).sort((a,b)=>a.localeCompare(b)),help:'A bárd bármely kaszt varázslistájáról választhat, de csak olyan szintűt, amelyhez van varázsrekesze; a választás bárdvarázslatnak számít.'},
         {type:'output',key:'superiorInspiration',label:'Superior Inspiration',minLevel:20,wide:true,value:()=> 'Kezdeményezés dobásakor, ha nincs Bárdi inspirációd, automatikusan visszakapsz egy használatot.'},
-        {type:'selectlist',key:'loreBonusSkills',label:'College of Lore – három bónusz jártasság',minLevel:3,wide:true,count:3,options:classFeatureSkillOptions,when:c=>c.subclass.includes('lore'),help:'Válassz három olyan készséget, amelyhez a Bonus Proficiencies jártasságot ad.'},
+        {type:'output',key:'loreBonusSkills',label:'College of Lore – három bónusz jártasság',minLevel:3,wide:true,when:c=>c.subclass.includes('lore'),value:()=> 'A három Bonus Proficiencies jártasságot a Skills panelen válaszd ki. Ott csak a még szabályosan felvehető készségek kapcsolhatók be.'},
         {type:'output',key:'cuttingWords',label:'College of Lore – Cutting Words',minLevel:3,wide:true,when:c=>c.subclass.includes('lore'),value:()=> 'Reakcióval és egy Bárdi inspirációval csökkentheted egy látott, 60 ft-on belüli, téged halló lény támadás-, tulajdonságpróba- vagy sebzésdobását.'},
         {type:'output',key:'peerlessSkill',label:'College of Lore – Peerless Skill',minLevel:14,wide:true,when:c=>c.subclass.includes('lore'),value:c=>'Saját tulajdonságpróbához elkölthetsz egy Bárdi inspirációt, és hozzáadhatsz '+(c.level>=15?'d12':c.level>=10?'d10':c.level>=5?'d8':'d6')+'-t.'},
         {type:'output',key:'valorProficiencies',label:'College of Valor – Bonus Proficiencies',minLevel:3,wide:true,when:c=>c.subclass.includes('valor'),value:()=> 'Közepes páncél, pajzs és harci fegyverek.'},
@@ -11504,7 +11504,6 @@ function updateSkills() {
         if(hasExpertise||knowledgeExpertise)parts.push(`${supplementalExpertise?'Survivalist szakértelem':'Szakértelem'}: ${formatModifier(proficiency)}`);
         supplemental.sources.forEach(source=>parts.push(source));
         valueElement.title=`${parts.join('; ')}; összesen: ${formatModifier(value)}`;
-        skill.title=valueElement.title;
     });
     updateSkillRollerPreview();
     updateDerivedFields();
@@ -11516,6 +11515,10 @@ document
 
     skill.addEventListener('click', () => {
         if(document.querySelector('.sheet')?.dataset.sheetMode==='play')return;
+        // Recompute from the current class, race, subclass and background at
+        // the moment of activation. This prevents a stale selectable flag
+        // after several character fields were changed quickly.
+        applySkillSelectionRules();
         if(skill.dataset.skillSelectable!=='true')return;
         const manuallyProficient=!skill.classList.contains('manual-proficient');
         skill.classList.toggle('manual-proficient',manuallyProficient);
@@ -11531,7 +11534,7 @@ document
 	saveCharacter();
 
     });
-    skill.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&skill.dataset.skillSelectable==='true'){event.preventDefault();skill.click();}});
+    skill.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();skill.click();}});
 
 });
 

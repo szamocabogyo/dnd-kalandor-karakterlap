@@ -1678,7 +1678,9 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-execute{width:100%;min-height:48px;margin-top:12px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:var(--bg);font:inherit;font-weight:800}
 .mobile-roll-result{margin-top:12px}
 .mobile-roll-result:empty{display:none}
-.mobile-roll-result .saving-throw-result-card{margin:0}
+.mobile-roll-result .saving-throw-result-card{margin:0;padding:15px;border-width:2px;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent),0 10px 24px rgba(0,0,0,.3)}
+.mobile-roll-final-label{display:block;margin-top:5px;color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-align:center;text-transform:uppercase}
+.mobile-roll-result .saving-throw-result-total{display:block;width:100%;padding:7px 0 9px;text-align:center;font-size:3.4rem;line-height:1;text-shadow:0 0 18px color-mix(in srgb,var(--accent) 52%,transparent)}
 .combat-help-panel{display:grid;gap:12px}.combat-help-panel[hidden]{display:none!important}.combat-help-section{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.combat-help-section h3{margin:0 0 8px;color:var(--accent);font-size:1rem}.combat-help-section h4{margin:14px 0 7px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--border) 65%,transparent);color:var(--accent);font-size:.86rem}.combat-help-section ol,.combat-help-section ul{margin:0;padding-left:1.35rem}.combat-help-section li{margin:0 0 7px;line-height:1.42}.combat-help-section li:last-child{margin-bottom:0}.combat-help-class-name{display:block;margin:-3px 0 9px;color:var(--muted);font-size:.82rem}.combat-help-detail-list{list-style:none;padding-left:0!important}.combat-help-detail-list li{padding:8px 9px;border-left:2px solid var(--border);background:color-mix(in srgb,var(--card) 70%,transparent)}.combat-help-detail-list strong{display:block;color:var(--text);font-size:.83rem}.combat-help-detail-list span{display:block;margin-top:3px;color:var(--muted);font-size:.78rem;line-height:1.45}.combat-help-empty{color:var(--muted);font-style:italic}
 .mobile-roll-dice-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin:7px 0}
 .mobile-roll-dice-summary.is-single{grid-template-columns:1fr}
@@ -13048,6 +13050,9 @@ function closeMobileRollPanel(){
     const returnFocus=mobileRollReturnFocus?.isConnected?mobileRollReturnFocus:mobileBottomNavButtons.find(button=>button.dataset.mobileNavAction==='rolls');
     mobileRollReturnFocus=null;returnFocus?.focus({preventScroll:true});
 }
+function revealMobileRollResult(card){
+    if(!card)return;requestAnimationFrame(()=>card.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center',inline:'nearest'}));
+}
 function performMobileUnifiedRoll(){
     const manualField=document.getElementById('mobileRollManual'),result=document.getElementById('mobileRollResult'),mode=document.getElementById('mobileRollMode')?.value||'normal';
     if(!manualField||!result||!mobileRollChoice?.value)return;
@@ -13060,8 +13065,8 @@ function performMobileUnifiedRoll(){
         result.className='mobile-roll-result';result.replaceChildren();const card=document.createElement('div');card.className='saving-throw-result-card';
         const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText('sebzésdobás','damage roll')} · ${manualValues?mobileRollText('kézi','manual'):mobileRollText('automatikus','automatic')}`;
         const diceSummary=document.createElement('div');diceSummary.className='mobile-roll-dice-summary'+(rolls.length===1?' is-single':'');rolls.forEach((roll,index)=>{const die=document.createElement('span');die.className='mobile-roll-die is-selected';const label=document.createElement('span');label.textContent=`${index+1}. d${roll.sides}`;const number=document.createElement('strong');number.textContent=`${roll.sign<0?'−':''}${roll.value}`;die.append(label,number);diceSummary.appendChild(die);});
-        const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`${parsed.expression} → ${rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + ')||'0'} ${formatModifier(parsed.modifier)} ${formatModifier(extra)} = ${total}`;
-        card.append(title,diceSummary,totalElement,math);result.append(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A dobott sebzés ${total}.`,`The rolled damage is ${total}.`);return;
+        const finalLabel=document.createElement('span');finalLabel.className='mobile-roll-final-label';finalLabel.textContent=mobileRollText('Végeredmény','Final result');const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`${parsed.expression} → ${rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + ')||'0'} ${formatModifier(parsed.modifier)} ${formatModifier(extra)} = ${total}`;
+        card.append(title,diceSummary,finalLabel,totalElement,math);result.append(card);revealMobileRollResult(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A dobott sebzés ${total}.`,`The rolled damage is ${total}.`);return;
     }
     const manualText=manualField.value.trim(),manual=manualText===''?null:Number(manualText);
     if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>20)){
@@ -13091,11 +13096,11 @@ function performMobileUnifiedRoll(){
         const label=document.createElement('span');label.textContent=rolls.length===1?(manual===null?mobileRollText('Dobás','Roll'):mobileRollText('Kézi dobás','Manual roll')):`${index+1}. ${mobileRollText('dobás','roll')}${selected?' · '+mobileRollText('felhasznált','used'):''}`;
         const number=document.createElement('strong');number.textContent=String(value);die.append(label,number);diceSummary.appendChild(die);
     });
-    const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
+    const finalLabel=document.createElement('span');finalLabel.className='mobile-roll-final-label';finalLabel.textContent=mobileRollText('Végeredmény','Final result');const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);
     const math=document.createElement('span');math.className='saving-throw-result-math';
     const rollText=rolls.length>1?`${rolls.join(', ')} → ${rolled}`:String(rolled);
     math.textContent=naturalOne?mobileRollText('d20: 1 · Kritikus hiba · A bónusz nem adódik hozzá.','d20: 1 · Critical failure · No bonus is added.'):`d20: ${rollText}${minimumText} + ${mobileRollText('számított bónusz','calculated bonus')}: ${formatModifier(baseBonus)} + ${mobileRollText('egyéb','other')}: ${formatModifier(extra)} = ${total}`;
-    card.append(title,diceSummary,totalElement,math);result.append(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`Az eredmény ${total}. Mondd meg a mesélőnek; ő dönti el, hogy sikerült-e a próba.`,`The result is ${total}. Tell the GM; they decide whether the check succeeds.`);
+    card.append(title,diceSummary,finalLabel,totalElement,math);result.append(card);revealMobileRollResult(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`Az eredmény ${total}. Mondd meg a mesélőnek; ő dönti el, hogy sikerült-e a próba.`,`The result is ${total}. Tell the GM; they decide whether the check succeeds.`);
 }
 document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.addEventListener('click',()=>setMobileRollKind(button.dataset.mobileRollKind)));
 mobileRollChoice?.addEventListener('change',()=>refreshMobileRollPreview(true));

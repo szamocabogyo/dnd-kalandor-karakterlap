@@ -1403,6 +1403,10 @@ input:focus, textarea:focus, select:focus {
 .combat-mode-dialog .combat-class-options input[type="checkbox"]{flex:0 0 18px;width:18px;min-height:18px;margin:1px 0 0}
 .combat-mode-dialog .combat-class-options .combat-class-suboption{margin-left:26px}
 .combat-class-note{display:block;color:var(--muted);font-size:.82rem;line-height:1.35}
+.combat-spell-description{margin:10px 0 0;padding:9px 10px;border-left:3px solid var(--accent);background:var(--bg);text-align:left}
+.combat-spell-description[hidden]{display:none!important}
+.combat-spell-description strong{display:block;margin-bottom:4px;color:var(--accent);font-size:.76rem;letter-spacing:.04em;text-transform:uppercase}
+.combat-spell-description p{max-height:8.2em;margin:0;overflow:auto;color:var(--text);font-size:.82rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
 .combat-mode-dialog select,.combat-mode-dialog input{width:100%;min-height:42px;box-sizing:border-box;padding:8px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);font:inherit}
 .combat-dice-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(68px,100%),1fr));gap:8px;width:100%;max-width:100%;margin:8px 0 14px;box-sizing:border-box}
 .combat-dice-inputs label{margin:0!important;text-align:center!important;font-size:.82rem}
@@ -3291,7 +3295,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <div id="combatRulesRollConditionsSlot"></div>
     <label id="combatRageDamageOption" class="combat-rage-option" hidden><input id="combatRageDamageEligible" type="checkbox"> Erő-alapú közelharci fegyvertámadás (haragbónusz)</label>
     <div id="combatClassOptions" class="combat-class-options" hidden></div>
-    <div id="combatSpellChoice" hidden><label for="combatSpellSelect">Varázslat kiválasztása</label><select id="combatSpellSelect"></select><label for="combatSpellCastMode">Felhasználás módja</label><select id="combatSpellCastMode"></select><small id="combatSpellCastModeHint" class="combat-class-note"></small></div>
+    <div id="combatSpellChoice" hidden><label for="combatSpellSelect">Varázslat kiválasztása</label><select id="combatSpellSelect"></select><label for="combatSpellCastMode">Felhasználás módja</label><select id="combatSpellCastMode"></select><small id="combatSpellCastModeHint" class="combat-class-note"></small><aside id="combatSpellDescription" class="combat-spell-description" hidden><strong>Hatás röviden</strong><p id="combatSpellDescriptionText"></p></aside></div>
     <label id="combatManualRollLabel" for="combatManualRoll">Kézi dobott érték <span id="combatManualRollUnit">(d20: 1–20, üresen automatikus)</span></label>
     <input id="combatManualRoll" type="number" inputmode="numeric" step="1" placeholder="Üresen automatikus dobás">
     <div id="combatDamageDiceInputs" class="combat-dice-inputs" hidden></div>
@@ -8134,6 +8138,13 @@ function combatSpellUseMode(){
     return parseSpellUseMode(combatSpellCastMode?.value);
 }
 function selectedCombatSpellRow(){return [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].find(row=>row.dataset.spellEntryKey===combatSpellSelect.value)||null;}
+function refreshCombatSpellDescription(){
+    const panel=document.getElementById('combatSpellDescription'),text=document.getElementById('combatSpellDescriptionText');
+    if(!panel||!text)return;
+    const spell=readCombatSpell(),description=String(spell?.description||'').trim();
+    panel.hidden=combatSpellChoice.hidden||!spell;
+    text.textContent=description||'Ehhez a varázslathoz még nincs szöveges leírás.';
+}
 function populateSpellUseModes(row,select,hint){
     if(!select)return;
     const previous=select.value;select.replaceChildren();
@@ -9349,6 +9360,7 @@ function refreshCombatAttackOptions(){
     const currentType=getCombatRollType(),damageSource=currentType==='damage'?combatAttackFlow.eventType:currentType;
     combatAttackChoice.hidden = damageSource!=='attack';
     combatSpellChoice.hidden = damageSource!=='spell';
+    refreshCombatSpellDescription();
     updateCombatRageOption();
     updateCombatClassOptions();
     syncCombatAttackFlow();
@@ -10215,6 +10227,7 @@ function readCombatSpell(){
     const snapshot=combatAttackFlow.phase!=='choose'&&combatAttackFlow.eventType==='spell'?combatAttackFlow.sourceSnapshot:null;
     const name = snapshot?.name||row.querySelector('input[id$="_name"]')?.value.trim();
     if(!name) return null;
+    const description=snapshot?.description||row.querySelector('textarea[id$="_description"]')?.value.trim()||'';
     const source=spellCatalogSelection(row);
     const meta=spellCatalogMetadata(row),catalogSpell=spellCatalogData.find(item=>item.id===meta?.spellId);
     const manualResolution=row.querySelector('input[id$="_outsideResolution"]')?.value||'',rawDamage=row.querySelector('input[id$="_damage"]')?.value.trim()||'';
@@ -10225,10 +10238,10 @@ function readCombatSpell(){
     if(source?.ability){
         const score=Number(document.getElementById(source.ability)?.value)||10,mod=Math.floor((score-10)/2);
         const level=Number(document.getElementById('characterLevel')?.value)||1,prof=2+Math.floor((level-1)/4);
-        return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage,bonus:snapshot?.bonus??mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
+        return {row,name,description,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage,bonus:snapshot?.bonus??mod+prof+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0),
             dc:snapshot?.dc??8+mod+prof+(Number(document.getElementById('spellSaveDCBonus')?.value)||0),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule,healing:snapshot?.healing??healing,special:specialResolution};
     }
-    return {row,name,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage, bonus:snapshot?.bonus??(Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0),
+    return {row,name,description,damage:snapshot?.damage||combatAttackFlow.damageExpression||scaledDamage, bonus:snapshot?.bonus??(Number.parseInt(document.getElementById('spellAttackBonus')?.value || '0',10) || 0),
         dc:snapshot?.dc??(document.getElementById('spellSaveDC')?.value || ''),castMode:savedMode.kind,castLevel:savedMode.level,resolution:snapshot?.resolution||combatAttackFlow.spellResolution||resolution,saveDamageRule:snapshot?.saveDamageRule||combatAttackFlow.saveDamageRule||saveDamageRule,healing:snapshot?.healing??healing,special:specialResolution};
 }
 
@@ -10440,7 +10453,7 @@ function performCombatRoll(){
             if(!spendSpellUse(spell.row,castMode)){refreshCombatAttackOptions();combatRollResult.textContent='Ehhez a varázslathoz már nincs elérhető használat vagy megfelelő varázsrekesz.';return;}
             if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
             applyArcaneWardFromSpell(spell);
-            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'healing',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'healing',healing:true}};
+            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'healing',castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,description:spell.description,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'healing',healing:true}};
             const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='scroll'?`${spell.name} (tekercsből/tárgyból)`:spell.name;
             recordCombatGuideRoll('spell',spellUseLabel);refreshCombatAttackOptions();updateCombatClassOptions(false);beginCombatDamage();return;
         }
@@ -10453,7 +10466,7 @@ function performCombatRoll(){
             const metamagicText=rulesIntent.metamagic?' | '+rulesIntent.metamagic+' ('+sorcererMetamagicCost(rulesIntent.metamagic,combatRulesSpell(spell.row)?.level)+' Varázserő-pont)':'';
             const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:castMode.kind==='scroll'?' | tekercsből vagy mágikus tárgyból':'';
             showCombatResult(`${spell.name}: célpont mentődobása DC ${spell.dc}${ambush?' (Magical Ambush: hátránnyal)':''}${castText}${metamagicText}${wardText}. Jelöld, hogy a mentődobás sikeres vagy sikertelen.`,Number(spell.dc)||0);
-            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'save',saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'save',saveDamageRule:spell.saveDamageRule}};
+            combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:'save',saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,description:spell.description,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:'save',saveDamageRule:spell.saveDamageRule}};
             const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='scroll'?`${spell.name} (tekercsből/tárgyból)`:spell.name;
             recordCombatGuideRoll('spell',spellUseLabel);refreshCombatAttackOptions();updateCombatClassOptions(false);updateCombatManualRollLabel();syncCombatAttackFlow();return;
         }
@@ -10464,7 +10477,7 @@ function performCombatRoll(){
             if(!combatRulesCommit(rulesPlan,rulesIntent)){combatRollResult.textContent='A műveletkeret megváltozott.';return;}
             const wardText=applyArcaneWardFromSpell(spell),castText=castMode.kind==='slot'?` (${castMode.level}. szintű rekeszből)`:castMode.kind==='scroll'?' (tekercsből vagy mágikus tárgyból)':'';
             const direct=['direct-damage','effect-pool'].includes(spell.resolution)&&Boolean(parseDamageExpression(spell.damage));
-            combatAttackFlow={phase:direct?'rolled':'complete',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:spell.resolution,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:spell.resolution}};
+            combatAttackFlow={phase:direct?'rolled':'complete',attackKey:spell.row.dataset.spellEntryKey,lastNatural:null,eventType:'spell',spellResolution:spell.resolution,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,description:spell.description,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:spell.resolution}};
             const specialText=spell.special?.label||'a különleges hatás alkalmazva; találati dobás nem szükséges';
             showCombatResult(`${spell.name}${castText}: ${specialText}${wardText}.`,null);
             const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='scroll'?`${spell.name} (tekercsből/tárgyból)`:spell.name;
@@ -10490,7 +10503,7 @@ function performCombatRoll(){
         const castText=castMode.kind==='slot'?` | ${castMode.level}. szintű rekeszből`:castMode.kind==='scroll'?' | tekercsből vagy mágikus tárgyból':'';
         showCombatResult(spell.name+': d20 ('+die+d20.detail+') '+(spell.bonus>=0?'+':'−')+' '+Math.abs(spell.bonus)+inspiration.text+dcText+castText+metamagicText+(tidesUsed?' | Tides of Chaos elköltve':'')+wardText+note,total);
         commitRollInspiration(inspiration);
-        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',spellResolution:spell.resolution,saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:spell.resolution,saveDamageRule:spell.saveDamageRule}};
+        combatAttackFlow={phase:'rolled',attackKey:spell.row.dataset.spellEntryKey,lastNatural:die,eventType:'spell',spellResolution:spell.resolution,saveDamageRule:spell.saveDamageRule,castMode:castMode.kind,castLevel:castMode.level,damageExpression:spell.damage,sourceSnapshot:{name:spell.name,description:spell.description,damage:spell.damage,bonus:spell.bonus,dc:spell.dc,castMode:castMode.kind,castLevel:castMode.level,resolution:spell.resolution,saveDamageRule:spell.saveDamageRule}};
         const spellUseLabel=castMode.kind==='slot'?`${spell.name} (${castMode.level}. szint)`:castMode.kind==='ritual'?`${spell.name} (rituálé)`:castMode.kind==='scroll'?`${spell.name} (tekercsből/tárgyból)`:spell.name;
         recordCombatGuideRoll('spell',spellUseLabel);
         refreshCombatAttackOptions();
@@ -10724,6 +10737,7 @@ combatAttackSelect?.addEventListener('change', () => {
 });
 combatSpellSelect?.addEventListener('change', () => {
     refreshCombatSpellCastModes();
+    refreshCombatSpellDescription();
     combatRollResult.textContent = '';
     syncCombatAttackFlow();
 });

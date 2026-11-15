@@ -1825,6 +1825,8 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .combat-guide-hp{flex:0 0 auto;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;white-space:nowrap;font-weight:bold;color:var(--text);background:var(--bg)}
 .combat-guide-hp.low-hp{border-color:#b76554}
 .combat-guided .combat-guide-close{flex:0 0 38px;width:38px;min-height:42px;padding:0;border:0;background:transparent;color:var(--accent);font-size:1.65rem;line-height:1}
+.combat-guide-quick-actions{display:flex;justify-content:flex-end;margin-top:8px}
+.combat-guided .combat-guide-save-roll{min-height:36px;padding:6px 12px;border-color:var(--border);border-radius:6px;background:var(--bg);color:var(--accent);font-size:.78rem;line-height:1.2}
 .combat-guide-progress{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0}
 .combat-guided .combat-guide-progress button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:38px;padding:5px 3px;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:.73rem;background:var(--bg);line-height:1.3}
 .combat-guided .combat-guide-progress button.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
@@ -3171,6 +3173,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
         <span id="combatGuideHpStatus" class="combat-guide-hp" aria-live="polite"></span>
         <button id="combatCloseButton" class="combat-guide-close" type="button" aria-label="Harc bezárása">×</button>
       </div>
+      <div class="combat-guide-quick-actions"><button id="combatSavingThrowButton" class="combat-guide-save-roll" type="button">🎲 Mentődobás</button></div>
       <nav id="combatGuideProgress" class="combat-guide-progress" aria-label="A kör lépései">
         <button type="button" data-combat-guide-step="0">1. Kezdés <small id="combatGuideInitiativeBadge" hidden></small></button>
         <button type="button" data-combat-guide-step="1" disabled>2. Műveletek</button>
@@ -10731,7 +10734,11 @@ combatSpellCastMode?.addEventListener('change', () => {
 });
 combatModeOverlay?.addEventListener('click', event => { if(event.target === combatModeOverlay) closeCombatMode(); });
 window.addEventListener('resize', () => { if(combatModeOverlay && !combatModeOverlay.hidden) fitCombatDialogToMobileSheet(); });
-document.addEventListener('keydown', event => { if(event.key === 'Escape' && combatModeOverlay && !combatModeOverlay.hidden) closeCombatMode(); });
+document.addEventListener('keydown', event => {
+    if(event.key !== 'Escape'||!combatModeOverlay||combatModeOverlay.hidden)return;
+    if(!document.getElementById('mobileRollPanelOverlay')?.hidden)return;
+    closeCombatMode();
+});
 
 function updateCharacterPanelTitle(){
 
@@ -12866,6 +12873,7 @@ const mobileBottomNavButtons=[...(mobileBottomNav?.querySelectorAll('button')||[
 const mobileRollPanelOverlay=document.getElementById('mobileRollPanelOverlay');
 const mobileRollChoice=document.getElementById('mobileRollChoice');
 let mobileRollKind='skill';
+let mobileRollReturnFocus=null;
 const mobileRollAbilityNames={STR:'Erő',DEX:'Ügyesség',CON:'Állóképesség',INT:'Intelligencia',WIS:'Bölcsesség',CHA:'Karizma'};
 const mobileRollAbilityNamesEn={STR:'Strength',DEX:'Dexterity',CON:'Constitution',INT:'Intelligence',WIS:'Wisdom',CHA:'Charisma'};
 function mobileRollText(hu,en){return document.documentElement.lang==='en'?en:hu;}
@@ -12902,12 +12910,17 @@ function setMobileRollKind(kind){
     document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.mobileRollKind===mobileRollKind)));
     populateMobileRollChoices();
 }
-function openMobileRollPanel(){
-    updateSkills();updateDerivedFields();populateMobileRollChoices();mobileRollPanelOverlay.hidden=false;
+function openMobileRollPanel(kind=mobileRollKind,returnFocus=document.activeElement){
+    mobileRollReturnFocus=returnFocus instanceof HTMLElement?returnFocus:null;
+    updateSkills();updateDerivedFields();setMobileRollKind(kind);mobileRollPanelOverlay.hidden=false;
     document.getElementById('mobileRollManual').value='';document.getElementById('mobileRollResult').replaceChildren();refreshMobileRollPreview();
     requestAnimationFrame(()=>mobileRollChoice?.focus());
 }
-function closeMobileRollPanel(){mobileRollPanelOverlay.hidden=true;mobileBottomNavButtons.find(button=>button.dataset.mobileNavAction==='rolls')?.focus({preventScroll:true});}
+function closeMobileRollPanel(){
+    mobileRollPanelOverlay.hidden=true;
+    const returnFocus=mobileRollReturnFocus?.isConnected?mobileRollReturnFocus:mobileBottomNavButtons.find(button=>button.dataset.mobileNavAction==='rolls');
+    mobileRollReturnFocus=null;returnFocus?.focus({preventScroll:true});
+}
 function performMobileUnifiedRoll(){
     const manualField=document.getElementById('mobileRollManual'),result=document.getElementById('mobileRollResult'),mode=document.getElementById('mobileRollMode')?.value||'normal';
     if(!manualField||!result||!mobileRollChoice?.value)return;
@@ -12955,6 +12968,7 @@ document.getElementById('mobileRollManual')?.addEventListener('keydown',event=>{
 document.getElementById('mobileRollPanelClose')?.addEventListener('click',closeMobileRollPanel);
 mobileRollPanelOverlay?.addEventListener('click',event=>{if(event.target===mobileRollPanelOverlay)closeMobileRollPanel();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileRollPanelOverlay&&!mobileRollPanelOverlay.hidden)closeMobileRollPanel();});
+document.getElementById('combatSavingThrowButton')?.addEventListener('click',event=>openMobileRollPanel('save',event.currentTarget));
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');

@@ -12383,14 +12383,33 @@ function setSheetMode(mode,{persist=true}={}){
     updateMobilePlayStatus();
 }
 
-let characterSaveStatusTimer=0,characterSaveDebounceTimer=0;
+let characterSaveStatusTimer=0,characterSaveDebounceTimer=0,characterSavePending=false;
 function showCharacterSaveStatus(message,state='saved'){
     const status=document.getElementById('characterSaveStatus');if(!status)return;
     status.textContent=message;status.dataset.state=state;status.hidden=false;clearTimeout(characterSaveStatusTimer);
     if(state==='saved')characterSaveStatusTimer=window.setTimeout(()=>{status.textContent='A karakterlap automatikusan mentődik.';},1400);
 }
-function scheduleCharacterSave(){clearTimeout(characterSaveDebounceTimer);characterSaveDebounceTimer=window.setTimeout(saveCharacter,220);}
+function scheduleCharacterSave(){
+    characterSavePending=true;
+    clearTimeout(characterSaveDebounceTimer);
+    characterSaveDebounceTimer=window.setTimeout(()=>{
+        characterSaveDebounceTimer=0;
+        characterSavePending=false;
+        saveCharacter();
+    },220);
+}
+function flushCharacterSave(){
+    if(!characterSavePending)return true;
+    clearTimeout(characterSaveDebounceTimer);
+    characterSaveDebounceTimer=0;
+    characterSavePending=false;
+    return saveCharacter();
+}
 function saveCharacter() {
+
+    clearTimeout(characterSaveDebounceTimer);
+    characterSaveDebounceTimer=0;
+    characterSavePending=false;
 
     refreshSpellAvailability();
     refreshDruidWildShapeUsage();
@@ -12778,8 +12797,19 @@ document
 .forEach(field => {
 
     field.addEventListener('input', scheduleCharacterSave);
-    field.addEventListener('change', scheduleCharacterSave);
+    // Mobile Chrome can finish editing a focused field when a touch scroll
+    // starts. Persist that committed value synchronously instead of leaving a
+    // debounce timer that can be suspended with the page.
+    field.addEventListener('change',()=>{
+        characterSavePending=true;
+        flushCharacterSave();
+    });
 });
+
+document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden')flushCharacterSave();
+});
+window.addEventListener('pagehide',flushCharacterSave);
 
 const frame =
     document.getElementById('previewFrame');
@@ -12816,6 +12846,9 @@ function positionCombatStatsPanel(){
 
 const responsiveSheetMedia=window.matchMedia('(max-width: 768px)');
 function syncResponsiveSheetMode(){
+    // Chrome's mobile browser chrome and orientation changes may alter the
+    // responsive mode while a field still owns an unsaved input event.
+    flushCharacterSave();
     const mobile=responsiveSheetMedia.matches;
     frame.classList.remove('mobile-preview');
     sheet.classList.toggle('mobile-mode',mobile);

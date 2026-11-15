@@ -1666,11 +1666,12 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-panel-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .mobile-roll-panel-dialog>header h2{margin:0;color:var(--accent);font-size:1.1rem;letter-spacing:.03em}
 .mobile-roll-panel-dialog>header button{flex:0 0 42px;min-height:42px;padding:0;border:1px solid var(--border);background:var(--bg);color:var(--accent);font-size:1.25rem}
-.mobile-roll-kind{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.mobile-roll-kind{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px;margin-bottom:12px}
 .mobile-roll-kind button{min-height:44px;padding:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-weight:700}
 .mobile-roll-kind button[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
 .mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mobile-roll-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:700}
+.mobile-roll-fields label[hidden]{display:none!important}
 .mobile-roll-fields select,.mobile-roll-fields input{width:100%;min-height:46px;box-sizing:border-box;font-size:1rem}
 .mobile-roll-bonus-preview{min-height:42px;margin-top:11px;padding:10px;border-left:3px solid var(--accent);background:var(--bg);color:var(--text);font-size:.82rem;line-height:1.4}
 .mobile-roll-execute{width:100%;min-height:48px;margin-top:12px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:var(--bg);font:inherit;font-weight:800}
@@ -2209,13 +2210,14 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .sheet.mobile-mode>.view-switcher>.sheet-mode-switch{grid-column:1/-1;width:100%;padding:2px;border-radius:9px}
 .sheet.mobile-mode>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:32px!important;padding:4px 7px;font-size:.69rem;border-radius:7px}
 .sheet.mobile-mode>.view-switcher>#combatModeButton{display:none!important}
+.sheet.mobile-mode>.view-switcher>#unifiedRollPanelButton{display:none!important}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:36px!important;width:100%;margin:0;padding:4px 5px!important;border-radius:8px;font-size:.64rem!important;font-weight:600;line-height:1.15;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]{grid-column:1/-1}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]>.settings-menu-panel{margin-top:6px;width:100%}
 .sheet.mobile-mode #desktopNotesButton{display:none!important}
 @media(min-width:769px){
-  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(5,minmax(112px,1fr));gap:6px;align-items:stretch;width:100%;margin:0 0 16px}
+  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(6,minmax(104px,1fr));gap:6px;align-items:stretch;width:100%;margin:0 0 16px}
   .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{display:grid;width:100%;min-width:0;padding:2px;border-radius:9px}
   .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:36px;padding:4px 7px;border-radius:7px;font-size:.72rem}
   .sheet:not(.mobile-mode)>.view-switcher>button,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
@@ -2223,7 +2225,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   .sheet:not(.mobile-mode)>.view-switcher>button:hover,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary:hover{transform:none}
   .sheet:not(.mobile-mode) #notesSettingsButton{display:none!important}
 }
-@media(min-width:769px) and (max-width:1099px){.sheet:not(.mobile-mode)>.view-switcher{grid-template-columns:repeat(5,minmax(0,1fr))}.sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{grid-column:1/-1}}
+@media(min-width:769px) and (max-width:1099px){.sheet:not(.mobile-mode)>.view-switcher{grid-template-columns:repeat(6,minmax(0,1fr))}.sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{grid-column:1/-1}}
 /* Compact, consistent mobile form rhythm without shrinking touch targets. */
 .sheet.mobile-mode input:not([type=checkbox]):not([type=radio]):not([type=hidden]),.sheet.mobile-mode select{height:40px;min-height:40px;padding:6px 8px;font-size:16px;line-height:1.25;border-radius:6px}
 .sheet.mobile-mode textarea{min-height:72px;padding:7px 8px;font-size:16px;line-height:1.4;border-radius:6px}
@@ -2539,6 +2541,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
       </div>
     </details>
     <button id="desktopNotesButton" type="button">📝 Jegyzetek</button>
+    <button id="unifiedRollPanelButton" type="button">🎲 Dobópanel</button>
     <button id="combatModeButton" type="button">⚔ Harc</button>
     <button id="shortRestButton" type="button">🌤 Rövid pihenő</button>
     <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
@@ -3154,13 +3157,16 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <div class="mobile-roll-kind" role="tablist" aria-label="Dobás típusa">
       <button type="button" role="tab" data-mobile-roll-kind="skill" aria-selected="true">Skillpróba</button>
       <button type="button" role="tab" data-mobile-roll-kind="save" aria-selected="false">Mentődobás</button>
+      <button type="button" role="tab" data-mobile-roll-kind="attack" aria-selected="false">Támadás</button>
+      <button type="button" role="tab" data-mobile-roll-kind="initiative" aria-selected="false">Kezdeményezés</button>
+      <button type="button" role="tab" data-mobile-roll-kind="damage" aria-selected="false">Sebzés</button>
     </div>
     <p id="mobileRollInstruction" class="context-instruction" aria-live="polite"></p>
     <div class="mobile-roll-fields">
-      <label><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
-      <label>Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
-      <label>Kézi d20 érték<input id="mobileRollManual" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
-      <label>Egyéb bónusz<input id="mobileRollExtra" type="number" inputmode="numeric" step="1" value="0"></label>
+      <label id="mobileRollChoiceField"><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
+      <label id="mobileRollModeField">Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
+      <label id="mobileRollManualField">Kézi d20 érték<input id="mobileRollManual" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
+      <label id="mobileRollExtraField"><span id="mobileRollExtraLabel">Egyéb bónusz</span><input id="mobileRollExtra" type="number" inputmode="numeric" step="1" value="0"></label>
     </div>
     <div id="mobileRollBonusPreview" class="mobile-roll-bonus-preview" aria-live="polite"></div>
     <button id="mobileRollExecute" class="mobile-roll-execute" type="button">🎲 Dobás</button>
@@ -12894,33 +12900,69 @@ function mobileRollText(hu,en){return document.documentElement.lang==='en'?en:hu
 function mobileRollSelectedSkill(){
     return [...document.querySelectorAll('.skill-row')].find(row=>characterSkillBaseName(row)===mobileRollChoice?.value)||null;
 }
+function mobileRollWeaponSources(){
+    return [...document.querySelectorAll('.attacks table tr[data-attack-row-key]')].filter(row=>!row.hidden).map((row,index)=>{
+        const inputs=row.querySelectorAll('input'),recordedName=inputs[0]?.value.trim()||'',damage=inputs[2]?.value.trim()||'';return {key:row.dataset.attackRowKey,name:recordedName||`${mobileRollText('Támadás','Attack')} ${index+1}`,recordedName,bonus:Number.parseInt(inputs[1]?.value,10)||0,damage};
+    }).filter(source=>source.recordedName||source.damage);
+}
+function mobileRollAttackSources(){
+    const weapons=mobileRollWeaponSources().map(source=>({...source,kind:'weapon'}));
+    const spells=[...document.querySelectorAll('#spellEntries .spell-entry-row')].filter(row=>!row.hidden).map(row=>{
+        const name=row.querySelector('input[id$="_name"]')?.value.trim()||'',meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId),manual=row.querySelector('input[id$="_outsideResolution"]')?.value||'',resolution=spell?.resolution||manual,selection=spellCatalogSelection(row);let bonus=Number.parseInt(document.getElementById('spellAttackBonus')?.value,10)||0;
+        if(selection?.ability){const score=Number(document.getElementById(selection.ability)?.value)||10,level=Number(document.getElementById('characterLevel')?.value)||1;bonus=Math.floor((score-10)/2)+2+Math.floor((level-1)/4)+(Number(document.getElementById('spellAttackBonusExtra')?.value)||0);}
+        return {key:`spell:${row.dataset.spellEntryKey}`,kind:'spell',name,recordedName:name,bonus,damage:row.querySelector('input[id$="_damage"]')?.value.trim()||'',resolution};
+    }).filter(source=>source.name&&source.resolution==='attack');
+    return [...weapons,...spells];
+}
+function mobileRollDamageSources(){
+    const weapons=mobileRollWeaponSources().map(source=>({...source,key:`attack:${source.key}`,kind:'attack'}));
+    const spells=[...document.querySelectorAll('#spellEntries .spell-entry-row')].filter(row=>!row.hidden).map(row=>({key:`spell:${row.dataset.spellEntryKey}`,kind:'spell',name:row.querySelector('input[id$="_name"]')?.value.trim()||'',damage:row.querySelector('input[id$="_damage"]')?.value.trim()||''}));
+    return [...weapons,...spells].filter(source=>source.name&&parseDamageExpression(source.damage));
+}
+function mobileRollSelectedAttack(){return mobileRollAttackSources().find(source=>source.key===mobileRollChoice?.value)||null;}
+function mobileRollSelectedDamage(){return mobileRollDamageSources().find(source=>source.key===mobileRollChoice?.value)||null;}
 function mobileRollCurrentBonus(){
     if(mobileRollKind==='save')return Number.parseInt(document.getElementById('saveValue'+mobileRollChoice?.value)?.value,10)||0;
+    if(mobileRollKind==='attack')return mobileRollSelectedAttack()?.bonus||0;
+    if(mobileRollKind==='initiative')return getInitiativeModifier();
+    if(mobileRollKind==='damage')return 0;
     return Number.parseInt(mobileRollSelectedSkill()?.querySelector('.skill-value')?.textContent,10)||0;
 }
 function refreshMobileRollInstruction(){
     const instruction=document.getElementById('mobileRollInstruction');if(!instruction)return;
+    if(mobileRollKind==='damage'){instruction.textContent=mobileRollText('Válaszd ki a rögzített fegyver vagy varázslat sebzését. A lap automatikusan kidobja a képlet összes kockáját.','Choose a recorded weapon or spell damage. The sheet automatically rolls every die in its formula.');return;}
     const mode=document.getElementById('mobileRollMode')?.value||'normal',manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());
-    const subject=mobileRollKind==='save'?mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'):mobileRollText('a helyzethez illő skillt','the skill that fits the situation');
+    const subjects={save:mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'),attack:mobileRollText('a használni kívánt támadást','the attack you want to use'),initiative:mobileRollText('a kezdeményezést','initiative'),skill:mobileRollText('a helyzethez illő skillt','the skill that fits the situation')},subject=subjects[mobileRollKind]||subjects.skill;
     if(manual)instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. A lap a beírt d20-hoz hozzáadja a bónuszokat.`,`Choose ${subject}, then press Roll. The sheet adds the bonuses to your entered d20.`);
     else if(mode==='advantage'||mode==='disadvantage')instruction.textContent=mobileRollText(`Válaszd ki ${subject}. A lap két d20-at dob, és ${mode==='advantage'?'a magasabb':'az alacsonyabb'} eredményt használja.`,`Choose ${subject}. The sheet rolls two d20s and uses the ${mode==='advantage'?'higher':'lower'} result.`);
     else instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. Az üres kézi mező automatikus d20 dobást jelent.`,`Choose ${subject}, then press Roll. A blank manual field means an automatic d20 roll.`);
 }
 function refreshMobileRollPreview(clearResult=false){
     const preview=document.getElementById('mobileRollBonusPreview'),extra=Number(document.getElementById('mobileRollExtra')?.value)||0,base=mobileRollCurrentBonus();
-    if(preview)preview.textContent=`${mobileRollText('Számított bónusz','Calculated bonus')}: ${formatModifier(base)} · ${mobileRollText('Egyéb bónusz','Other bonus')}: ${formatModifier(extra)} · ${mobileRollText('Összesen','Total')}: ${formatModifier(base+extra)}`;
+    if(preview){
+        if(mobileRollKind==='damage'){const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage);preview.textContent=source&&parsed?`${source.name} · ${mobileRollText('Sebzésképlet','Damage formula')}: ${parsed.expression} · ${mobileRollText('Egyéb módosító','Other modifier')}: ${formatModifier(extra)}`:mobileRollText('Nincs dobható sebzésképlet rögzítve.','No rollable damage formula is recorded.');}
+        else preview.textContent=`${mobileRollText('Számított bónusz','Calculated bonus')}: ${formatModifier(base)} · ${mobileRollText('Egyéb bónusz','Other bonus')}: ${formatModifier(extra)} · ${mobileRollText('Összesen','Total')}: ${formatModifier(base+extra)}`;
+    }
     if(clearResult)document.getElementById('mobileRollResult')?.replaceChildren();refreshMobileRollInstruction();
 }
 function populateMobileRollChoices(){
     if(!mobileRollChoice)return;const previous=mobileRollChoice.value;
-    if(mobileRollKind==='save')mobileRollChoice.replaceChildren(...Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value)));
-    else mobileRollChoice.replaceChildren(...[...document.querySelectorAll('.skill-row')].map(row=>new Option(characterSkillBaseName(row),characterSkillBaseName(row))));
+    let options=[],label='Skill';
+    if(mobileRollKind==='save'){options=Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value));label=mobileRollText('Mentődobás','Saving Throw');}
+    else if(mobileRollKind==='attack'){options=mobileRollAttackSources().map(source=>new Option(`${source.name} (${formatModifier(source.bonus)})`,source.key));label=mobileRollText('Támadás','Attack');}
+    else if(mobileRollKind==='initiative'){options=[new Option(mobileRollText('Kezdeményezés','Initiative'),'initiative')];label=mobileRollText('Dobás','Roll');}
+    else if(mobileRollKind==='damage'){options=mobileRollDamageSources().map(source=>new Option(`${source.name} (${source.damage})`,source.key));label=mobileRollText('Sebzés forrása','Damage source');}
+    else options=[...document.querySelectorAll('.skill-row')].map(row=>new Option(characterSkillBaseName(row),characterSkillBaseName(row)));
+    if(!options.length){const option=new Option(mobileRollText('Nincs rögzített választható elem','No recorded option available'),'');option.disabled=true;options=[option];}
+    mobileRollChoice.replaceChildren(...options);
     if([...mobileRollChoice.options].some(option=>option.value===previous))mobileRollChoice.value=previous;
-    const label=document.getElementById('mobileRollChoiceLabel');if(label)label.textContent=mobileRollKind==='save'?mobileRollText('Mentődobás','Saving Throw'):'Skill';
+    const labelElement=document.getElementById('mobileRollChoiceLabel');if(labelElement)labelElement.textContent=label;
+    const damage=mobileRollKind==='damage';document.getElementById('mobileRollModeField').hidden=damage;document.getElementById('mobileRollManualField').hidden=damage;
+    const extraLabel=document.getElementById('mobileRollExtraLabel');if(extraLabel)extraLabel.textContent=damage?mobileRollText('Egyéb sebzésmódosító','Other damage modifier'):mobileRollText('Egyéb bónusz','Other bonus');
     refreshMobileRollPreview(true);
 }
 function setMobileRollKind(kind){
-    mobileRollKind=kind==='save'?'save':'skill';
+    mobileRollKind=['skill','save','attack','initiative','damage'].includes(kind)?kind:'skill';
     document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.mobileRollKind===mobileRollKind)));
     populateMobileRollChoices();
 }
@@ -12939,6 +12981,15 @@ function performMobileUnifiedRoll(){
     const manualField=document.getElementById('mobileRollManual'),result=document.getElementById('mobileRollResult'),mode=document.getElementById('mobileRollMode')?.value||'normal';
     if(!manualField||!result||!mobileRollChoice?.value)return;
     updateSkills();updateDerivedFields();
+    if(mobileRollKind==='damage'){
+        const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage),extra=Number(document.getElementById('mobileRollExtra')?.value)||0;if(!source||!parsed)return;
+        const rolls=parsed.dice.map(die=>({...die,value:rollDie(die.sides)})),diceTotal=rolls.reduce((sum,die)=>sum+die.value*die.sign,0),total=diceTotal+parsed.modifier+extra;
+        result.className='mobile-roll-result';result.replaceChildren();const card=document.createElement('div');card.className='saving-throw-result-card';
+        const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText('sebzésdobás','damage roll')}`;
+        const diceSummary=document.createElement('div');diceSummary.className='mobile-roll-dice-summary'+(rolls.length===1?' is-single':'');rolls.forEach((roll,index)=>{const die=document.createElement('span');die.className='mobile-roll-die is-selected';const label=document.createElement('span');label.textContent=`${index+1}. d${roll.sides}`;const number=document.createElement('strong');number.textContent=`${roll.sign<0?'−':''}${roll.value}`;die.append(label,number);diceSummary.appendChild(die);});
+        const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`${parsed.expression} → ${rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + ')||'0'} ${formatModifier(parsed.modifier)} ${formatModifier(extra)} = ${total}`;
+        card.append(title,diceSummary,totalElement,math);result.append(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A dobott sebzés ${total}.`,`The rolled damage is ${total}.`);return;
+    }
     const manualText=manualField.value.trim(),manual=manualText===''?null:Number(manualText);
     if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>20)){
         result.className='mobile-roll-result saving-throw-roll-result is-error';result.textContent=mobileRollText('A kézi d20 érték 1 és 20 közötti egész szám lehet.','The manual d20 roll must be a whole number from 1 to 20.');manualField.focus();return;
@@ -12955,7 +13006,8 @@ function performMobileUnifiedRoll(){
         if(effectiveRoll!==rolled)minimumText=` → ${effectiveRoll} (${reliableTalent?'Reliable Talent':mobileRollText('kasztjellemző','class feature')})`;
     }
     const abilityLabels=document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames;
-    const total=naturalOne?1:effectiveRoll+bonus,name=mobileRollKind==='save'?`${abilityLabels[mobileRollChoice.value]} ${mobileRollText('mentődobás','saving throw')}`:`${mobileRollChoice.value} (${mobileRollSelectedSkill()?.dataset.ability||''})`;
+    let name;if(mobileRollKind==='save')name=`${abilityLabels[mobileRollChoice.value]} ${mobileRollText('mentődobás','saving throw')}`;else if(mobileRollKind==='attack')name=`${mobileRollSelectedAttack()?.name||mobileRollText('Támadás','Attack')} ${mobileRollText('támadó dobás','attack roll')}`;else if(mobileRollKind==='initiative')name=mobileRollText('Kezdeményezés','Initiative');else name=`${mobileRollChoice.value} (${mobileRollSelectedSkill()?.dataset.ability||''})`;
+    const total=naturalOne?1:effectiveRoll+bonus;
     result.className='mobile-roll-result';result.replaceChildren();
     const card=document.createElement('div');card.className='saving-throw-result-card'+(naturalOne?' is-critical-failure':'');
     const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${name} · ${naturalOne?mobileRollText('kritikus hiba','critical failure'):manual===null?mode==='advantage'?mobileRollText('előny','advantage'):mode==='disadvantage'?mobileRollText('hátrány','disadvantage'):mobileRollText('automatikus dobás','automatic roll'):mobileRollText('kézi dobás','manual roll')}`;
@@ -12983,6 +13035,7 @@ document.getElementById('mobileRollPanelClose')?.addEventListener('click',closeM
 mobileRollPanelOverlay?.addEventListener('click',event=>{if(event.target===mobileRollPanelOverlay)closeMobileRollPanel();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileRollPanelOverlay&&!mobileRollPanelOverlay.hidden)closeMobileRollPanel();});
 document.getElementById('combatSavingThrowButton')?.addEventListener('click',event=>openMobileRollPanel('save',event.currentTarget));
+document.getElementById('unifiedRollPanelButton')?.addEventListener('click',event=>openMobileRollPanel(mobileRollKind,event.currentTarget));
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');

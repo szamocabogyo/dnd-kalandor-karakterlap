@@ -1670,6 +1670,7 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-kind button{min-height:44px;padding:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-weight:700}
 .mobile-roll-kind button[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
 .mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mobile-roll-fields[hidden]{display:none!important}
 .mobile-roll-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:700}
 .mobile-roll-fields label[hidden]{display:none!important}
 .mobile-roll-fields select,.mobile-roll-fields input{width:100%;min-height:46px;box-sizing:border-box;font-size:1rem}
@@ -1678,6 +1679,7 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-result{margin-top:12px}
 .mobile-roll-result:empty{display:none}
 .mobile-roll-result .saving-throw-result-card{margin:0}
+.combat-help-panel{display:grid;gap:12px}.combat-help-panel[hidden]{display:none!important}.combat-help-section{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.combat-help-section h3{margin:0 0 8px;color:var(--accent);font-size:1rem}.combat-help-section ol,.combat-help-section ul{margin:0;padding-left:1.35rem}.combat-help-section li{margin:0 0 7px;line-height:1.42}.combat-help-section li:last-child{margin-bottom:0}.combat-help-class-name{display:block;margin:-3px 0 9px;color:var(--muted);font-size:.82rem}
 .mobile-roll-dice-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin:7px 0}
 .mobile-roll-dice-summary.is-single{grid-template-columns:1fr}
 .mobile-roll-die{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--muted);font-size:.74rem;line-height:1.2}
@@ -2210,6 +2212,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .sheet.mobile-mode>.view-switcher>.sheet-mode-switch{grid-column:1/-1;width:100%;padding:2px;border-radius:9px}
 .sheet.mobile-mode>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:32px!important;padding:4px 7px;font-size:.69rem;border-radius:7px}
 .sheet.mobile-mode>.view-switcher>#combatModeButton{display:none!important}
+.sheet.mobile-mode>.view-switcher>#combatGuideButton{display:none!important}
 .sheet.mobile-mode>.view-switcher>#unifiedRollPanelButton{display:none!important}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
 .sheet.mobile-mode>.view-switcher>button,.sheet.mobile-mode>.view-switcher>.settings-menu>summary{display:flex;align-items:center;justify-content:center;min-height:36px!important;width:100%;margin:0;padding:4px 5px!important;border-radius:8px;font-size:.64rem!important;font-weight:600;line-height:1.15;letter-spacing:0;white-space:normal;word-break:normal;overflow-wrap:normal;box-sizing:border-box}
@@ -2542,7 +2545,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     </details>
     <button id="desktopNotesButton" type="button">📝 Jegyzetek</button>
     <button id="unifiedRollPanelButton" type="button">🎲 Dobópanel</button>
-    <button id="combatModeButton" type="button">⚔ Harc</button>
+    <button id="combatGuideButton" type="button">⚔ Harci súgó</button>
     <button id="shortRestButton" type="button">🌤 Rövid pihenő</button>
     <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
 </div>
@@ -3146,7 +3149,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
   <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
-  <button type="button" data-mobile-nav-action="combat"><span aria-hidden="true">⚔</span><strong>Harc</strong></button>
+  <button type="button" data-mobile-nav-action="combat-guide"><span aria-hidden="true">⚔</span><strong>Harci súgó</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
 </nav>
@@ -3160,9 +3163,14 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
       <button type="button" role="tab" data-mobile-roll-kind="attack" aria-selected="false">Támadás</button>
       <button type="button" role="tab" data-mobile-roll-kind="initiative" aria-selected="false">Kezdeményezés</button>
       <button type="button" role="tab" data-mobile-roll-kind="damage" aria-selected="false">Sebzés</button>
+      <button type="button" role="tab" data-mobile-roll-kind="guide" aria-selected="false">Harci súgó</button>
     </div>
     <p id="mobileRollInstruction" class="context-instruction" aria-live="polite"></p>
-    <div class="mobile-roll-fields">
+    <div id="combatHelpPanel" class="combat-help-panel" hidden>
+      <section class="combat-help-section"><h3>Általános harci lépések</h3><ol id="combatHelpGeneral"></ol></section>
+      <section class="combat-help-section"><h3>Kasztspecifikus lehetőségek</h3><span id="combatHelpClassName" class="combat-help-class-name"></span><ul id="combatHelpClass"></ul></section>
+    </div>
+    <div id="mobileRollFields" class="mobile-roll-fields">
       <label id="mobileRollChoiceField"><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
       <label id="mobileRollModeField">Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
       <label id="mobileRollManualField"><span id="mobileRollManualLabel">Kézi d20 érték</span><input id="mobileRollManual" type="text" inputmode="decimal" autocomplete="off" placeholder="Üresen automatikus"></label>
@@ -9396,7 +9404,7 @@ function readCompletedCombatEncounters(){
 function renderCombatEncounterControls(){
     const ended=document.getElementById('combatEncounterEnded').value==='true';
     const open=document.getElementById('combatModeButton');
-    open.textContent='⚔ Harc';
+    if(open)open.textContent='⚔ Harc';
     document.getElementById('combatEndEncounterButton').disabled=ended;
     const status=document.getElementById('combatEncounterStatus');
     status.hidden=!ended||document.getElementById('combatEncounterNoticeDismissed').value==='true';
@@ -9436,7 +9444,7 @@ function dismissCombatEncounterNotice(){
     document.getElementById('combatEncounterNoticeDismissed').value='true';
     renderCombatEncounterControls();
     saveCharacter();
-    document.getElementById('combatModeButton').focus({preventScroll:true});
+    document.getElementById('combatModeButton')?.focus({preventScroll:true});
 }
 
 function beginCombatEncounter(){
@@ -9495,7 +9503,7 @@ function finishCombatEncounter(){
     renderCombatEncounterControls();
     renderCombatEncounterArchive();
     saveCharacter();
-    document.getElementById('combatModeButton').focus({preventScroll:true});
+    document.getElementById('combatModeButton')?.focus({preventScroll:true});
 }
 
 function openCombatMode(){
@@ -12921,6 +12929,35 @@ function mobileRollDamageSources(){
 }
 function mobileRollSelectedAttack(){return mobileRollAttackSources().find(source=>source.key===mobileRollChoice?.value)||null;}
 function mobileRollSelectedDamage(){return mobileRollDamageSources().find(source=>source.key===mobileRollChoice?.value)||null;}
+const combatHelpGeneralSteps=[
+    'A köröd elején ellenőrizd az aktív állapotokat, a koncentrációt és a kör elején bekövetkező hatásokat.',
+    'Mozoghatsz legfeljebb a mozgási sebességedig. A mozgást a műveleteid előtt és után is feloszthatod.',
+    'Válassz egy akciót: Támadás, Varázslás, Dash, Disengage, Dodge, Help, Hide, Ready, Search vagy tárgy használata.',
+    'Bónuszakciót csak akkor használhatsz, ha egy képesség, varázslat vagy szabály kifejezetten bónuszakciót ad.',
+    'A körödben általában egy egyszerű tárgyinterakciód is lehet, például fegyver elővétele vagy ajtónyitás.',
+    'A reakciódat a következő köröd kezdetéig egyszer használhatod, amikor annak kiváltó feltétele teljesül.',
+    'A kör végén ellenőrizd a kör végéig tartó hatásokat, majd jelezd, hogy befejezted a körödet.'
+];
+const combatHelpClassFeatures={
+    Barbarian:[{min:1,text:'Dühöngés: bónuszakcióval aktiválható; erőalapú közelharci támadásoknál többletsebzést, valamint gyakori fizikai sebzésekkel szemben ellenállást ad.'},{min:2,text:'Vakmerő támadás: a kör első Erő alapú közelharci támadásánál előnyt kérhetsz, de a következő körödig ellened is előnnyel támadnak.'},{min:5,text:'Extra Attack: a Támadás akcióval kétszer támadhatsz.'}],
+    Bard:[{min:1,text:'Bárdi inspiráció: bónuszakcióval adj inspirációs kockát egy társadnak; figyeld a megmaradt használatokat.'},{min:1,text:'Varázslás: válassz az ismert varázslataidból, ellenőrizd az akciótípust, a hatótávot és a koncentrációt.'},{min:3,text:'Az alkasztod harci képességei további akciót, bónuszakciót vagy reakciót adhatnak; ellenőrizd a Kasztjellemzők panelt.'}],
+    Cleric:[{min:1,text:'Varázslás: az előkészített papi varázslatok és a domainvarázslatok használhatók; különösen figyelj a koncentrációra.'},{min:2,text:'Channel Divinity: akcióként vagy a domain által meghatározott módon használható; ellenőrizd a rendelkezésre álló használatokat.'},{min:3,text:'A spirituális fegyverhez és más bónuszakciós varázslatokhoz a bónuszakciódat is tervezd meg.'}],
+    Druid:[{min:1,text:'Varázslás: az előkészített druida varázslatok közül válassz; sok irányító hatás koncentrációt igényel.'},{min:2,text:'Wild Shape: a választott állati alak meghatározza a mozgást, támadásokat és ideiglenesen használt fizikai értékeket.'},{min:2,text:'Az alköröd és az állati alak szabályai módosíthatják, hogy az átalakulás akció vagy bónuszakció.'}],
+    Fighter:[{min:1,text:'Second Wind: bónuszakcióval saját életerőt tölthetsz vissza.'},{min:2,text:'Action Surge: a körödben egy további akciót kapsz; a bónuszakciót és reakciót nem duplázza meg.'},{min:5,text:'Extra Attack: a Támadás akcióval kétszer támadhatsz.'}],
+    Monk:[{min:1,text:'Martial Arts: megfelelő szerzetesi fegyver vagy pusztakezes támadás után bónuszakciós pusztakezes csapást végezhetsz.'},{min:2,text:'Ki képességek: Flurry of Blows, Patient Defense és Step of the Wind bónuszakcióval, ki pont felhasználásával érhető el.'},{min:3,text:'Deflect Missiles: reakcióval csökkentheted egy távolsági fegyvertámadás sebzését.'},{min:5,text:'Extra Attack és Stunning Strike: kétszer támadhatsz, találatkor pedig ki pontért kábítást kísérelhetsz meg.'}],
+    Paladin:[{min:1,text:'Lay on Hands: akcióval gyógyíthatsz vagy bizonyos állapotokat szüntethetsz meg a gyógyító készletből.'},{min:2,text:'Divine Smite: közelharci fegyvertalálat után varázsrekeszt költhetsz sugárzó többletsebzésre; nem igényel külön akciót.'},{min:2,text:'Varázslás: az előkészített paladin varázslatok, különösen a koncentrációs smite varázslatok, módosíthatják a támadásodat.'},{min:5,text:'Extra Attack: a Támadás akcióval kétszer támadhatsz.'}],
+    Ranger:[{min:1,text:'Jelöld ki a kiemelt célpontot vagy használd a Hunter’s Mark jellegű hatást, ha a karaktered rendelkezik vele; figyelj a koncentrációra.'},{min:2,text:'Harci stílus és varázslás: számítsd bele a választott stílus bónuszát, és tervezd meg az akció vagy bónuszakció igényét.'},{min:3,text:'Az alkaszt harci lehetőségei gyakran körönként egyszeri többlethatást vagy társi műveletet adnak.'},{min:5,text:'Extra Attack: a Támadás akcióval kétszer támadhatsz.'}],
+    Rogue:[{min:1,text:'Sneak Attack: körönként egyszer jár, ha előnyöd van, vagy a célpont mellett megfelelő szövetséges áll, és alkalmas fegyvert használsz.'},{min:2,text:'Cunning Action: bónuszakcióként Dash, Disengage vagy Hide választható.'},{min:5,text:'Uncanny Dodge: reakcióval megfelezheted egy látott támadó találatának sebzését.'}],
+    Sorcerer:[{min:1,text:'Varázslás: az ismert varázslatok közül válassz, és ellenőrizd a varázsrekeszt, hatótávot és koncentrációt.'},{min:2,text:'Sorcery Points: varázsrekeszek alakítására, később pedig Metamagic használatára költhetők.'},{min:3,text:'Metamagic: a kiválasztott opció a varázslat célpontját, hatótávját, idejét vagy más tulajdonságát módosíthatja.'}],
+    Warlock:[{min:1,text:'Pact Magic: a kevés paktumrekesz mindig a rendelkezésre álló szinten használódik; rövid pihenővel visszatöltődik.'},{min:1,text:'Eldritch Blast és más trükkök rekesz nélkül használhatók; az invokációk módosíthatják a támadást és a sebzést.'},{min:2,text:'Eldritch Invocations: ellenőrizd, ad-e valamelyik passzív bónuszt vagy külön harci műveletet.'}],
+    Wizard:[{min:1,text:'Varázslás: csak az aznap előkészített varázslatokat használhatod rekeszből; a trükkök nem fogyasztanak rekeszt.'},{min:1,text:'Minden varázslat előtt ellenőrizd a varázslási időt, a hatótávot, a komponenseket és a koncentrációt.'},{min:2,text:'Az arcane tradition képességei módosíthatják a sebzést, védelmet, dobásokat vagy a varázslatok célzását.'}]
+};
+function renderCombatHelp(){
+    const general=document.getElementById('combatHelpGeneral'),specific=document.getElementById('combatHelpClass'),name=document.getElementById('combatHelpClassName');if(!general||!specific||!name)return;
+    general.replaceChildren(...combatHelpGeneralSteps.map(text=>{const item=document.createElement('li');item.textContent=text;return item;}));
+    const klass=document.getElementById('characterClass')?.value||'',level=Math.max(1,Number(document.getElementById('characterLevel')?.value)||1),features=(combatHelpClassFeatures[klass]||[]).filter(feature=>level>=feature.min);
+    name.textContent=klass?`${klass} · ${level}. szint`:'Nincs kaszt kiválasztva';specific.replaceChildren(...(features.length?features:[{text:'Válassz kasztot és szintet a karakteradatoknál a kasztspecifikus harci lehetőségek megjelenítéséhez.'}]).map(feature=>{const item=document.createElement('li');item.textContent=feature.text;return item;}));
+}
 function mobileRollCurrentBonus(){
     if(mobileRollKind==='save')return Number.parseInt(document.getElementById('saveValue'+mobileRollChoice?.value)?.value,10)||0;
     if(mobileRollKind==='attack')return mobileRollSelectedAttack()?.bonus||0;
@@ -12930,6 +12967,7 @@ function mobileRollCurrentBonus(){
 }
 function refreshMobileRollInstruction(){
     const instruction=document.getElementById('mobileRollInstruction');if(!instruction)return;
+    if(mobileRollKind==='guide'){instruction.textContent=mobileRollText('Használd ezt a sorrendet emlékeztetőként; csak azokat a műveleteket válaszd, amelyekhez a karakterednek van megfelelő képessége vagy erőforrása.','Use this order as a reminder; choose only actions supported by your character’s features and resources.');return;}
     if(mobileRollKind==='damage'){const manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());instruction.textContent=manual?mobileRollText('A kézi kockaértékeket vesszővel elválasztva add meg, a sebzésképlet kockáinak sorrendjében.','Enter manual die values separated by commas, in the order of the dice in the damage formula.'):mobileRollText('Válaszd ki a rögzített fegyver vagy varázslat sebzését. Az üres kézi mező automatikusan kidobja a képlet összes kockáját.','Choose a recorded weapon or spell damage. A blank manual field automatically rolls every die in its formula.');return;}
     const mode=document.getElementById('mobileRollMode')?.value||'normal',manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());
     const subjects={save:mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'),attack:mobileRollText('a használni kívánt támadást','the attack you want to use'),initiative:mobileRollText('a kezdeményezést','initiative'),skill:mobileRollText('a helyzethez illő skillt','the skill that fits the situation')},subject=subjects[mobileRollKind]||subjects.skill;
@@ -12947,6 +12985,8 @@ function refreshMobileRollPreview(clearResult=false){
 }
 function populateMobileRollChoices(){
     if(!mobileRollChoice)return;const previous=mobileRollChoice.value;
+    const guide=mobileRollKind==='guide',fields=document.getElementById('mobileRollFields'),help=document.getElementById('combatHelpPanel'),preview=document.getElementById('mobileRollBonusPreview'),execute=document.getElementById('mobileRollExecute'),result=document.getElementById('mobileRollResult');
+    if(fields)fields.hidden=guide;if(help)help.hidden=!guide;if(preview)preview.hidden=guide;if(execute)execute.hidden=guide;if(result)result.hidden=guide;if(guide){renderCombatHelp();refreshMobileRollInstruction();return;}
     let options=[],label='Skill';
     if(mobileRollKind==='save'){options=Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value));label=mobileRollText('Mentődobás','Saving Throw');}
     else if(mobileRollKind==='attack'){options=mobileRollAttackSources().map(source=>new Option(`${source.name} (${formatModifier(source.bonus)})`,source.key));label=mobileRollText('Támadás','Attack');}
@@ -12963,7 +13003,7 @@ function populateMobileRollChoices(){
     refreshMobileRollPreview(true);
 }
 function setMobileRollKind(kind){
-    mobileRollKind=['skill','save','attack','initiative','damage'].includes(kind)?kind:'skill';
+    mobileRollKind=['skill','save','attack','initiative','damage','guide'].includes(kind)?kind:'skill';
     document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.mobileRollKind===mobileRollKind)));
     populateMobileRollChoices();
 }
@@ -12971,7 +13011,7 @@ function openMobileRollPanel(kind=mobileRollKind,returnFocus=document.activeElem
     mobileRollReturnFocus=returnFocus instanceof HTMLElement?returnFocus:null;
     updateSkills();updateDerivedFields();setMobileRollKind(kind);mobileRollPanelOverlay.hidden=false;
     document.getElementById('mobileRollManual').value='';document.getElementById('mobileRollResult').replaceChildren();refreshMobileRollPreview();
-    requestAnimationFrame(()=>mobileRollChoice?.focus());
+    requestAnimationFrame(()=>mobileRollKind==='guide'?document.querySelector('[data-mobile-roll-kind="guide"]')?.focus():mobileRollChoice?.focus());
 }
 function closeMobileRollPanel(){
     mobileRollPanelOverlay.hidden=true;
@@ -13039,6 +13079,7 @@ mobileRollPanelOverlay?.addEventListener('click',event=>{if(event.target===mobil
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileRollPanelOverlay&&!mobileRollPanelOverlay.hidden)closeMobileRollPanel();});
 document.getElementById('combatSavingThrowButton')?.addEventListener('click',event=>openMobileRollPanel('save',event.currentTarget));
 document.getElementById('unifiedRollPanelButton')?.addEventListener('click',event=>openMobileRollPanel(mobileRollKind,event.currentTarget));
+document.getElementById('combatGuideButton')?.addEventListener('click',event=>openMobileRollPanel('guide',event.currentTarget));
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');
@@ -13051,8 +13092,8 @@ mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
     if(button.dataset.mobileNavAction==='rolls'){
         setMobileBottomNavCurrent(button);openMobileRollPanel();return;
     }
-    if(button.dataset.mobileNavAction==='combat'){
-        setMobileBottomNavCurrent(button);document.getElementById('combatModeButton')?.click();return;
+    if(button.dataset.mobileNavAction==='combat-guide'){
+        setMobileBottomNavCurrent(button);openMobileRollPanel('guide',button);return;
     }
     const target=document.getElementById(button.dataset.mobileNavTarget||'');if(!target)return;
     revealMobileNavigationTarget(target);setMobileBottomNavCurrent(button);

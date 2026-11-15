@@ -3165,7 +3165,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <div class="mobile-roll-fields">
       <label id="mobileRollChoiceField"><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
       <label id="mobileRollModeField">Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
-      <label id="mobileRollManualField">Kézi d20 érték<input id="mobileRollManual" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="Üresen automatikus"></label>
+      <label id="mobileRollManualField"><span id="mobileRollManualLabel">Kézi d20 érték</span><input id="mobileRollManual" type="text" inputmode="decimal" autocomplete="off" placeholder="Üresen automatikus"></label>
       <label id="mobileRollExtraField"><span id="mobileRollExtraLabel">Egyéb bónusz</span><input id="mobileRollExtra" type="number" inputmode="numeric" step="1" value="0"></label>
     </div>
     <div id="mobileRollBonusPreview" class="mobile-roll-bonus-preview" aria-live="polite"></div>
@@ -12917,7 +12917,7 @@ function mobileRollAttackSources(){
 function mobileRollDamageSources(){
     const weapons=mobileRollWeaponSources().map(source=>({...source,key:`attack:${source.key}`,kind:'attack'}));
     const spells=[...document.querySelectorAll('#spellEntries .spell-entry-row')].filter(row=>!row.hidden).map(row=>({key:`spell:${row.dataset.spellEntryKey}`,kind:'spell',name:row.querySelector('input[id$="_name"]')?.value.trim()||'',damage:row.querySelector('input[id$="_damage"]')?.value.trim()||''}));
-    return [...weapons,...spells].filter(source=>source.name&&parseDamageExpression(source.damage));
+    return [...weapons,...spells].filter(source=>source.name&&(parseDamageExpression(source.damage)?.dice.length||0)>0);
 }
 function mobileRollSelectedAttack(){return mobileRollAttackSources().find(source=>source.key===mobileRollChoice?.value)||null;}
 function mobileRollSelectedDamage(){return mobileRollDamageSources().find(source=>source.key===mobileRollChoice?.value)||null;}
@@ -12930,7 +12930,7 @@ function mobileRollCurrentBonus(){
 }
 function refreshMobileRollInstruction(){
     const instruction=document.getElementById('mobileRollInstruction');if(!instruction)return;
-    if(mobileRollKind==='damage'){instruction.textContent=mobileRollText('Válaszd ki a rögzített fegyver vagy varázslat sebzését. A lap automatikusan kidobja a képlet összes kockáját.','Choose a recorded weapon or spell damage. The sheet automatically rolls every die in its formula.');return;}
+    if(mobileRollKind==='damage'){const manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());instruction.textContent=manual?mobileRollText('A kézi kockaértékeket vesszővel elválasztva add meg, a sebzésképlet kockáinak sorrendjében.','Enter manual die values separated by commas, in the order of the dice in the damage formula.'):mobileRollText('Válaszd ki a rögzített fegyver vagy varázslat sebzését. Az üres kézi mező automatikusan kidobja a képlet összes kockáját.','Choose a recorded weapon or spell damage. A blank manual field automatically rolls every die in its formula.');return;}
     const mode=document.getElementById('mobileRollMode')?.value||'normal',manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());
     const subjects={save:mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'),attack:mobileRollText('a használni kívánt támadást','the attack you want to use'),initiative:mobileRollText('a kezdeményezést','initiative'),skill:mobileRollText('a helyzethez illő skillt','the skill that fits the situation')},subject=subjects[mobileRollKind]||subjects.skill;
     if(manual)instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. A lap a beírt d20-hoz hozzáadja a bónuszokat.`,`Choose ${subject}, then press Roll. The sheet adds the bonuses to your entered d20.`);
@@ -12957,7 +12957,8 @@ function populateMobileRollChoices(){
     mobileRollChoice.replaceChildren(...options);
     if([...mobileRollChoice.options].some(option=>option.value===previous))mobileRollChoice.value=previous;
     const labelElement=document.getElementById('mobileRollChoiceLabel');if(labelElement)labelElement.textContent=label;
-    const damage=mobileRollKind==='damage';document.getElementById('mobileRollModeField').hidden=damage;document.getElementById('mobileRollManualField').hidden=damage;
+    const damage=mobileRollKind==='damage';document.getElementById('mobileRollModeField').hidden=damage;
+    const manualLabel=document.getElementById('mobileRollManualLabel'),manualField=document.getElementById('mobileRollManual');if(manualLabel)manualLabel.textContent=damage?mobileRollText('Kézi kockaértékek','Manual die values'):mobileRollText('Kézi d20 érték','Manual d20 value');if(manualField)manualField.placeholder=damage?mobileRollText('pl. 4, 6, 2','e.g. 4, 6, 2'):mobileRollText('Üresen automatikus','Blank means automatic');
     const extraLabel=document.getElementById('mobileRollExtraLabel');if(extraLabel)extraLabel.textContent=damage?mobileRollText('Egyéb sebzésmódosító','Other damage modifier'):mobileRollText('Egyéb bónusz','Other bonus');
     refreshMobileRollPreview(true);
 }
@@ -12983,9 +12984,11 @@ function performMobileUnifiedRoll(){
     updateSkills();updateDerivedFields();
     if(mobileRollKind==='damage'){
         const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage),extra=Number(document.getElementById('mobileRollExtra')?.value)||0;if(!source||!parsed)return;
-        const rolls=parsed.dice.map(die=>({...die,value:rollDie(die.sides)})),diceTotal=rolls.reduce((sum,die)=>sum+die.value*die.sign,0),total=diceTotal+parsed.modifier+extra;
+        const manualText=manualField.value.trim(),manualValues=manualText?manualText.split(/[;,\s]+/).filter(Boolean).map(Number):null;
+        if(manualValues&&(manualValues.length!==parsed.dice.length||manualValues.some((value,index)=>!Number.isInteger(value)||value<1||value>parsed.dice[index].sides))){result.className='mobile-roll-result saving-throw-roll-result is-error';result.textContent=mobileRollText(`A kézi mezőbe pontosan ${parsed.dice.length} kockaértéket adj meg, mindegyiket a saját kockatartományán belül.`,`Enter exactly ${parsed.dice.length} manual die values, each within its die's range.`);manualField.focus();return;}
+        const rolls=parsed.dice.map((die,index)=>({...die,value:manualValues?manualValues[index]:rollDie(die.sides)})),diceTotal=rolls.reduce((sum,die)=>sum+die.value*die.sign,0),total=diceTotal+parsed.modifier+extra;
         result.className='mobile-roll-result';result.replaceChildren();const card=document.createElement('div');card.className='saving-throw-result-card';
-        const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText('sebzésdobás','damage roll')}`;
+        const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText('sebzésdobás','damage roll')} · ${manualValues?mobileRollText('kézi','manual'):mobileRollText('automatikus','automatic')}`;
         const diceSummary=document.createElement('div');diceSummary.className='mobile-roll-dice-summary'+(rolls.length===1?' is-single':'');rolls.forEach((roll,index)=>{const die=document.createElement('span');die.className='mobile-roll-die is-selected';const label=document.createElement('span');label.textContent=`${index+1}. d${roll.sides}`;const number=document.createElement('strong');number.textContent=`${roll.sign<0?'−':''}${roll.value}`;die.append(label,number);diceSummary.appendChild(die);});
         const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`${parsed.expression} → ${rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + ')||'0'} ${formatModifier(parsed.modifier)} ${formatModifier(extra)} = ${total}`;
         card.append(title,diceSummary,totalElement,math);result.append(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A dobott sebzés ${total}.`,`The rolled damage is ${total}.`);return;

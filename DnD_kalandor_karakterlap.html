@@ -582,7 +582,7 @@ select{
 .view-switcher button:active,.settings-menu>summary:active{
     transform:translateY(0);
 }
-.rest-status{margin:-14px 0 20px;color:var(--accent);text-align:center;font-size:.9rem;font-weight:bold}
+.rest-status{margin:0 0 20px;color:var(--accent);text-align:center;font-size:.9rem;font-weight:bold;line-height:1.5}
 .settings-menu{position:relative;z-index:20}
 .settings-menu>summary{display:inline-flex;align-items:center;box-sizing:border-box;list-style:none;background:linear-gradient(180deg,#5c4630,#3a2d20);color:#f4e8cf;border:1px solid #a68658;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;font-family:inherit;line-height:normal;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
 .settings-menu>summary::-webkit-details-marker{display:none}
@@ -1891,6 +1891,7 @@ body:has(.mobile-roll-panel-overlay:not([hidden])) .mobile-bottom-nav{display:no
 .undo-event-stack{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:12000;display:grid;gap:9px;width:min(390px,calc(100vw - 28px));pointer-events:none}
 .undo-event-bubble{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--class-border,var(--accent));border-radius:10px;background:linear-gradient(145deg,color-mix(in srgb,var(--class-surface,var(--card)) 94%,#000),var(--bg));color:var(--text);box-shadow:0 10px 32px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.08);pointer-events:auto;animation:undoBubbleIn .18s ease-out}
 .undo-event-bubble strong{display:block;color:var(--class-symbol,var(--accent));font-size:.84rem;line-height:1.3}.undo-event-bubble small{display:-webkit-box;margin-top:2px;color:var(--muted);font-size:.72rem;line-height:1.35;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2}.undo-event-bubble button{min-height:34px;padding:5px 9px;border:1px solid var(--class-border,var(--accent));border-radius:6px;background:var(--card);color:var(--text);font:inherit;font-size:.75rem;font-weight:800;cursor:pointer}.undo-event-bubble .undo-event-action{background:var(--class-primary,var(--accent));color:var(--bg)}.undo-event-bubble .undo-event-close{width:34px;padding:0;font-size:1rem}
+.undo-event-bubble.is-rest-event small{-webkit-line-clamp:6}
 @keyframes undoBubbleIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:768px){.undo-event-stack{left:10px;right:10px;bottom:calc(66px + env(safe-area-inset-bottom));width:auto}.undo-event-bubble{grid-template-columns:minmax(0,1fr) auto auto;padding:9px 10px}}
 .combat-guided .combat-turn-tracker{margin:0;padding:0;border:0;background:transparent}
@@ -7402,7 +7403,7 @@ function showUndoEventBubble(label,detail='',snapshot=pendingUndoSnapshot){
     let stack=document.getElementById('undoEventStack');
     if(!stack){stack=document.createElement('div');stack.id='undoEventStack';stack.className='undo-event-stack';stack.setAttribute('aria-live','polite');stack.setAttribute('aria-label','Legutóbbi események');document.body.appendChild(stack);}
     stack.querySelectorAll('.undo-event-action').forEach(button=>button.remove());
-    const bubble=document.createElement('div');bubble.className='undo-event-bubble';
+    const bubble=document.createElement('div');bubble.className='undo-event-bubble';if(/pihenő/i.test(label))bubble.classList.add('is-rest-event');
     const text=document.createElement('div'),title=document.createElement('strong'),description=document.createElement('small');
     title.textContent=label||'Művelet rögzítve';description.textContent=detail||'A karakterlap állapota frissült.';text.append(title,description);
     if(snapshot?.data!==null&&snapshot?.data!==undefined){
@@ -9294,6 +9295,20 @@ document.getElementById('arcaneRecoveryApply')?.addEventListener('click',()=>{
 document.getElementById('arcaneRecoveryCancel')?.addEventListener('click',closeArcaneRecoveryPicker);
 document.getElementById('arcaneRecoveryOverlay')?.addEventListener('click',event=>{if(event.target===event.currentTarget)closeArcaneRecoveryPicker();});
 
+function hitDiceRestReminder(restType,recovered=null){
+    updateHitDiceDefaults();
+    const total=hitDiceIntegerValue('hitDiceTotal'),spent=hitDiceIntegerValue('hitDiceSpent'),die=document.getElementById('hitDieType')?.value||'életerőkocka';
+    if(total===null||spent===null||spent>total)return restType==='short'?'Életerőkocka-emlékeztető: rövid pihenő végén életerőkockákat költhetsz gyógyulásra. Add meg az Életerőkockák és mentők panelen az összes és az elhasznált kockák számát.':'Életerőkocka-emlékeztető: hosszú pihenő végén a teljes készlet legfeljebb fele (minimum 1) töltődik vissza. Add meg az Életerőkockák és mentők panelen a kockák adatait.';
+    const available=Math.max(0,total-spent),conScore=Number(document.getElementById('CON')?.value)||10,conModifier=Math.floor((conScore-10)/2),modifierText=conModifier>=0?`+${conModifier}`:String(conModifier);
+    if(restType==='long'){
+        const maximum=total>0?Math.max(1,Math.floor(total/2)):0;
+        const recoveryRule=total>0?`${total} fele, lefelé kerekítve; minimum 1`:'nincs rögzített készlet';
+        return `Életerőkockák: a szabály szerint hosszú pihenőn legfeljebb ${maximum} (${recoveryRule}) elhasznált kocka tér vissza. Most ${recovered??0} töltődött vissza; ${available}/${total} ${die} elérhető. Gyógyulásra ezeket rövid pihenő végén költheted el.`;
+    }
+    const klass=document.getElementById('characterClass')?.value||'',level=Number.parseInt(document.getElementById('characterLevel')?.value,10)||1,bardDie=level>=17?'d12':level>=13?'d10':level>=9?'d8':'d6',songOfRest=klass==='Bard'&&level>=2?` Song of Rest: ha legalább egy életerőkockát elköltesz, további ${bardDie} HP-t gyógyulsz.`:'';
+    return `Életerőkocka-emlékeztető: ${available}/${total} ${die} elérhető. Rövid pihenő végén egyesével költhetsz: dobd a ${die} kockát, add hozzá a CON módosítót (${modifierText}), gyógyulj ennyit (minimum 0), majd dönthetsz újabb kockáról. Az elköltött darabszámot rögzítsd az Életerőkockák és mentők panelen.${songOfRest}`;
+}
+
 function restoreSpellResources(restType){
     if(document.querySelector('.sheet')?.classList.contains('spell-preparation-editing')){cancelDailyPreparation();return;}
     const undoSnapshot=captureUndoSnapshot(restType==='long'?'Hosszú pihenő':'Rövid pihenő');
@@ -9328,7 +9343,7 @@ function restoreSpellResources(restType){
     if(restType==='short'&&klass==='Wizard')openArcaneRecoveryPicker();
     if(!combatModeOverlay.hidden){refreshCombatAttackOptions();renderCombatTurnChoices();}
     const restStatus=document.getElementById('restStatus');
-    if(restStatus){restStatus.textContent=restType==='long'?'Hosszú pihenő: a varázsrekeszek és a hosszú pihenőre visszatöltő használatok helyreálltak.':'Rövid pihenő: a rövid pihenőre visszatöltő használatok helyreálltak.';if(hitDiceRecovered!==null)restStatus.textContent+=` Életerőkockák: ${hitDiceRecovered} visszatöltve.`;const preparationMessage=restType==='long'?dailyPreparationReminder(klass):'';if(preparationMessage){restStatus.textContent+=' '+preparationMessage+' Játék módban nyisd meg a Varázslás panel Napi varázslatok módosítása részét.';updateDailyPreparationToolbar(preparationMessage);}restStatus.hidden=false;showUndoEventBubble(restType==='long'?'Hosszú pihenő':'Rövid pihenő',restStatus.textContent,undoSnapshot);}
+    if(restStatus){restStatus.textContent=restType==='long'?'Hosszú pihenő: a varázsrekeszek és a hosszú pihenőre visszatöltő használatok helyreálltak.':'Rövid pihenő: a rövid pihenőre visszatöltő használatok helyreálltak.';restStatus.textContent+=' '+hitDiceRestReminder(restType,hitDiceRecovered);const preparationMessage=restType==='long'?dailyPreparationReminder(klass):'';if(preparationMessage){restStatus.textContent+=' '+preparationMessage+' Nyisd meg a Varázslás panel Napi varázslatok módosítása részét.';updateDailyPreparationToolbar(preparationMessage);}restStatus.hidden=false;showUndoEventBubble(restType==='long'?'Hosszú pihenő':'Rövid pihenő',restStatus.textContent,undoSnapshot);}
 }
 
 function refreshCombatAttackOptions(){

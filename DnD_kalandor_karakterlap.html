@@ -1640,17 +1640,24 @@ body:has(.sheet:not(.mobile-mode)) #previewFrame{padding-bottom:78px}
 .mobile-context-notices button[data-severity="critical"]{border-color:#c66b62;background:color-mix(in srgb,#8f352f 24%,var(--bg));color:#ffd8d2}
 .mobile-context-notices button[data-severity="warning"]{border-color:#c99a46;background:color-mix(in srgb,#8b641f 18%,var(--bg))}
 body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:flex;justify-content:flex-start;gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-behavior:smooth;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 58%,transparent) transparent;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px);-webkit-overflow-scrolling:touch}
-body:has(.sheet.mobile-mode) .mobile-bottom-nav button{flex:0 0 82px;scroll-snap-align:center}
-body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(6,minmax(105px,160px));justify-content:center;gap:4px;padding:7px 12px;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
-.mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
-.mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
+body:has(.sheet.mobile-mode) .mobile-bottom-nav>button,body:has(.sheet.mobile-mode) .mobile-bottom-nav>.settings-menu{flex:0 0 82px;scroll-snap-align:center}
+body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:flex;justify-content:center;gap:4px;padding:7px 12px;overflow-x:auto;overflow-y:hidden;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
+body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav>button,body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav>.settings-menu{flex:0 1 128px;min-width:82px}
+@media(min-width:769px) and (max-width:900px){body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{justify-content:flex-start}}
+.mobile-bottom-nav>button,.mobile-bottom-nav>.settings-menu>summary{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer;box-sizing:border-box;list-style:none;text-transform:none;letter-spacing:normal}
+.mobile-bottom-nav>.settings-menu{position:static;z-index:auto;margin:0}
+.mobile-bottom-nav>.settings-menu>summary{border-color:transparent!important;background:transparent!important;color:var(--muted)!important;box-shadow:none!important;text-shadow:none!important}
+.mobile-bottom-nav>.settings-menu>summary::-webkit-details-marker{display:none}
+.mobile-bottom-nav>button>span,.mobile-bottom-nav>.settings-menu>summary>span{font-size:1.05rem;line-height:1}
 .mobile-bottom-nav .d20-nav-icon{display:grid;place-items:center;width:22px;height:22px;font-size:0}
 .mobile-bottom-nav .d20-nav-icon svg{display:block;width:22px;height:22px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 .d20-line-icon{display:inline-grid;flex:0 0 auto;place-items:center;width:24px;height:24px;color:currentColor;vertical-align:middle}
 .d20-line-icon svg{display:block;width:100%;height:100%;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
-.mobile-bottom-nav button>strong{max-width:100%;overflow:hidden;font-size:.65rem;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
-.mobile-bottom-nav button[aria-current="page"]{border-color:color-mix(in srgb,var(--accent) 58%,transparent);background:color-mix(in srgb,var(--accent) 16%,var(--card));color:var(--accent);box-shadow:inset 0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)}
-.mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mobile-bottom-nav>button>strong,.mobile-bottom-nav>.settings-menu>summary>strong{max-width:100%;overflow:hidden;font-size:.65rem;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
+.mobile-bottom-nav>button[aria-current="page"],.mobile-bottom-nav>.settings-menu[open]>summary{border-color:color-mix(in srgb,var(--accent) 58%,transparent)!important;background:color-mix(in srgb,var(--accent) 16%,var(--card))!important;color:var(--accent)!important;box-shadow:inset 0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)!important}
+.mobile-bottom-nav>button:focus-visible,.mobile-bottom-nav>.settings-menu>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mobile-bottom-nav>.settings-menu>.settings-menu-panel{position:fixed;top:auto;right:max(8px,env(safe-area-inset-right));bottom:calc(70px + env(safe-area-inset-bottom));left:auto;z-index:9010;width:min(290px,calc(100vw - 16px));min-width:0;max-height:calc(100dvh - 92px);padding:10px;overflow:auto;transform:none;box-sizing:border-box}
+.mobile-bottom-nav>.settings-menu>.settings-menu-panel button{display:block;width:100%;min-height:42px;margin:0;padding:8px 12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:.82rem;font-weight:700;line-height:1.2;text-align:left;cursor:pointer}
 body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
 #mobileNavCharacter,#mobileNavStats,#mobileNavWeapons,#mobileNavRolls,#mobileNavSpells,#classFeaturesCard{scroll-margin-top:10px}
 .mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:block;padding:0;background:radial-gradient(circle at 50% -10%,var(--class-glow,rgba(200,169,106,.22)),transparent 34%),var(--card);box-sizing:border-box}
@@ -2530,23 +2537,6 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   <div class="class-banner-runes" aria-hidden="true"><i>◆</i><i>✦</i><i>◇</i><i>⌁</i><i>✧</i><i>⌁</i></div>
 </section>
 
-<div class="view-switcher">
-    <details id="settingsMenu" class="settings-menu">
-      <summary>⚙ Beállítások</summary>
-      <div class="settings-menu-panel">
-        <button id="portraitSettingsButton" type="button">🖼 Portré</button>
-        <button id="notesSettingsButton" type="button">📝 Jegyzetek</button>
-        <button id="uiLanguageToggle" class="settings-language-toggle" type="button" data-i18n-ignore>English</button>
-        <button id="exportCharacter">💾 Export</button>
-        <button id="importCharacter">📂 Import</button>
-        <button id="clearCharacter" type="button">♲ Karakterlap ürítése</button>
-        <input type="file" id="importFile" accept=".json" style="display:none;">
-      </div>
-    </details>
-    <button id="desktopNotesButton" type="button">📝 Jegyzetek</button>
-    <button id="shortRestButton" type="button">🌤 Rövid pihenő</button>
-    <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
-</div>
 <p id="restStatus" class="rest-status" aria-live="polite" hidden></p>
 <p id="characterSaveStatus" class="character-save-status" role="status" aria-live="polite" data-state="saved">A karakterlap automatikusan mentődik.</p>
 <p id="combatEncounterStatus" class="combat-encounter-status" role="status" hidden><span id="combatEncounterStatusText"></span><button id="combatEncounterDismiss" type="button" aria-label="Értesítés bezárása" title="Bezárás">×</button></p>
@@ -3144,13 +3134,27 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 </div>
 </div>
 
-<nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
+<nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Gyorsnavigáció">
   <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavStats"><span aria-hidden="true">✣</span><strong>Statok</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavWeapons"><span aria-hidden="true">⚔</span><strong>Fegyverek</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="classFeaturesCard"><span aria-hidden="true">◆</span><strong>Kaszt</strong></button>
+  <button id="bottomNotesButton" type="button"><span aria-hidden="true">📝</span><strong>Jegyzetek</strong></button>
+  <button id="shortRestButton" type="button"><span aria-hidden="true">🌤</span><strong>Rövid pihenő</strong></button>
+  <button id="longRestButton" type="button"><span aria-hidden="true">🌙</span><strong>Hosszú pihenő</strong></button>
+  <details id="settingsMenu" class="settings-menu">
+    <summary><span aria-hidden="true">⚙</span><strong>Beállítások</strong></summary>
+    <div class="settings-menu-panel">
+      <button id="portraitSettingsButton" type="button">🖼 Portré</button>
+      <button id="uiLanguageToggle" class="settings-language-toggle" type="button" data-i18n-ignore>English</button>
+      <button id="exportCharacter">💾 Export</button>
+      <button id="importCharacter">📂 Import</button>
+      <button id="clearCharacter" type="button">♲ Karakterlap ürítése</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+  </details>
 </nav>
 
 <div id="mobileRollPanelOverlay" class="mobile-roll-panel-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mobileRollPanelTitle">
@@ -12973,7 +12977,7 @@ responsiveSheetMedia.addEventListener?.('change',syncResponsiveSheetMode);
 syncResponsiveSheetMode();
 
 const mobileBottomNav=document.getElementById('mobileBottomNav');
-const mobileBottomNavButtons=[...(mobileBottomNav?.querySelectorAll('button')||[])];
+const mobileBottomNavButtons=[...(mobileBottomNav?.querySelectorAll(':scope > button')||[])];
 const mobileRollPanelOverlay=document.getElementById('mobileRollPanelOverlay');
 const mobileRollChoice=document.getElementById('mobileRollChoice');
 let mobileRollKind='skill';
@@ -13474,8 +13478,8 @@ function sanitizeNotesHtml(value){const template=document.createElement('templat
 function syncNotesEditorFromField(){if(notesEditor&&characterNotesData){const clean=sanitizeNotesHtml(characterNotesData.value);characterNotesData.value=clean;notesEditor.innerHTML=clean;}}
 function saveNotes(){if(!notesEditor||!characterNotesData)return;characterNotesData.value=notesEditor.innerHTML;saveCharacter();const status=document.getElementById('notesStatus');if(status){status.textContent='Mentve.';clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(()=>{status.textContent='A jegyzet automatikusan mentődik.';},1200);}}
 function openNotes(){syncNotesEditorFromField();notesOverlay.hidden=false;document.body.style.overflow='hidden';requestAnimationFrame(()=>notesEditor?.focus());}
-function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById(sheet?.classList.contains('mobile-mode')?'notesSettingsButton':'desktopNotesButton')?.focus();}
-document.getElementById('notesSettingsButton')?.addEventListener('click',openNotes);document.getElementById('desktopNotesButton')?.addEventListener('click',openNotes);document.getElementById('notesCloseButton')?.addEventListener('click',closeNotes);notesOverlay?.addEventListener('click',event=>{if(event.target===notesOverlay)closeNotes();});
+function closeNotes(){saveNotes();notesOverlay.hidden=true;document.body.style.overflow='';document.getElementById('bottomNotesButton')?.focus();}
+document.getElementById('bottomNotesButton')?.addEventListener('click',openNotes);document.getElementById('notesCloseButton')?.addEventListener('click',closeNotes);notesOverlay?.addEventListener('click',event=>{if(event.target===notesOverlay)closeNotes();});
 notesEditor?.addEventListener('input',()=>{characterNotesData.value=notesEditor.innerHTML;clearTimeout(notesSaveTimer);notesSaveTimer=window.setTimeout(saveNotes,350);});notesEditor?.addEventListener('paste',event=>{event.preventDefault();document.execCommand('insertText',false,event.clipboardData?.getData('text/plain')||'');});
 document.getElementById('notesToolbar')?.addEventListener('mousedown',event=>event.preventDefault());document.getElementById('notesToolbar')?.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;notesEditor?.focus();if(button.dataset.notesBlock){const target=button.dataset.notesBlock.toLowerCase(),selection=window.getSelection();let node=selection?.anchorNode;if(node?.nodeType===Node.TEXT_NODE)node=node.parentElement;const current=node instanceof Element?node.closest('h2,h3,p,div'):null;document.execCommand('formatBlock',false,current?.tagName.toLowerCase()===target?'p':target);}else document.execCommand(button.dataset.notesCommand,false,null);saveNotes();});
 syncNotesEditorFromField();

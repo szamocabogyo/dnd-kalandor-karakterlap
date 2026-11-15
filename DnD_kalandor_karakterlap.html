@@ -1650,7 +1650,7 @@ body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;righ
 .mobile-bottom-nav button[aria-current="page"]{border-color:color-mix(in srgb,var(--accent) 58%,transparent);background:color-mix(in srgb,var(--accent) 16%,var(--card));color:var(--accent);box-shadow:inset 0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)}
 .mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
-#mobileNavCharacter,#mobileNavStats,#mobileNavWeapons,#mobileNavRolls,#mobileNavSpells,#mobileNavMore{scroll-margin-top:10px}
+#mobileNavCharacter,#mobileNavStats,#mobileNavWeapons,#mobileNavRolls,#mobileNavSpells,#classFeaturesCard{scroll-margin-top:10px}
 .mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:block;padding:0;background:var(--card);box-sizing:border-box}
 .mobile-roll-panel-overlay[hidden]{display:none!important}
 .mobile-roll-panel-dialog{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:100dvh;margin:0;padding:0 0 calc(20px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;border:0;border-radius:0;background:var(--card);box-shadow:none;box-sizing:border-box}
@@ -3134,7 +3134,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   <button type="button" data-mobile-nav-target="mobileNavWeapons"><span aria-hidden="true">⚔</span><strong>Fegyverek</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
-  <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
+  <button type="button" data-mobile-nav-target="classFeaturesCard"><span aria-hidden="true">◆</span><strong>Kaszt</strong></button>
 </nav>
 
 <div id="mobileRollPanelOverlay" class="mobile-roll-panel-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mobileRollPanelTitle">

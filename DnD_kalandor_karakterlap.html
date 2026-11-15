@@ -1639,8 +1639,9 @@ body:has(.sheet:not(.mobile-mode)) #previewFrame{padding-bottom:78px}
 .mobile-context-notices button::after{content:"›";margin-left:auto;color:var(--accent);font-size:1.25rem;line-height:1}
 .mobile-context-notices button[data-severity="critical"]{border-color:#c66b62;background:color-mix(in srgb,#8f352f 24%,var(--bg));color:#ffd8d2}
 .mobile-context-notices button[data-severity="warning"]{border-color:#c99a46;background:color-mix(in srgb,#8b641f 18%,var(--bg))}
-body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
-body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(4,minmax(130px,180px));justify-content:center;gap:4px;padding:7px 12px;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
+body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:flex;justify-content:flex-start;gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-behavior:smooth;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--accent) 58%,transparent) transparent;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px);-webkit-overflow-scrolling:touch}
+body:has(.sheet.mobile-mode) .mobile-bottom-nav button{flex:0 0 82px;scroll-snap-align:center}
+body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(6,minmax(105px,160px));justify-content:center;gap:4px;padding:7px 12px;border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
 .mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
 .mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
 .mobile-bottom-nav .d20-nav-icon{display:grid;place-items:center;width:22px;height:22px;font-size:0}
@@ -1649,7 +1650,7 @@ body:has(.sheet:not(.mobile-mode)) .mobile-bottom-nav{position:fixed;left:0;righ
 .mobile-bottom-nav button[aria-current="page"]{border-color:color-mix(in srgb,var(--accent) 58%,transparent);background:color-mix(in srgb,var(--accent) 16%,var(--card));color:var(--accent);box-shadow:inset 0 0 12px color-mix(in srgb,var(--accent) 9%,transparent)}
 .mobile-bottom-nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portrait-editor-overlay:not([hidden])) .mobile-bottom-nav,body:has(.character-reset-overlay:not([hidden])) .mobile-bottom-nav,body:has(.notes-overlay:not([hidden])) .mobile-bottom-nav{display:none}
-#mobileNavCharacter,#mobileNavRolls,#mobileNavSpells,#mobileNavMore{scroll-margin-top:10px}
+#mobileNavCharacter,#mobileNavStats,#mobileNavWeapons,#mobileNavRolls,#mobileNavSpells,#mobileNavMore{scroll-margin-top:10px}
 .mobile-roll-panel-overlay{position:fixed;inset:0;z-index:100002;display:block;padding:0;background:var(--card);box-sizing:border-box}
 .mobile-roll-panel-overlay[hidden]{display:none!important}
 .mobile-roll-panel-dialog{width:100vw;height:100vh;height:100dvh;max-width:none;max-height:100dvh;margin:0;padding:0 0 calc(20px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;border:0;border-radius:0;background:var(--card);box-shadow:none;box-sizing:border-box}
@@ -2656,7 +2657,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 <div class="main">
 
     <!-- BAL OLDAL -->
-    <div class="abilities">
+    <div id="mobileNavStats" class="abilities">
 
 <h2 class="desktop-abilities-title"><span class="dnd-mark" aria-hidden="true">✣</span> Tulajdonságok</h2>
 
@@ -2836,7 +2837,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   <div class="inspiration-row"><input id="inspiration" type="checkbox" aria-label="Inspiráció aktív"><label class="inspiration-label" for="inspiration"><span aria-hidden="true">✦</span> Inspiráció</label><span class="inspiration-state" aria-live="polite">Nincs aktív inspiráció</span><label class="inspiration-die">Kockaérték<select id="inspirationDie"><option value="">Válassz…</option><option value="d4">d4</option><option value="d6">d6</option><option value="d8">d8</option><option value="d10">d10</option><option value="d12">d12</option><option value="d20">d20</option></select></label><label class="combat-inspiration-source"><input id="inspirationCombat" type="checkbox"> Combat Inspiration (College of Valor)</label></div>
 </div>
 
-        <div class="card attacks">
+        <div id="mobileNavWeapons" class="card attacks">
             <div class="attacks-heading">
                 <span class="attacks-rule" aria-hidden="true"></span>
                 <span class="attacks-mark" aria-hidden="true">⚔</span>
@@ -3129,6 +3130,8 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 
 <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
   <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavStats"><span aria-hidden="true">✣</span><strong>Statok</strong></button>
+  <button type="button" data-mobile-nav-target="mobileNavWeapons"><span aria-hidden="true">⚔</span><strong>Fegyverek</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
@@ -13156,6 +13159,13 @@ document.getElementById('combatSavingThrowButton')?.addEventListener('click',eve
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');
+    if(button&&sheet.classList.contains('mobile-mode')&&mobileBottomNav){
+        const buttonRect=button.getBoundingClientRect(),navRect=mobileBottomNav.getBoundingClientRect();
+        if(buttonRect.left<navRect.left||buttonRect.right>navRect.right){
+            const left=button.offsetLeft-(mobileBottomNav.clientWidth-button.offsetWidth)/2;
+            mobileBottomNav.scrollTo({left:Math.max(0,left),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+        }
+    }
 }
 function revealMobileNavigationTarget(target){
     if(target.classList.contains('collapsed'))target.querySelector(':scope > .section-header')?.click();

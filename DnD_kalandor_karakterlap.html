@@ -1677,12 +1677,14 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .dice-shape-guide[hidden]{display:none!important}
 .dice-shape-guide-title{grid-column:1/-1;margin:0 0 2px;color:var(--accent);font-size:.68rem;font-weight:800;letter-spacing:.08em;text-align:center;text-transform:uppercase}
 .dice-shape-guide-item{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;font-size:.7rem;font-weight:800;line-height:1}
-.dice-shape-guide-item svg{display:block;width:38px;height:34px;overflow:visible;fill:color-mix(in srgb,var(--accent) 7%,transparent);stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round;transition:color .18s ease,fill .18s ease,filter .18s ease,transform .18s ease}
+.dice-shape-guide-item svg{display:block;width:40px;height:36px;overflow:visible;fill:color-mix(in srgb,var(--accent) 5%,transparent);stroke:currentColor;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:miter;transition:color .18s ease,fill .18s ease,filter .18s ease,transform .18s ease}
+.dice-shape-guide-item svg .die-outline{stroke-width:2.25}
+.dice-shape-guide-item svg text{fill:currentColor;stroke:none;font-family:Georgia,'Times New Roman',serif;font-size:10px;font-weight:800;text-anchor:middle;dominant-baseline:middle}
 .dice-shape-guide-item strong{color:var(--text);font-size:.72rem}
 .dice-shape-guide-item.is-active{color:var(--accent)}
 .dice-shape-guide-item.is-active svg{fill:color-mix(in srgb,var(--accent) 24%,transparent);stroke-width:2;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 72%,transparent));transform:translateY(-1px) scale(1.08)}
 .dice-shape-guide-item.is-active strong{color:var(--accent);text-shadow:0 0 8px color-mix(in srgb,var(--accent) 48%,transparent)}
-@media(max-width:390px){.dice-shape-guide{gap:3px;padding-inline:5px}.dice-shape-guide-item svg{width:32px;height:29px}}
+@media(max-width:390px){.dice-shape-guide{gap:3px;padding-inline:5px}.dice-shape-guide-item svg{width:34px;height:31px}.dice-shape-guide-item svg text{font-size:9px}}
 .mobile-roll-result{margin-top:12px}
 .mobile-roll-result:empty{display:none}
 .mobile-roll-result .saving-throw-result-card{margin:0;padding:15px;border-width:2px;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 24%,transparent),0 10px 24px rgba(0,0,0,.3)}
@@ -3178,12 +3180,12 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <button id="mobileRollExecute" class="mobile-roll-execute" type="button"><span class="d20-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><span>Dobás</span></button>
     <aside id="diceShapeGuide" class="dice-shape-guide" aria-label="Kockaforma súgó">
       <p class="dice-shape-guide-title">Kockaforma súgó</p>
-      <span class="dice-shape-guide-item" data-die="4" title="Négyoldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="M24 3 44 39H4L24 3Z"/><path d="M24 3 14 31h20L24 3ZM4 39l10-8m30 8-10-8"/></svg><strong>d4</strong></span>
-      <span class="dice-shape-guide-item" data-die="6" title="Hatoldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="m24 3 18 10v20L24 43 6 33V13L24 3Z"/><path d="m6 13 18 10 18-10M24 23v20"/></svg><strong>d6</strong></span>
-      <span class="dice-shape-guide-item" data-die="8" title="Nyolcoldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="M24 2 43 22 24 42 5 22 24 2Z"/><path d="M24 2 11 30h26L24 2ZM5 22l6 8m32-8-6 8M11 30l13 12 13-12"/></svg><strong>d8</strong></span>
-      <span class="dice-shape-guide-item" data-die="10" title="Tízoldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="M24 2 44 22 24 42 4 22 24 2Z"/><path d="m24 2-9 19 9 10 9-10-9-19ZM4 22l11-1m29 1-11-1M4 22l20 20 20-20M15 21l9 10 9-10"/></svg><strong>d10</strong></span>
-      <span class="dice-shape-guide-item" data-die="12" title="Tizenkét oldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="m24 2 13 4 8 11v14L35 41H13L3 31V17L11 6l13-4Z"/><path d="m24 12 11 8-4 13H17l-4-13 11-8ZM11 6l2 14L3 17m34-11-2 14 10-3M3 31l14 2-4 8m32-10-14 2 4 8M24 2v10"/></svg><strong>d12</strong></span>
-      <span class="dice-shape-guide-item" data-die="20" title="Húszoldalú kocka"><svg viewBox="0 0 48 44" aria-hidden="true"><path d="M24 2 43 13v21L24 43 5 34V13L24 2Z"/><path d="m24 2-9 17 9 15 9-15-9-17ZM5 13l10 6L5 34m38-21-10 6 10 15M5 34l19-1 19 1M15 19h18M24 34v9"/></svg><strong>d20</strong></span>
+      <span class="dice-shape-guide-item" data-die="4" title="Négyoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 3 48 41H4L26 3Z"/><path d="m26 3-9 29h18L26 3ZM4 41l13-9m31 9-13-9"/><text x="26" y="29">4</text></svg><strong>d4</strong></span>
+      <span class="dice-shape-guide-item" data-die="6" title="Hatoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="m26 3 20 11v21L26 44 6 34V13L26 3Z"/><path d="M6 13l20 11 20-10M26 24v20"/><text x="27" y="15">6</text></svg><strong>d6</strong></span>
+      <span class="dice-shape-guide-item" data-die="8" title="Nyolcoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 2 45 13v22L26 44 7 35V13L26 2Z"/><path d="M26 2 12 35h28L26 2ZM7 13l5 22m33-22-5 22M12 35l14 9 14-9"/><text x="26" y="27">8</text></svg><strong>d8</strong></span>
+      <span class="dice-shape-guide-item" data-die="10" title="Tízoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 2 49 23 26 44 3 23 26 2Z"/><path d="M26 2 16 22l10 11 10-11L26 2ZM3 23l13-1m33 1-13-1M3 23l23 21 23-21M16 22l10 11 10-11"/><text x="26" y="21">10</text></svg><strong>d10</strong></span>
+      <span class="dice-shape-guide-item" data-die="12" title="Tizenkét oldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="m26 2 13 4 9 10v14l-9 10-13 4-13-4-9-10V16l9-10 13-4Z"/><path d="m26 12 11 8-4 13H19l-4-13 11-8ZM13 6l2 14L4 16m35-10-2 14 11-4M4 30l15 3-6 7m35-10-15 3 6 7M26 2v10"/><text x="26" y="23">12</text></svg><strong>d12</strong></span>
+      <span class="dice-shape-guide-item" data-die="20" title="Húszoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 2 46 14v20L26 44 6 34V14L26 2Z"/><path d="m26 2-9 16 9 16 9-16L26 2ZM6 14l11 4L6 34m40-20-11 4 11 16M6 34l20-1 20 1M17 18h18M26 34v10"/><text x="26" y="23">20</text></svg><strong>d20</strong></span>
     </aside>
     <div id="mobileRollResult" class="mobile-roll-result" aria-live="polite"></div>
   </section>

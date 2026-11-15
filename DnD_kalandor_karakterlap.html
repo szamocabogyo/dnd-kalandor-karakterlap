@@ -1650,7 +1650,7 @@ body:has(.sheet.mobile-mode) #previewFrame{padding-bottom:calc(74px + env(safe-a
 .mobile-context-notices button::after{content:"›";margin-left:auto;color:var(--accent);font-size:1.25rem;line-height:1}
 .mobile-context-notices button[data-severity="critical"]{border-color:#c66b62;background:color-mix(in srgb,#8f352f 24%,var(--bg));color:#ffd8d2}
 .mobile-context-notices button[data-severity="warning"]{border-color:#c99a46;background:color-mix(in srgb,#8b641f 18%,var(--bg))}
-body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
+body:has(.sheet.mobile-mode) .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:9000;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:6px 5px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--accent);background:color-mix(in srgb,var(--card) 94%,#000);box-shadow:0 -8px 22px rgba(0,0,0,.42);backdrop-filter:blur(10px)}
 .mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;margin:0;padding:5px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
 .mobile-bottom-nav button>span{font-size:1.05rem;line-height:1}
 .mobile-bottom-nav .d20-nav-icon{display:grid;place-items:center;width:22px;height:22px;font-size:0}
@@ -2220,7 +2220,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 .sheet.mobile-mode>.view-switcher>.settings-menu[open]>.settings-menu-panel{margin-top:6px;width:100%}
 .sheet.mobile-mode #desktopNotesButton{display:none!important}
 @media(min-width:769px){
-  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(6,minmax(104px,1fr));gap:6px;align-items:stretch;width:100%;margin:0 0 16px}
+  .sheet:not(.mobile-mode)>.view-switcher{display:grid;grid-template-columns:minmax(220px,1.45fr) repeat(5,minmax(112px,1fr));gap:6px;align-items:stretch;width:100%;margin:0 0 16px}
   .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{display:grid;width:100%;min-width:0;padding:2px;border-radius:9px}
   .sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch button{width:100%;min-width:0;min-height:36px;padding:4px 7px;border-radius:7px;font-size:.72rem}
   .sheet:not(.mobile-mode)>.view-switcher>button,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu{width:100%;min-width:0;box-sizing:border-box}
@@ -2228,7 +2228,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   .sheet:not(.mobile-mode)>.view-switcher>button:hover,.sheet:not(.mobile-mode)>.view-switcher>.settings-menu>summary:hover{transform:none}
   .sheet:not(.mobile-mode) #notesSettingsButton{display:none!important}
 }
-@media(min-width:769px) and (max-width:1099px){.sheet:not(.mobile-mode)>.view-switcher{grid-template-columns:repeat(6,minmax(0,1fr))}.sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{grid-column:1/-1}}
+@media(min-width:769px) and (max-width:1099px){.sheet:not(.mobile-mode)>.view-switcher{grid-template-columns:repeat(5,minmax(0,1fr))}.sheet:not(.mobile-mode)>.view-switcher>.sheet-mode-switch{grid-column:1/-1}}
 /* Compact, consistent mobile form rhythm without shrinking touch targets. */
 .sheet.mobile-mode input:not([type=checkbox]):not([type=radio]):not([type=hidden]),.sheet.mobile-mode select{height:40px;min-height:40px;padding:6px 8px;font-size:16px;line-height:1.25;border-radius:6px}
 .sheet.mobile-mode textarea{min-height:72px;padding:7px 8px;font-size:16px;line-height:1.4;border-radius:6px}
@@ -2545,7 +2545,6 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     </details>
     <button id="desktopNotesButton" type="button">📝 Jegyzetek</button>
     <button id="unifiedRollPanelButton" type="button">🎲 Dobópanel</button>
-    <button id="combatGuideButton" type="button">⚔ Harci súgó</button>
     <button id="shortRestButton" type="button">🌤 Rövid pihenő</button>
     <button id="longRestButton" type="button">🌙 Hosszú pihenő</button>
 </div>
@@ -3149,7 +3148,6 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
 <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobil gyorsnavigáció">
   <button type="button" data-mobile-nav-target="mobileNavCharacter" aria-current="page"><span aria-hidden="true">♙</span><strong>Karakter</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavRolls" data-mobile-nav-action="rolls"><span class="d20-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><strong>Dobások</strong></button>
-  <button type="button" data-mobile-nav-action="combat-guide"><span aria-hidden="true">⚔</span><strong>Harci súgó</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavSpells"><span aria-hidden="true">✧</span><strong>Varázslatok</strong></button>
   <button type="button" data-mobile-nav-target="mobileNavMore"><span aria-hidden="true">◆</span><strong>Továbbiak</strong></button>
 </nav>
@@ -13079,7 +13077,6 @@ mobileRollPanelOverlay?.addEventListener('click',event=>{if(event.target===mobil
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileRollPanelOverlay&&!mobileRollPanelOverlay.hidden)closeMobileRollPanel();});
 document.getElementById('combatSavingThrowButton')?.addEventListener('click',event=>openMobileRollPanel('save',event.currentTarget));
 document.getElementById('unifiedRollPanelButton')?.addEventListener('click',event=>openMobileRollPanel(mobileRollKind,event.currentTarget));
-document.getElementById('combatGuideButton')?.addEventListener('click',event=>openMobileRollPanel('guide',event.currentTarget));
 function setMobileBottomNavCurrent(button){
     mobileBottomNavButtons.forEach(item=>item.toggleAttribute('aria-current',item===button));
     if(button)button.setAttribute('aria-current','page');
@@ -13091,9 +13088,6 @@ function revealMobileNavigationTarget(target){
 mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
     if(button.dataset.mobileNavAction==='rolls'){
         setMobileBottomNavCurrent(button);openMobileRollPanel();return;
-    }
-    if(button.dataset.mobileNavAction==='combat-guide'){
-        setMobileBottomNavCurrent(button);openMobileRollPanel('guide',button);return;
     }
     const target=document.getElementById(button.dataset.mobileNavTarget||'');if(!target)return;
     revealMobileNavigationTarget(target);setMobileBottomNavCurrent(button);

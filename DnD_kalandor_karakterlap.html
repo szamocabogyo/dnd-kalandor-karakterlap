@@ -3169,7 +3169,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
       <button type="button" role="tab" data-mobile-roll-kind="save" aria-selected="false">Mentődobás</button>
       <button type="button" role="tab" data-mobile-roll-kind="initiative" aria-selected="false">Kezdeményezés</button>
       <button type="button" role="tab" data-mobile-roll-kind="attack" aria-selected="false">Támadás</button>
-      <button type="button" role="tab" data-mobile-roll-kind="damage" aria-selected="false">Sebzés</button>
+      <button type="button" role="tab" data-mobile-roll-kind="damage" aria-selected="false">Sebzés / gyógyítás</button>
       <button type="button" role="tab" data-mobile-roll-kind="guide" aria-selected="false">Harci súgó</button>
     </div>
     <p id="mobileRollInstruction" class="context-instruction" aria-live="polite"></p>
@@ -8345,10 +8345,11 @@ function refreshSpellOutsideRoll(row){
     const type=panel.querySelector('.spell-outside-roll-type'),manual=panel.querySelector('.spell-outside-roll-manual'),manualLabel=manual?.closest('label'),extra=panel.querySelector('.spell-outside-roll-extra'),extraLabel=panel.querySelector('.spell-outside-roll-extra-label'),button=panel.querySelector('.spell-outside-roll-button:not(.spell-outside-damage-button)'),progress=panel.querySelector('.spell-outside-progress'),outcome=panel.querySelector('.spell-outside-attack-outcome'),saveOutcome=panel.querySelector('.spell-outside-save-outcome'),saveRuleInfo=panel.querySelector('.spell-outside-save-rule'),saveRuleSetting=panel.querySelector('.spell-outside-save-rule-setting'),damageButton=panel.querySelector('.spell-outside-damage-button'),damageFields=panel.querySelector('.spell-outside-damage'),note=panel.querySelector('.spell-outside-roll-note'),saveDc=panel.querySelector('.spell-outside-save-dc'),rollOptions=panel.querySelector('.spell-roll-options');
     const values=spellOutsideRollValues(row),name=row.querySelector('input[id$="_name"]')?.value.trim(),healing=values.healing;
     type.value=['attack','save','direct-damage','effect-pool'].includes(values.inferred)?values.inferred:'utility';type.disabled=Boolean(values.catalogResolution);type.dataset.inferred=values.inferred;
+    const directOption=type.querySelector('option[value="direct-damage"]'),utilityOption=type.querySelector('option[value="utility"]');if(directOption)directOption.textContent=healing?'Nincs d20 – közvetlen gyógyítás':'Nincs d20 – közvetlen sebzés';if(utilityOption)utilityOption.textContent=healing?'Nincs d20 – gyógyító hatás':'Nincs d20 vagy sebzésdobás';
     const direct=['direct-damage','effect-pool'].includes(values.inferred),utility=type.value==='utility'&&!direct,save=type.value==='save',damagePhase=panel.dataset.damageReady==='true',saveNoDamage=save&&panel.dataset.saveOutcome==='success'&&spellSaveDamageRule(row,values.spell)==='none';
     if(manualLabel)manualLabel.hidden=utility||save||damagePhase;if(extraLabel)extraLabel.hidden=utility||save||damagePhase;
     manual.disabled=utility||save;extra.disabled=utility||save;
-    if(progress){progress.hidden=utility||healing||direct;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';steps[0]?.classList.toggle('active',!damagePhase&&!saveNoDamage);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);steps[1]?.classList.toggle('done',saveNoDamage);}
+    if(progress){progress.hidden=utility||direct;const steps=progress.querySelectorAll('span');if(steps[0])steps[0].textContent=save?'1. Mentődobás eredménye':'1. Találati dobás';if(steps[1])steps[1].textContent=healing?'2. Gyógyítás':'2. Sebzésdobás';steps[0]?.classList.toggle('active',!damagePhase&&!saveNoDamage);steps[0]?.classList.toggle('done',save?Boolean(panel.dataset.saveOutcome):Boolean(panel.dataset.attackResult));steps[1]?.classList.toggle('active',damagePhase);steps[1]?.classList.toggle('done',saveNoDamage);}
     if(button){button.hidden=utility||save||damagePhase;button.disabled=!name;button.textContent='🎲 Varázstámadás dobása';}
     const damageSpec=!utility||healing?parseDamageExpression(spellOutsideDamageExpression(row)):null,damageReady=damagePhase;
     if(damageFields){
@@ -8363,19 +8364,20 @@ function refreshSpellOutsideRoll(row){
             }
         }
     }
-    if(outcome)outcome.hidden=save||!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);
+    if(outcome){outcome.hidden=save||!damageSpec||!panel.dataset.attackResult||panel.dataset.lastNatural==='1'||Boolean(panel.dataset.attackResolved);const hitButton=outcome.querySelector('button');if(hitButton)hitButton.textContent=healing?'✓ Talált – gyógyítás':'✓ Talált – sebzésdobás';}
     if(saveOutcome){saveOutcome.hidden=!save||!damageSpec;saveOutcome.querySelectorAll('button').forEach(button=>{const selected=button.dataset.saveOutcome===panel.dataset.saveOutcome;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});}
     if(saveRuleInfo){saveRuleInfo.hidden=!save||!damageSpec;saveRuleInfo.textContent=spellSaveDamageRuleText(spellSaveDamageRule(row,values.spell));}
     if(damageButton){damageButton.hidden=!damageSpec||!damageReady;damageButton.disabled=!name;damageButton.textContent=values.inferred==='effect-pool'?'🎲 Hatásérték kiszámítása':healing?'🎲 Gyógyítás kiszámítása':'🎲 Sebzés kiszámítása';}
     if(saveDc){saveDc.hidden=!save;saveDc.textContent=save?`Sikeres mentődobáshoz szükséges érték: DC ${values.dc}`:'';}
     if(saveRuleSetting)saveRuleSetting.hidden=!save||Boolean(values.catalogResolution);
     if(rollOptions){rollOptions.hidden=utility||damagePhase||(save&&Boolean(values.catalogResolution));if(rollOptions.hidden)rollOptions.open=false;}
-    note.textContent=values.inferred==='effect-pool'?'Ez nem sebzés: add meg a hatáskockákat, vagy hagyd üresen az automatikus dobáshoz.':direct?(values.special?.label||'Nincs találati dobás; a sebzés közvetlenül kiszámítható.'):healing?'Add meg kockánként a kézi gyógyítási értékeket, vagy hagyd üresen az automatikus dobáshoz.':utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save&&!damagePhase?'A célpont saját mentődobását a fenti DC ellen végzi el. Csak jelöld, hogy sikerült-e; dobott értéket nem kell megadni.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
+    note.textContent=values.inferred==='effect-pool'?'Ez nem sebzés: add meg a hatáskockákat, vagy hagyd üresen az automatikus dobáshoz.':healing?'Add meg kockánként a kézi gyógyítási értékeket, vagy hagyd üresen az automatikus dobáshoz.':direct?(values.special?.label||'Nincs találati dobás; a sebzés közvetlenül kiszámítható.'):utility?'A varázslat használata rögzítve; ehhez a hatáshoz nincs d20 dobás.':save&&!damagePhase?'A célpont saját mentődobását a fenti DC ellen végzi el. Csak jelöld, hogy sikerült-e; dobott értéket nem kell megadni.':damagePhase?'Add meg kockánként a kézi sebzésértékeket, vagy hagyd üresen az automatikus dobáshoz.':`Varázstámadási bónusz: ${values.attack>=0?'+':''}${values.attack}. Hagyd üresen a kézi d20 mezőt az automatikus dobáshoz.`;
 }
 function resolveSpellOutsideAttack(row,hit){
     const panel=row?.querySelector('.spell-outside-roll'),result=row?.querySelector('.spell-outside-use-result');if(!panel||!result)return;
+    const healing=spellOutsideRollValues(row).healing;
     panel.dataset.attackResolved=hit?'hit':'miss';panel.dataset.damageReady=hit?'true':'false';
-    if(!hit)result.textContent=`${panel.dataset.attackResult||panel.dataset.usageText||''} A támadás nem talált, ezért nincs sebzésdobás.`;
+    if(!hit)result.textContent=`${panel.dataset.attackResult||panel.dataset.usageText||''} A támadás nem talált, ezért nincs ${healing?'gyógyítás':'sebzésdobás'}.`;
     refreshSpellOutsideRoll(row);
     if(hit)panel.querySelector('[data-spell-damage-die],.spell-outside-damage-button')?.focus({preventScroll:true});
 }
@@ -13022,7 +13024,7 @@ function mobileRollAttackSources(){
 }
 function mobileRollDamageSources(){
     const weapons=mobileRollWeaponSources().map(source=>({...source,key:`attack:${source.key}`,kind:'attack'}));
-    const spells=[...document.querySelectorAll('#spellEntries .spell-entry-row')].filter(row=>!row.hidden).map(row=>({key:`spell:${row.dataset.spellEntryKey}`,kind:'spell',name:row.querySelector('input[id$="_name"]')?.value.trim()||'',damage:row.querySelector('input[id$="_damage"]')?.value.trim()||''}));
+    const spells=[...document.querySelectorAll('#spellEntries .spell-entry-row')].filter(row=>!row.hidden).map(row=>{const meta=spellCatalogMetadata(row),spell=spellCatalogData.find(item=>item.id===meta?.spellId);return {key:`spell:${row.dataset.spellEntryKey}`,kind:'spell',name:row.querySelector('input[id$="_name"]')?.value.trim()||'',damage:row.querySelector('input[id$="_damage"]')?.value.trim()||'',healing:spellCatalogNameMatches(row,spell)?spellIsHealingSpell(spell):false};});
     return [...weapons,...spells].filter(source=>source.name&&(parseDamageExpression(source.damage)?.dice.length||0)>0);
 }
 function mobileRollSelectedAttack(){return mobileRollAttackSources().find(source=>source.key===mobileRollChoice?.value)||null;}
@@ -13094,7 +13096,8 @@ function renderCombatHelp(){
     spellItems.push(detailItem('Varázslási értékek',`${spellAbility||'—'} · támadóbónusz: ${document.getElementById('spellAttackBonus')?.value||'—'} · mentődobás DC: ${document.getElementById('spellSaveDC')?.value||'—'}${slotText?' · rekeszek: '+slotText:''}`));
     [...document.querySelectorAll('#spellEntries .spell-entry-row:not([hidden])')].forEach(row=>{
         const spellName=row.querySelector('input[id$="_name"]')?.value.trim();if(!spellName)return;const prepared=row.querySelector('input[id$="_prepared"]'),levelValue=row.querySelector('select[id$="_level"]')?.value||'',casting=row.querySelector('input[id$="_castingTime"]')?.value.trim()||'',damage=row.querySelector('input[id$="_damage"]')?.value.trim()||'',description=row.querySelector('textarea[id$="_description"]')?.value.trim()||'';
-        const requiresPreparation=dailyPreparationClasses.has(klass)&&levelValue!=='cantrip',status=requiresPreparation&&prepared&&!prepared.checked?'nincs előkészítve':'használható',summary=[levelValue==='cantrip'?'trükk':levelValue?`${levelValue}. szint`:'',casting,damage,status,description?description.replace(/\s+/g,' ').slice(0,240)+(description.length>240?'…':''):''].filter(Boolean).join(' · ');spellItems.push(detailItem(spellName,summary));
+        const meta=spellCatalogMetadata(row),catalogSpell=spellCatalogData.find(item=>item.id===meta?.spellId),healing=spellCatalogNameMatches(row,catalogSpell)&&spellIsHealingSpell(catalogSpell);
+        const requiresPreparation=dailyPreparationClasses.has(klass)&&levelValue!=='cantrip',status=requiresPreparation&&prepared&&!prepared.checked?'nincs előkészítve':'használható',formula=damage?`${healing?'gyógyítás':'sebzés'}: ${damage}`:'',summary=[levelValue==='cantrip'?'trükk':levelValue?`${levelValue}. szint`:'',casting,formula,status,description?description.replace(/\s+/g,' ').slice(0,240)+(description.length>240?'…':''):''].filter(Boolean).join(' · ');spellItems.push(detailItem(spellName,summary));
     });
     spellcasting.replaceChildren(...spellItems);
 }
@@ -13108,7 +13111,7 @@ function mobileRollCurrentBonus(){
 function refreshMobileRollInstruction(){
     const instruction=document.getElementById('mobileRollInstruction');if(!instruction)return;
     if(mobileRollKind==='guide'){instruction.textContent=mobileRollText('Használd ezt a sorrendet emlékeztetőként; csak azokat a műveleteket válaszd, amelyekhez a karakterednek van megfelelő képessége vagy erőforrása.','Use this order as a reminder; choose only actions supported by your character’s features and resources.');return;}
-    if(mobileRollKind==='damage'){const manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());instruction.textContent=manual?mobileRollText('A kézi kockaértékeket vesszővel elválasztva add meg, a sebzésképlet kockáinak sorrendjében.','Enter manual die values separated by commas, in the order of the dice in the damage formula.'):mobileRollText('Válaszd ki a rögzített fegyver vagy varázslat sebzését. Az üres kézi mező automatikusan kidobja a képlet összes kockáját.','Choose a recorded weapon or spell damage. A blank manual field automatically rolls every die in its formula.');return;}
+    if(mobileRollKind==='damage'){const source=mobileRollSelectedDamage(),healing=Boolean(source?.healing),manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());instruction.textContent=manual?mobileRollText(`A kézi kockaértékeket vesszővel elválasztva add meg, a ${healing?'gyógyítási':'sebzés'} képlet kockáinak sorrendjében.`,`Enter manual die values separated by commas, in the order of the dice in the ${healing?'healing':'damage'} formula.`):mobileRollText(`Válaszd ki a rögzített ${healing?'gyógyító varázslatot':'fegyver vagy varázslat sebzését'}. Az üres kézi mező automatikusan kidobja a képlet összes kockáját.`,`Choose the recorded ${healing?'healing spell':'weapon or spell damage'}. A blank manual field automatically rolls every die in its formula.`);return;}
     const mode=document.getElementById('mobileRollMode')?.value||'normal',manual=Boolean(document.getElementById('mobileRollManual')?.value.trim());
     const subjects={save:mobileRollText('a mesélő által kért mentődobást','the saving throw requested by the GM'),attack:mobileRollText('a használni kívánt támadást','the attack you want to use'),initiative:mobileRollText('a kezdeményezést','initiative'),skill:mobileRollText('a helyzethez illő skillt','the skill that fits the situation')},subject=subjects[mobileRollKind]||subjects.skill;
     if(manual)instruction.textContent=mobileRollText(`Válaszd ki ${subject}, majd nyomd meg a Dobás gombot. A lap a beírt d20-hoz hozzáadja a bónuszokat.`,`Choose ${subject}, then press Roll. The sheet adds the bonuses to your entered d20.`);
@@ -13118,7 +13121,7 @@ function refreshMobileRollInstruction(){
 function refreshMobileRollPreview(clearResult=false){
     const preview=document.getElementById('mobileRollBonusPreview'),extra=Number(document.getElementById('mobileRollExtra')?.value)||0,base=mobileRollCurrentBonus();
     if(preview){
-        if(mobileRollKind==='damage'){const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage);preview.textContent=source&&parsed?`${source.name} · ${mobileRollText('Sebzésképlet','Damage formula')}: ${parsed.expression} · ${mobileRollText('Egyéb módosító','Other modifier')}: ${formatModifier(extra)}`:mobileRollText('Nincs dobható sebzésképlet rögzítve.','No rollable damage formula is recorded.');}
+        if(mobileRollKind==='damage'){const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage),healing=Boolean(source?.healing);preview.textContent=source&&parsed?`${source.name} · ${mobileRollText(healing?'Gyógyítási képlet':'Sebzésképlet',healing?'Healing formula':'Damage formula')}: ${parsed.expression} · ${mobileRollText('Egyéb módosító','Other modifier')}: ${formatModifier(extra)}`:mobileRollText('Nincs dobható sebzés- vagy gyógyítási képlet rögzítve.','No rollable damage or healing formula is recorded.');}
         else preview.textContent=`${mobileRollText('Számított bónusz','Calculated bonus')}: ${formatModifier(base)} · ${mobileRollText('Egyéb bónusz','Other bonus')}: ${formatModifier(extra)} · ${mobileRollText('Összesen','Total')}: ${formatModifier(base+extra)}`;
     }
     if(clearResult)document.getElementById('mobileRollResult')?.replaceChildren();refreshDiceShapeGuide();refreshMobileRollInstruction();
@@ -13131,7 +13134,7 @@ function populateMobileRollChoices(){
     if(mobileRollKind==='save'){options=Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value));label=mobileRollText('Mentődobás','Saving Throw');}
     else if(mobileRollKind==='attack'){options=mobileRollAttackSources().map(source=>new Option(`${source.name} (${formatModifier(source.bonus)})`,source.key));label=mobileRollText('Támadás','Attack');}
     else if(mobileRollKind==='initiative'){options=[new Option(mobileRollText('Kezdeményezés','Initiative'),'initiative')];label=mobileRollText('Dobás','Roll');}
-    else if(mobileRollKind==='damage'){options=mobileRollDamageSources().map(source=>new Option(`${source.name} (${source.damage})`,source.key));label=mobileRollText('Sebzés forrása','Damage source');}
+    else if(mobileRollKind==='damage'){options=mobileRollDamageSources().map(source=>new Option(`${source.name} · ${source.healing?mobileRollText('gyógyítás','healing'):mobileRollText('sebzés','damage')} (${source.damage})`,source.key));label=mobileRollText('Sebzés vagy gyógyítás forrása','Damage or healing source');}
     else options=[...document.querySelectorAll('.skill-row')].map(row=>new Option(characterSkillBaseName(row),characterSkillBaseName(row)));
     if(!options.length){const option=new Option(mobileRollText('Nincs rögzített választható elem','No recorded option available'),'');option.disabled=true;options=[option];}
     mobileRollChoice.replaceChildren(...options);
@@ -13139,7 +13142,7 @@ function populateMobileRollChoices(){
     const labelElement=document.getElementById('mobileRollChoiceLabel');if(labelElement)labelElement.textContent=label;
     const damage=mobileRollKind==='damage';document.getElementById('mobileRollModeField').hidden=damage;
     const manualLabel=document.getElementById('mobileRollManualLabel'),manualField=document.getElementById('mobileRollManual');if(manualLabel)manualLabel.textContent=damage?mobileRollText('Kézi kockaértékek','Manual die values'):mobileRollText('Kézi d20 érték','Manual d20 value');if(manualField)manualField.placeholder=damage?mobileRollText('pl. 4, 6, 2','e.g. 4, 6, 2'):mobileRollText('Üresen automatikus','Blank means automatic');
-    const extraLabel=document.getElementById('mobileRollExtraLabel');if(extraLabel)extraLabel.textContent=damage?mobileRollText('Egyéb sebzésmódosító','Other damage modifier'):mobileRollText('Egyéb bónusz','Other bonus');
+    const extraLabel=document.getElementById('mobileRollExtraLabel');if(extraLabel){const healing=damage&&Boolean(mobileRollSelectedDamage()?.healing);extraLabel.textContent=damage?mobileRollText(healing?'Egyéb gyógyításmódosító':'Egyéb sebzésmódosító',healing?'Other healing modifier':'Other damage modifier'):mobileRollText('Egyéb bónusz','Other bonus');}
     refreshMobileRollPreview(true);
 }
 function setMobileRollKind(kind){
@@ -13167,15 +13170,15 @@ function performMobileUnifiedRoll(){
     if(!manualField||!result||!mobileRollChoice?.value)return;
     updateSkills();updateDerivedFields();
     if(mobileRollKind==='damage'){
-        const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage),extra=Number(document.getElementById('mobileRollExtra')?.value)||0;if(!source||!parsed)return;
+        const source=mobileRollSelectedDamage(),parsed=parseDamageExpression(source?.damage),healing=Boolean(source?.healing),extra=Number(document.getElementById('mobileRollExtra')?.value)||0;if(!source||!parsed)return;
         const manualText=manualField.value.trim(),manualValues=manualText?manualText.split(/[;,\s]+/).filter(Boolean).map(Number):null;
         if(manualValues&&(manualValues.length!==parsed.dice.length||manualValues.some((value,index)=>!Number.isInteger(value)||value<1||value>parsed.dice[index].sides))){result.className='mobile-roll-result saving-throw-roll-result is-error';result.textContent=mobileRollText(`A kézi mezőbe pontosan ${parsed.dice.length} kockaértéket adj meg, mindegyiket a saját kockatartományán belül.`,`Enter exactly ${parsed.dice.length} manual die values, each within its die's range.`);manualField.focus();return;}
         const rolls=parsed.dice.map((die,index)=>({...die,value:manualValues?manualValues[index]:rollDie(die.sides)})),diceTotal=rolls.reduce((sum,die)=>sum+die.value*die.sign,0),total=diceTotal+parsed.modifier+extra;
         result.className='mobile-roll-result';result.replaceChildren();const card=document.createElement('div');card.className='saving-throw-result-card';
-        const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText('sebzésdobás','damage roll')} · ${manualValues?mobileRollText('kézi','manual'):mobileRollText('automatikus','automatic')}`;
+        const title=document.createElement('span');title.className='saving-throw-result-name';title.textContent=`${source.name} · ${mobileRollText(healing?'gyógyítás':'sebzésdobás',healing?'healing':'damage roll')} · ${manualValues?mobileRollText('kézi','manual'):mobileRollText('automatikus','automatic')}`;
         const diceSummary=document.createElement('div');diceSummary.className='mobile-roll-dice-summary'+(rolls.length===1?' is-single':'');rolls.forEach((roll,index)=>{const die=document.createElement('span');die.className='mobile-roll-die is-selected';const label=document.createElement('span');label.textContent=`${index+1}. d${roll.sides}`;const number=document.createElement('strong');number.textContent=`${roll.sign<0?'−':''}${roll.value}`;die.append(label,number);diceSummary.appendChild(die);});
         const finalLabel=document.createElement('span');finalLabel.className='mobile-roll-final-label';finalLabel.textContent=mobileRollText('Végeredmény','Final result');const totalElement=document.createElement('strong');totalElement.className='saving-throw-result-total';totalElement.textContent=String(total);const math=document.createElement('span');math.className='saving-throw-result-math';math.textContent=`${parsed.expression} → ${rolls.map(roll=>(roll.sign<0?'−':'')+roll.value).join(' + ')||'0'} ${formatModifier(parsed.modifier)} ${formatModifier(extra)} = ${total}`;
-        card.append(title,diceSummary,finalLabel,totalElement,math);result.append(card);revealMobileRollResult(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A dobott sebzés ${total}.`,`The rolled damage is ${total}.`);return;
+        card.append(title,diceSummary,finalLabel,totalElement,math);result.append(card);revealMobileRollResult(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`A kiszámított ${healing?'gyógyítás':'sebzés'} ${total}.`,`The calculated ${healing?'healing':'damage'} is ${total}.`);return;
     }
     const manualText=manualField.value.trim(),manual=manualText===''?null:Number(manualText);
     if(manual!==null&&(!Number.isInteger(manual)||manual<1||manual>20)){
@@ -13212,7 +13215,7 @@ function performMobileUnifiedRoll(){
     card.append(title,diceSummary,finalLabel,totalElement,math);result.append(card);revealMobileRollResult(card);const instruction=document.getElementById('mobileRollInstruction');if(instruction)instruction.textContent=mobileRollText(`Az eredmény ${total}. Mondd meg a mesélőnek; ő dönti el, hogy sikerült-e a próba.`,`The result is ${total}. Tell the GM; they decide whether the check succeeds.`);
 }
 document.querySelectorAll('[data-mobile-roll-kind]').forEach(button=>button.addEventListener('click',()=>setMobileRollKind(button.dataset.mobileRollKind)));
-mobileRollChoice?.addEventListener('change',()=>refreshMobileRollPreview(true));
+mobileRollChoice?.addEventListener('change',()=>populateMobileRollChoices());
 document.getElementById('mobileRollExtra')?.addEventListener('input',()=>refreshMobileRollPreview(true));
 document.getElementById('mobileRollMode')?.addEventListener('change',()=>{document.getElementById('mobileRollResult')?.replaceChildren();refreshMobileRollInstruction();});
 document.getElementById('mobileRollManual')?.addEventListener('input',refreshMobileRollInstruction);

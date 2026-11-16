@@ -1676,6 +1676,7 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-kind button[aria-selected="true"]{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 72%,var(--class-surface,var(--card))),color-mix(in srgb,var(--class-secondary,var(--border)) 42%,var(--bg)));color:var(--class-symbol,#fff);box-shadow:0 0 0 1px color-mix(in srgb,var(--class-primary,var(--accent)) 30%,transparent),0 0 18px var(--class-glow,rgba(200,169,106,.28)),inset 0 1px 0 color-mix(in srgb,var(--class-symbol,#fff) 22%,transparent)}
 .mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mobile-roll-fields[hidden]{display:none!important}
+.mobile-roll-fields[data-roll-kind="damage"] #mobileRollChoiceField{grid-column:1/-1}
 .mobile-roll-fields label{display:grid;grid-template-rows:minmax(2.5em,1fr) 46px;align-items:end;gap:5px;min-width:0;min-height:78px;color:var(--accent);font-size:.78rem;font-weight:700;line-height:1.25}
 .mobile-roll-fields label>span{display:flex;align-items:flex-end;min-width:0;min-height:2.5em}
 .mobile-roll-fields label[hidden]{display:none!important}
@@ -13130,6 +13131,7 @@ function refreshMobileRollPreview(clearResult=false){
 function populateMobileRollChoices(){
     if(!mobileRollChoice)return;const previous=mobileRollChoice.value;
     const guide=mobileRollKind==='guide',fields=document.getElementById('mobileRollFields'),help=document.getElementById('combatHelpPanel'),preview=document.getElementById('mobileRollBonusPreview'),execute=document.getElementById('mobileRollExecute'),diceGuide=document.getElementById('diceShapeGuide'),result=document.getElementById('mobileRollResult');
+    if(fields)fields.dataset.rollKind=mobileRollKind;
     if(fields)fields.hidden=guide;if(help)help.hidden=!guide;if(preview)preview.hidden=guide;if(execute)execute.hidden=guide;if(diceGuide)diceGuide.hidden=guide;if(result)result.hidden=guide;if(guide){renderCombatHelp();refreshDiceShapeGuide();refreshMobileRollInstruction();return;}
     let options=[],label='Skill';
     if(mobileRollKind==='save'){options=Object.keys(mobileRollAbilityNames).map(value=>new Option((document.documentElement.lang==='en'?mobileRollAbilityNamesEn:mobileRollAbilityNames)[value],value));label=mobileRollText('Mentődobás','Saving Throw');}

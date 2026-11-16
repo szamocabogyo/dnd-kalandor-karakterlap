@@ -1691,11 +1691,12 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .dice-shape-guide[hidden]{display:none!important}
 .dice-shape-guide-title{grid-column:1/-1;margin:0 0 2px;color:var(--accent);font-size:.68rem;font-weight:800;letter-spacing:.08em;text-align:center;text-transform:uppercase}
 .dice-shape-guide-item{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;font-size:.7rem;font-weight:800;line-height:1}
-.dice-shape-guide-item svg{display:block;width:40px;height:36px;overflow:visible;fill:color-mix(in srgb,var(--accent) 5%,transparent);stroke:currentColor;stroke-width:1.55;stroke-linecap:square;stroke-linejoin:miter;transition:color .18s ease,fill .18s ease,filter .18s ease,transform .18s ease}
-.dice-shape-guide-item svg .die-outline{stroke-width:2.25}
+.dice-shape-guide-item svg{display:block;width:40px;height:36px;overflow:visible;fill:color-mix(in srgb,var(--accent) 5%,transparent);stroke:currentColor;stroke-width:1.7;stroke-linecap:square;stroke-linejoin:miter;transition:color .18s ease,fill .18s ease,filter .18s ease,transform .18s ease}
+.dice-shape-guide-item svg path{vector-effect:non-scaling-stroke}
+.dice-shape-guide-item svg .die-outline{stroke-width:1.7}
 .dice-shape-guide-item strong{color:var(--text);font-size:.72rem}
 .dice-shape-guide-item.is-active{color:var(--accent)}
-.dice-shape-guide-item.is-active svg{fill:color-mix(in srgb,var(--accent) 24%,transparent);stroke-width:2;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 72%,transparent));transform:translateY(-1px) scale(1.08)}
+.dice-shape-guide-item.is-active svg{fill:color-mix(in srgb,var(--accent) 24%,transparent);filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 72%,transparent));transform:translateY(-1px) scale(1.08)}
 .dice-shape-guide-item.is-active strong{color:var(--accent);text-shadow:0 0 8px color-mix(in srgb,var(--accent) 48%,transparent)}
 @media(max-width:390px){.dice-shape-guide{gap:3px;padding-inline:5px}.dice-shape-guide-item svg{width:34px;height:31px}}
 .mobile-roll-result{margin-top:12px}
@@ -3192,7 +3193,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     <button id="mobileRollExecute" class="mobile-roll-execute" type="button"><span class="d20-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 2.25 20.4 7.1l1.2 9.1L12 21.75 2.4 16.2l1.2-9.1L12 2.25Z"/><path d="m12 2.25-4.1 7.2L12 16.4l4.1-6.95L12 2.25ZM3.6 7.1l4.3 2.35-5.5 6.75M20.4 7.1l-4.3 2.35 5.5 6.75M2.4 16.2 12 16.4l9.6-.2M7.9 9.45h8.2M12 16.4v5.35"/></svg></span><span>Dobás</span></button>
     <aside id="diceShapeGuide" class="dice-shape-guide" aria-label="Kockaforma súgó">
       <p class="dice-shape-guide-title">Kockaforma súgó</p>
-      <span class="dice-shape-guide-item" data-die="4" title="Négyoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 3 48 41H4L26 3Z"/><path d="M26 3v38M4 41l22-13 22 13"/></svg><strong>d4</strong></span>
+      <span class="dice-shape-guide-item" data-die="4" title="Négyoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 3 48 41H4L26 3Z"/><path d="M26 3v25M4 41l22-13 22 13"/></svg><strong>d4</strong></span>
       <span class="dice-shape-guide-item" data-die="6" title="Hatoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="m26 3 20 11v21L26 44 6 34V13L26 3Z"/><path d="M6 13l20 11 20-10M26 24v20"/></svg><strong>d6</strong></span>
       <span class="dice-shape-guide-item" data-die="8" title="Nyolcoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 2 46 14v20L26 44 6 34V14L26 2Z"/><path d="M26 2 10 34h32L26 2"/></svg><strong>d8</strong></span>
       <span class="dice-shape-guide-item" data-die="10" title="Tízoldalú kocka"><svg viewBox="0 0 52 46" aria-hidden="true"><path class="die-outline" d="M26 2 49 23 26 44 3 23 26 2Z"/><path d="M26 2 14 22l12 11 12-11L26 2ZM3 23l11-1m35 1-11-1M26 33v11"/></svg><strong>d10</strong></span>

@@ -3150,17 +3150,12 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
   <button id="bottomNotesButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 3.5h11.5a2 2 0 0 1 2 2v10.8H8.2A3.2 3.2 0 0 0 5 19.5v-16Z"/><path d="M5 19.5a3.2 3.2 0 0 1 3.2-3.2h10.3v2.2a2 2 0 0 1-2 2H7.7A2.7 2.7 0 0 1 5 17.8M8 7h6.5M8 10h4.5"/><path d="m14.2 14.2 6.2-6.2 1.1 1.1-6.2 6.2-2.1.9.9-2.1Z"/></svg></span><strong>Jegyzetek</strong></button>
   <button id="shortRestButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3.2c.8 2.4-.5 3.4-1.5 4.7-.9 1.1-1.2 2.1-.7 3.4.7-1.1 1.5-1.8 2.6-2.7 1.6 1.5 2.8 3 2.8 5.1A3.4 3.4 0 0 1 12 17.2a3.5 3.5 0 0 1-3.5-3.5c0-2.5 1.6-4.3 3.5-6.4"/><path d="m5 18.4 14 2.4M19 18.4 5 20.8M4 22h16"/></svg></span><strong>Rövid pihenő</strong></button>
   <button id="longRestButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M17.8 15.8A7.5 7.5 0 0 1 8.2 6.2a7.6 7.6 0 1 0 9.6 9.6Z"/><path d="m17.8 4 .45 1.15L19.4 5.6l-1.15.45-.45 1.15-.45-1.15-1.15-.45 1.15-.45L17.8 4ZM20.2 9.2l.3.8.8.3-.8.3-.3.8-.3-.8-.8-.3.8-.3.3-.8Z"/></svg></span><strong>Hosszú pihenő</strong></button>
-  <details id="settingsMenu" class="settings-menu">
-    <summary><span aria-hidden="true">⚙</span><strong>Beállítások</strong></summary>
-    <div class="settings-menu-panel">
-      <button id="portraitSettingsButton" type="button">🖼 Portré</button>
-      <button id="uiLanguageToggle" class="settings-language-toggle" type="button" data-i18n-ignore>English</button>
-      <button id="exportCharacter">💾 Export</button>
-      <button id="importCharacter">📂 Import</button>
-      <button id="clearCharacter" type="button">♲ Karakterlap ürítése</button>
-      <input type="file" id="importFile" accept=".json" style="display:none;">
-    </div>
-  </details>
+  <button id="portraitSettingsButton" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="3.5" width="16" height="17" rx="2"/><circle cx="12" cy="9" r="3"/><path d="M6.8 18c.9-3 2.7-4.5 5.2-4.5s4.3 1.5 5.2 4.5"/></svg></span><strong>Portré</strong></button>
+  <button id="uiLanguageToggle" class="settings-language-toggle" type="button" data-i18n-ignore><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3c2.4 2.5 3.6 5.5 3.6 9S14.4 18.5 12 21M12 3C9.6 5.5 8.4 8.5 8.4 12S9.6 18.5 12 21"/></svg></span><strong>English</strong></button>
+  <button id="exportCharacter" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M5 14.5v5h14v-5"/></svg></span><strong>Export</strong></button>
+  <button id="importCharacter" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 14.5v5h14v-5"/></svg></span><strong>Import</strong></button>
+  <button id="clearCharacter" type="button"><span class="action-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 7h14M9 7V4.5h6V7M7.5 7l.8 13h7.4l.8-13M10 10.5v6M14 10.5v6"/></svg></span><strong>Ürítés</strong></button>
+  <input type="file" id="importFile" accept=".json" style="display:none;">
 </nav>
 
 <div id="mobileRollPanelOverlay" class="mobile-roll-panel-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mobileRollPanelTitle">
@@ -13263,7 +13258,6 @@ mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
     mobileNavigationTemporaryState=existingTemporaryState||(collapsed||mobileCollapsed?{target,collapsed,mobileCollapsed}:null);
     target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }));
-document.querySelector('#settingsMenu>summary')?.addEventListener('click',()=>restoreMobileNavigationTarget());
 let mobileBottomNavFrame=0;
 function syncMobileBottomNavCurrent(){
     mobileBottomNavFrame=0;if(!sheet.classList.contains('mobile-mode')||!combatModeOverlay.hidden)return;
@@ -13548,9 +13542,6 @@ document.getElementById('chooseCharacterPortrait')?.addEventListener('click', ()
 });
 document.getElementById('closePortraitEditor')?.addEventListener('click', () => { portraitEditorOverlay.hidden = true; });
 portraitEditorOverlay?.addEventListener('click', event => { if(event.target === portraitEditorOverlay) portraitEditorOverlay.hidden = true; });
-document.getElementById('settingsMenu')?.addEventListener('click', event => {
-    if(event.target.closest('button')) event.currentTarget.open = false;
-});
 document.addEventListener('keydown', event => {
     const modal=document.querySelector('[role="dialog"][aria-modal="true"]:not([hidden])');
     if(event.key==='Tab'&&modal){const focusable=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[contenteditable="true"],[tabindex]:not([tabindex="-1"])')].filter(item=>!item.hidden&&item.getClientRects().length);if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}}
@@ -14799,7 +14790,7 @@ function translateUiValue(value){const match=String(value).match(/^(\s*)([\s\S]*
 function translateUiTextNode(node,refresh=false){if(!node?.parentElement||node.parentElement.closest('script,style,svg,[contenteditable="true"],[data-i18n-ignore]'))return;const current=node.nodeValue||'',rendered=uiRenderedText.get(node);if(refresh||!uiOriginalText.has(node)||rendered!==current)uiOriginalText.set(node,current);const original=uiOriginalText.get(node)||'',next=activeUiLanguage==='en'?translateUiValue(original):original;uiRenderedText.set(node,next);if(current!==next)node.nodeValue=next;}
 function translateUiElement(element,refresh=false){if(!(element instanceof Element)||element.closest('script,style,svg,[contenteditable="true"],[data-i18n-ignore]'))return;if(element instanceof HTMLOptionElement&&!element.hasAttribute('value'))element.setAttribute('value',element.value);const attributes=['placeholder','aria-label','title'];let originals=uiOriginalAttrs.get(element)||{},rendered=uiRenderedAttrs.get(element)||{};attributes.forEach(attribute=>{if(!element.hasAttribute(attribute))return;const current=element.getAttribute(attribute)||'';if(refresh||!(attribute in originals)||rendered[attribute]!==current)originals[attribute]=current;const next=activeUiLanguage==='en'?translateUiValue(originals[attribute]):originals[attribute];rendered[attribute]=next;if(current!==next)element.setAttribute(attribute,next);});uiOriginalAttrs.set(element,originals);uiRenderedAttrs.set(element,rendered);}
 function translateUiTree(root=document.body,refresh=false){if(root.nodeType===Node.TEXT_NODE){translateUiTextNode(root,refresh);return;}if(root instanceof Element)translateUiElement(root,refresh);root.querySelectorAll?.('*').forEach(element=>{translateUiElement(element,refresh);element.childNodes.forEach(node=>{if(node.nodeType===Node.TEXT_NODE)translateUiTextNode(node,refresh);});});}
-function applyUiLanguage(language,{persist=true}={}){activeUiLanguage=language==='en'?'en':'hu';document.documentElement.lang=activeUiLanguage;if(typeof spellCatalogRefreshRows==='function')spellCatalogRefreshRows();translateUiTree(document.body);const toggle=document.getElementById('uiLanguageToggle');if(toggle){toggle.textContent=activeUiLanguage==='en'?'Magyar':'English';toggle.setAttribute('aria-label',activeUiLanguage==='en'?'Váltás magyar nyelvre':'Switch to English');}if(persist)localStorage.setItem('dndSheetLanguage',activeUiLanguage);}
+function applyUiLanguage(language,{persist=true}={}){activeUiLanguage=language==='en'?'en':'hu';document.documentElement.lang=activeUiLanguage;if(typeof spellCatalogRefreshRows==='function')spellCatalogRefreshRows();translateUiTree(document.body);const toggle=document.getElementById('uiLanguageToggle');if(toggle){const text=activeUiLanguage==='en'?'Magyar':'English',label=toggle.querySelector('strong');if(label)label.textContent=text;else toggle.textContent=text;toggle.setAttribute('aria-label',activeUiLanguage==='en'?'Váltás magyar nyelvre':'Switch to English');}if(persist)localStorage.setItem('dndSheetLanguage',activeUiLanguage);}
 const uiLanguageObserver=new MutationObserver(mutations=>{mutations.forEach(mutation=>{if(mutation.type==='characterData')translateUiTextNode(mutation.target);else mutation.addedNodes.forEach(node=>translateUiTree(node,true));});});
 document.getElementById('uiLanguageToggle')?.addEventListener('click',()=>applyUiLanguage(activeUiLanguage==='en'?'hu':'en'));applyUiLanguage(localStorage.getItem('dndSheetLanguage')||'hu',{persist:false});uiLanguageObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
 </script>

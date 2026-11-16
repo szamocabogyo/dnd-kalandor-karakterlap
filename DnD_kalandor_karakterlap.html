@@ -13243,14 +13243,27 @@ function revealMobileNavigationTarget(target){
     if(target.classList.contains('collapsed'))target.querySelector(':scope > .section-header')?.click();
     if(target.classList.contains('mobile-section-collapsed'))target.querySelector(':scope > .mobile-section-heading .mobile-section-fold-toggle,:scope > .attacks-heading .mobile-section-fold-toggle')?.click();
 }
+let mobileNavigationTemporaryState=null;
+function restoreMobileNavigationTarget(exceptTarget=null){
+    const state=mobileNavigationTemporaryState;if(!state||state.target===exceptTarget)return;
+    const {target,collapsed,mobileCollapsed}=state;mobileNavigationTemporaryState=null;
+    if(collapsed&&!target.classList.contains('collapsed'))target.querySelector(':scope > .section-header')?.click();
+    if(mobileCollapsed&&!target.classList.contains('mobile-section-collapsed'))target.querySelector(':scope > .mobile-section-heading .mobile-section-fold-toggle,:scope > .attacks-heading .mobile-section-fold-toggle')?.click();
+}
 mobileBottomNavButtons.forEach(button=>button.addEventListener('click',()=>{
+    const target=document.getElementById(button.dataset.mobileNavTarget||'');
+    const existingTemporaryState=mobileNavigationTemporaryState?.target===target?mobileNavigationTemporaryState:null;
+    restoreMobileNavigationTarget(target);
     if(button.dataset.mobileNavAction==='rolls'){
         setMobileBottomNavCurrent(button);openMobileRollPanel();return;
     }
-    const target=document.getElementById(button.dataset.mobileNavTarget||'');if(!target)return;
+    if(!target)return;
+    const collapsed=target.classList.contains('collapsed'),mobileCollapsed=target.classList.contains('mobile-section-collapsed');
     revealMobileNavigationTarget(target);setMobileBottomNavCurrent(button);
+    mobileNavigationTemporaryState=existingTemporaryState||(collapsed||mobileCollapsed?{target,collapsed,mobileCollapsed}:null);
     target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }));
+document.querySelector('#settingsMenu>summary')?.addEventListener('click',()=>restoreMobileNavigationTarget());
 let mobileBottomNavFrame=0;
 function syncMobileBottomNavCurrent(){
     mobileBottomNavFrame=0;if(!sheet.classList.contains('mobile-mode')||!combatModeOverlay.hidden)return;

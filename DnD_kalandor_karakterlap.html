@@ -1670,15 +1670,16 @@ body:has(.combat-mode-overlay:not([hidden])) .mobile-bottom-nav,body:has(.portra
 .mobile-roll-panel-dialog>header button{flex:0 0 42px;min-height:42px;padding:0;border:1px solid var(--class-border,var(--border));border-radius:var(--class-radius,6px);background:color-mix(in srgb,var(--class-primary,var(--accent)) 12%,var(--bg));color:var(--class-symbol,var(--accent));font-size:1.25rem}
 .mobile-roll-panel-dialog>:not(header){width:min(960px,calc(100% - 32px));margin-left:auto;margin-right:auto;box-sizing:border-box}
 .mobile-roll-kind{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:7px;margin-bottom:12px;padding:8px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 55%,transparent);border-radius:var(--class-radius,8px);background:color-mix(in srgb,var(--class-surface,var(--card)) 62%,transparent);box-shadow:inset 0 0 18px rgba(0,0,0,.2)}
-.mobile-roll-kind button{position:relative;min-height:46px;padding:8px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 58%,var(--border));border-radius:var(--class-radius,6px);background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 10%,var(--bg)),var(--bg));color:var(--class-symbol,var(--text));font:inherit;font-weight:800;text-shadow:0 1px 0 rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .12s ease}
+.mobile-roll-kind button{position:relative;display:flex;align-items:center;justify-content:center;height:52px;min-height:52px;padding:7px 8px;border:1px solid color-mix(in srgb,var(--class-border,var(--border)) 58%,var(--border));border-radius:var(--class-radius,6px);background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 10%,var(--bg)),var(--bg));color:var(--class-symbol,var(--text));font:inherit;font-weight:800;line-height:1.15;text-align:center;text-shadow:0 1px 0 rgba(0,0,0,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,transform .12s ease}
 .mobile-roll-kind button:hover,.mobile-roll-kind button:focus-visible{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 24%,var(--class-surface,var(--card))),var(--bg));box-shadow:0 0 12px var(--class-glow,rgba(200,169,106,.2));outline:none}
 .mobile-roll-kind button:active{transform:translateY(1px)}
 .mobile-roll-kind button[aria-selected="true"]{border-color:var(--class-primary,var(--accent));background:linear-gradient(180deg,color-mix(in srgb,var(--class-primary,var(--accent)) 72%,var(--class-surface,var(--card))),color-mix(in srgb,var(--class-secondary,var(--border)) 42%,var(--bg)));color:var(--class-symbol,#fff);box-shadow:0 0 0 1px color-mix(in srgb,var(--class-primary,var(--accent)) 30%,transparent),0 0 18px var(--class-glow,rgba(200,169,106,.28)),inset 0 1px 0 color-mix(in srgb,var(--class-symbol,#fff) 22%,transparent)}
 .mobile-roll-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mobile-roll-fields[hidden]{display:none!important}
-.mobile-roll-fields label{display:flex;flex-direction:column;gap:5px;min-width:0;color:var(--accent);font-size:.78rem;font-weight:700}
+.mobile-roll-fields label{display:grid;grid-template-rows:minmax(2.5em,1fr) 46px;align-items:end;gap:5px;min-width:0;min-height:78px;color:var(--accent);font-size:.78rem;font-weight:700;line-height:1.25}
+.mobile-roll-fields label>span{display:flex;align-items:flex-end;min-width:0;min-height:2.5em}
 .mobile-roll-fields label[hidden]{display:none!important}
-.mobile-roll-fields select,.mobile-roll-fields input{width:100%;min-height:46px;box-sizing:border-box;font-size:1rem}
+.mobile-roll-fields select,.mobile-roll-fields input{width:100%;height:46px;min-height:46px;margin:0;box-sizing:border-box;font-size:1rem}
 .mobile-roll-bonus-preview{min-height:42px;margin-top:11px;padding:10px;border-left:3px solid var(--accent);background:var(--bg);color:var(--text);font-size:.82rem;line-height:1.4}
 .mobile-roll-execute{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;margin-top:12px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:var(--bg);font:inherit;font-weight:800;text-align:center}
 .mobile-roll-execute .d20-line-icon{width:23px;height:23px}
@@ -3179,7 +3180,7 @@ html[lang="en"] .context-instruction::before{content:'Next step: '}
     </div>
     <div id="mobileRollFields" class="mobile-roll-fields">
       <label id="mobileRollChoiceField"><span id="mobileRollChoiceLabel">Skill</span><select id="mobileRollChoice"></select></label>
-      <label id="mobileRollModeField">Dobás módja<select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
+      <label id="mobileRollModeField"><span>Dobás módja</span><select id="mobileRollMode"><option value="normal">Normál</option><option value="advantage">Előny</option><option value="disadvantage">Hátrány</option></select></label>
       <label id="mobileRollManualField"><span id="mobileRollManualLabel">Kézi d20 érték</span><input id="mobileRollManual" type="text" inputmode="decimal" autocomplete="off" placeholder="Üresen automatikus"></label>
       <label id="mobileRollExtraField"><span id="mobileRollExtraLabel">Egyéb bónusz</span><input id="mobileRollExtra" type="number" inputmode="numeric" step="1" value="0"></label>
     </div>

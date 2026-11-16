@@ -175,10 +175,10 @@ select{
 
 textarea{
     min-height:120px;
-    max-height:300px;
+    max-height:none;
 
     resize:none;
-    overflow-y:auto;
+    overflow-y:hidden;
 }
 
 #equipment,
@@ -10929,34 +10929,66 @@ document.querySelectorAll('.score').forEach(input => {
 updateModifiers();
 
 function autoResizeTextarea(textarea) {
+    if (!(textarea instanceof HTMLTextAreaElement)) return;
 
     textarea.style.height = 'auto';
+    textarea.style.overflowY = 'hidden';
 
-    const followsFullContent = textarea.matches('#equipment,#otherProficiencies');
-
-    const maxHeight =
-        followsFullContent
-            ? Number.POSITIVE_INFINITY
-            : window.innerWidth < 768
-            ? 200
-            : 300;
-
-    if (textarea.scrollHeight < maxHeight) {
-        textarea.style.height = textarea.scrollHeight + 'px';
-        textarea.style.overflowY = 'hidden';
-    } else {
-        textarea.style.height = maxHeight + 'px';
-        textarea.style.overflowY = 'auto';
-    }
+    const minimumHeight = parseFloat(getComputedStyle(textarea).minHeight) || 0;
+    textarea.style.height = Math.max(minimumHeight, textarea.scrollHeight) + 'px';
 }
 
-document.querySelectorAll('textarea').forEach(textarea => {
+function resizeAllTextareas(root = document) {
+    if (root instanceof HTMLTextAreaElement) {
+        autoResizeTextarea(root);
+        return;
+    }
+    root.querySelectorAll?.('textarea').forEach(autoResizeTextarea);
+}
 
-    autoResizeTextarea(textarea);
+const textareaWidths = new WeakMap();
+const textareaResizeObserver = typeof ResizeObserver === 'function'
+    ? new ResizeObserver(entries => {
+        entries.forEach(entry => {
+            const textarea = entry.target;
+            const width = entry.contentRect.width;
+            const previousWidth = textareaWidths.get(textarea);
+            textareaWidths.set(textarea, width);
+            if (width > 0 && (previousWidth === undefined || Math.abs(width - previousWidth) > 0.5)) {
+                autoResizeTextarea(textarea);
+            }
+        });
+    })
+    : null;
 
-    textarea.addEventListener('input', () => {
+function registerAutoGrowingTextareas(root = document) {
+    const textareas = root instanceof HTMLTextAreaElement
+        ? [root]
+        : Array.from(root.querySelectorAll?.('textarea') || []);
+    textareas.forEach(textarea => {
+        if (textarea.dataset.autoGrowReady === 'true') return;
+        textarea.dataset.autoGrowReady = 'true';
+        textareaResizeObserver?.observe(textarea);
         autoResizeTextarea(textarea);
     });
+}
+
+registerAutoGrowingTextareas();
+
+document.addEventListener('input', event => {
+    if (event.target instanceof HTMLTextAreaElement) autoResizeTextarea(event.target);
+});
+
+new MutationObserver(mutations => {
+    mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+        if (node instanceof Element) registerAutoGrowingTextareas(node);
+    }));
+}).observe(document.body, { childList: true, subtree: true });
+
+let textareaResizeFrame = 0;
+window.addEventListener('resize', () => {
+    cancelAnimationFrame(textareaResizeFrame);
+    textareaResizeFrame = requestAnimationFrame(() => resizeAllTextareas());
 });
 
 function getModifier(score){
